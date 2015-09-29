@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <TextView
+
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Turno"
+            android:id="@+id/textView"
+            android:layout_weight="12"
+            style="@style/MyLabelStyle"
+            android:textScaleX="1"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="10dp" />
+
+        <TextView
+
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/textView2"
+            android:layout_weight="9"
+
+            style="@style/MyLabelStyle"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:text="Contenedor" />
+
+        <TextView
+
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Placa"
+            android:id="@+id/txt3"
+            android:layout_weight="10"
+            style="@style/MyLabelStyle"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp" />
+
+        <TextView
+
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Linea"
+            android:id="@+id/txt4"
+            android:layout_weight="12"
+            style="@style/MyLabelStyle"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="10dp"
+             />
+
+
+
+
+    </LinearLayout>
+
+    <ListView
+        style="@style/activated"
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        >
+    </ListView>
+
+
+</LinearLayout>

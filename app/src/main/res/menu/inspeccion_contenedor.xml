@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/action_guardar_todo"
+        android:title="Guardar"
+        android:orderInCategory="100"
+        />
+    <item android:id="@+id/action_terminar_luego"
+        android:title="Guardar Borrador"
+        />
+
+    <item android:id="@+id/action_imprimir"
+        android:title="Imprimir"
+        />
+    <item android:id="@+id/action_imprimir_y_borrar"
+        android:title="Imprimir."
+        android:visible="false"
+        />
+
+    <item android:id="@+id/action_configurar_impresora"
+        android:title="Configurar Impresora"
+
+        />
+
+
+
+</menu>
+

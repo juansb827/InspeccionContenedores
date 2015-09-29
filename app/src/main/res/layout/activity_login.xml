@@ -1,0 +1,106 @@
+<TableLayout
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tableLayout12"
+    android:stretchColumns="*"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <TableRow
+
+        android:layout_weight="10"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:id="@+id/imageView"
+            android:soundEffectsEnabled="false"
+            android:src="@drawable/user_img"
+            android:layout_span="10"
+            android:layout_marginTop="50dp" />
+    </TableRow>
+
+    <TableRow
+
+        android:layout_weight="5"
+
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Codigo de Inspector"
+            android:id="@+id/textView2"
+            android:layout_span="10"
+            android:gravity="center_horizontal"
+            android:layout_weight="1"
+            android:textSize="25dp" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="5"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtCedula"
+            android:drawableLeft="@drawable/ic_action_person"
+            android:layout_span="6"
+            android:layout_column="2"
+            android:inputType="number"
+            android:imeActionLabel="Login"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="5">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ingresar"
+            android:id="@+id/btnLogearse"
+            android:layout_span="4"
+            android:layout_column="3"
+            android:onClick="logear" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="La conexion a la base de datos no ha sido configurada"
+            android:id="@+id/labelErrorLogin"
+            android:layout_span="10"
+            android:gravity="center_horizontal"
+            android:textColor="@color/RojoError"
+            android:visibility="invisible" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="35">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/imgErrorLogin"
+            android:soundEffectsEnabled="false"
+            android:src="@drawable/error_icon"
+            android:layout_span="4"
+            android:layout_column="3"
+            android:visibility="invisible" />
+    </TableRow>
+</TableLayout>

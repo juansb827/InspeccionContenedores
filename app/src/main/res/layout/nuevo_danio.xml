@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableLayout
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:stretchColumns="*"
+    android:orientation="vertical"
+    android:id="@+id/tabla_nuevo_danio"
+    xmlns:custom="http://schemas.android.com/apk/res-auto">
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <Button
+            android:id="@+id/btnTomarFotoDanio"
+            android:layout_column="1"
+            android:layout_width="wrap_content"
+            android:layout_span="3"
+            android:text="Tomar Foto"/>
+        <Button
+            android:id="@+id/btnVerFotosDanio"
+            android:layout_span="3"
+            android:layout_width="wrap_content"
+            android:layout_column="6"
+            android:text="Ver fotos"/>
+        </TableRow>
+    <TableRow android:visibility="gone">
+        <com.juans.inspeccion.CustomView.MyEditText
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_span="4"
+            android:id="@+id/txtTipoCalculo"
+
+
+            custom:nombreCampo="@string/CTIPCALCULO"
+
+            />
+
+        <com.juans.inspeccion.CustomView.MyEditText
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_span="4"
+            android:id="@+id/txtUsaTamano"
+
+
+            custom:nombreCampo="@string/NTARTAMANO"
+
+            />
+
+
+    </TableRow>
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Secuencia de el daño:"
+            android:id="@+id/lblSecuencia"
+            android:layout_span="10"
+            style="@style/MyLabelStyle" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtSecuenciaCorto"
+            style="@style/NonEditableTextField"
+            android:layout_span="4"
+
+            custom:nombreCampo="@string/CIDSECUENCIA"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"
+            custom:myInputType="lista"
+
+
+            />
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtSecuenciaLargo"
+            style="@style/NonEditableTextField"
+            android:layout_span="6"
+            android:layout_column="2"
+            custom:nombreCampo="@string/CDESCRIPCION"
+            custom:vaParaTabla="@string/TB26SECUENCIAS"
+            custom:myInputType="lista"
+
+
+            />
+    </TableRow>
+
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Ubicacion"
+            android:id="@+id/lblUbicacion"
+            android:layout_span="3"
+            style="@style/MyLabelStyle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Componente"
+            android:id="@+id/lblComponente"
+            android:layout_span="3"
+            style="@style/MyLabelStyle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Daño"
+            android:id="@+id/lblTipo"
+            android:layout_span="2"
+            style="@style/MyLabelStyle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Metodo"
+            android:id="@+id/lblMetodoReparacion"
+            android:layout_span="2"
+            style="@style/MyLabelStyle" />
+
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtUbicacion"
+            style="@style/NonEditableTextField"
+            android:layout_span="3"
+            custom:nombreCampo="@string/CCODUBI"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"
+            custom:myInputType="lista"
+
+
+            />
+
+
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtComponente"
+            style="@style/NonEditableTextField"
+            android:layout_span="3"
+            custom:nombreCampo="@string/CCODELE"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"
+            custom:myInputType="lista"
+
+            />
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtTipo"
+            style="@style/NonEditableTextField"
+            custom:nombreCampo="@string/CCODDAN"
+            custom:myInputType="lista"
+            android:layout_span="2"
+
+
+            />
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtMetodoReparacion"
+            android:layout_span="2"
+            style="@style/NonEditableTextField"
+            custom:nombreCampo="@string/CCODMET"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"
+            custom:myInputType="lista" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Descripcion"
+            android:id="@+id/textView"
+            android:layout_span="10"
+            style="@style/MyLabelStyle" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+
+
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtDescripcionReparacion"
+            android:layout_span="10"
+            style="@style/NonEditableTextField" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Largo"
+            android:id="@+id/lblLargo"
+            android:layout_span="3"
+            style="@style/MyLabelStyle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Ancho"
+            android:id="@+id/lblAncho"
+            android:layout_span="3"
+            style="@style/MyLabelStyle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Cantidad"
+            android:id="@+id/lblCantidad"
+            android:layout_span="4"
+            style="@style/MyLabelStyle" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtLargo"
+            android:layout_span="3"
+            style="@style/NonEditableTextField"
+            custom:nombreCampo="@string/NLARGO"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"
+            custom:myInputType="editTextDialog"
+            android:inputType="number"
+            android:editable="false"
+             />
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtAncho"
+            android:layout_span="3"
+            style="@style/NonEditableTextField"
+            custom:nombreCampo="@string/NANCHO"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"
+            custom:myInputType="editTextDialog"
+            android:inputType="number"
+            android:editable="false"
+             />
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtCantidad"
+            android:layout_span="4"
+            style="@style/NonEditableTextField"
+            custom:nombreCampo="@string/NUNIDADES"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"
+            custom:myInputType="editTextDialog"
+            android:inputType="number"
+            android:editable="false"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Con Cargo A"
+            android:id="@+id/lblConCargoA"
+            style="@style/MyLabelStyle"
+            android:layout_span="4" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Horas Hombre"
+            android:id="@+id/lblHorasHombre"
+            style="@style/MyLabelStyle"
+            android:layout_span="3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Costo Material"
+            android:id="@+id/lblCostoMaterial"
+            style="@style/MyLabelStyle"
+            android:layout_span="3" />
+
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtConCargoA"
+            android:layout_span="4"
+            style="@style/EditableTextField"
+            custom:nombreCampo="@string/CCARGOA"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"
+            custom:myInputType="lista"/>
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtHorasHombre"
+            android:layout_span="3"
+            style="@style/NonEditableTextField"
+            custom:nombreCampo="@string/NHORASHOM"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"
+
+            />
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtCostoMaterial"
+            android:layout_span="3"
+            style="@style/NonEditableTextField"
+            custom:nombreCampo="@string/NVALOR"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"/>
+
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="% IVA"
+            android:id="@+id/lbliva"
+            android:layout_span="3"
+            style="@style/MyLabelStyle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Tamaño Contenedor"
+            android:id="@+id/lblTamanoContenedor"
+            android:layout_span="7"
+            style="@style/MyLabelStyle" />
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtIva"
+            android:layout_span="4"
+            style="@style/NonEditableTextField"
+            custom:nombreCampo="@string/NTARIVA"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"/>
+
+        <com.juans.inspeccion.CustomView.MyEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtTamanoContenedor"
+            android:layout_span="6"
+            style="@style/NonEditableTextField"
+            custom:nombreCampo="@string/CMATCNTR"
+            custom:vaParaTabla="@string/TBDETMOVPATIO"/>
+    </TableRow>
+
+</TableLayout>

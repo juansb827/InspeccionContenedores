@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">FOCUS</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Configuración</string>
+    <string name="action_help">Ayuda</string>
+    <string name="title_activity_settings">Configuracion</string>
+    <string name="db_connection_user">Usuario</string>
+    <string name="db_connection_password">Contraseña</string>
+    <string name="db_name">Base de Datos</string>
+    <string name="db_server">Servidor</string>
+    <string name="db_server_instance">Instancia del Servidor</string>
+    <string name="db_save_connection">Guardar Configuracion</string>
+    <string name="db_test_connection">Probar Conexión</string>
+    <string name="msg_complete_form">Complete el formulario</string>
+    <string name="show_error">Mostrar Error</string>
+    <string name="error">Error</string>
+    <string name="cancel">Cancelar</string>
+    <string name="msg_connection_error">Error de conexión</string>
+    <string name="ok">OK</string>
+    <string name="save">Guardar</string>
+    <string name="save_connection_anyway">"No fue posible la conexión, ¿Desea guardar esta configuración de todas formas?"</string>
+    <string name="yes">Si</string>
+string>                            <string name="no">No</string>
+    <string name="title_activity_turnos">TurnosActivity</string>
+    <string name="title_activity_inspeccion">Inspeccion</string>
+    <string name="informacion">Informacion</string>
+    <string name="danio">Daños</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="ENTRADA_INSPECCION">ENTRADA INSPECCION CONTENEDORES</string>
+    <string name="SALIDA_INSPECCION">SALIDA INSPECCION CONTENEDORES</string>
+    <string name="title_activity_ficha_contenedor">FichaContenedor</string>
+    <string name="nit_usuario">Nit Usuario</string>
+    <string name="NO_ENCONTRO_CONTENEDOR">No se encontro el contenedor, Desea crearlo? </string>
+    <string name="GUARDADO_INSPECCION_CORRECTO">La informacion del contenedor se guardo correctamente</string>
+    <string name="DANIOS_YA_EXISTEN">Ya existen daños para este contenedor.\n¿Desea cambiarlos de todas formas?</string>
+    <string name="PRECIOS_NO_ENCONTRADOS">No se encontraron las tarifas para este daño .</string>
+    <string name="PROBLEMAS_AL_GUARDAR_INSPECCION">La tabla de campos no se encuentra incializada</string>
+
+
+    <string-array name="lista_cargo_a">
+        <item>NOAPLICA</item>
+        <item>CLIENTE</item>
+        <item>LINEA</item>
+
+    </string-array>
+    <string name="title_activity_login">Login</string>
+    <string name="title_activity_consultas">ConsultasActivity</string>
+    <string name="title_activity_pendientes">Registros Pendientes</string>
+
+    <string name="leyenda_factura">El consignatario o el embarcador son responsables
+                                    de la devolucion del contenedor en buen estado.
+                                    Daños encontrados al momento de la devolucion deben
+                                    ser recobrados.
+                                    Este documento reemplaza el contrato de comodato bajo los
+                                    términos del contrato del transporte maritimo.</string>
+    <string name="title_activity_print">PrintActivity</string>
+    <string name="title_activity_impresora">ImpresoraActivity</string>
+    <string name="title_activity_visualizar">VisualizarActivity</string>
+    <string name="title_activity_camera">CameraActivity</string>
+
+
+</resources>

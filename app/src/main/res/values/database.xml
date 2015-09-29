@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array
+        name="Tablas">
+        <item>TBTURNOS</item>
+        <item>TBCABMOVPATIO</item>
+        <item>TBCLIENTESLNA</item>
+        <item>TBESTADOSCNTR</item>
+        <item>TBCONTENEDORES</item>
+        <item>TBINSPECTORES</item>
+        <item>TBDETMOVPATIO</item>
+
+
+
+
+    </string-array>
+
+    <string-array
+        name="Listas">
+        <item>LISTA_METODOS_DE_REPARACION</item>
+        <item>LISTA_ESTADOS</item>
+        <item>LISTAS_DE_UBICACIONES</item>
+        <item>LISTA_SECUENCIAS</item>
+        <item>LISTA_COMPONENTES</item>
+        <item>LISTA_TIPOS_DE_DANIO</item>
+        <item>LISTA_LINEAS</item>
+    </string-array>
+
+    <string-array
+        name="ListasNoInspeccion">
+
+        <item>LISTA_PUERTOS</item>
+        <item>LISTA_TIPOS_CONTENEDOR</item>
+        <item>LISTA_MATERIALES_CONTENEDOR</item>
+        <item>LISTA_TAMANOS_CONTENEDOR</item>
+        <item>LISTAS_MOTONAVES_POR_LINEA</item>
+        <item>LISTA_TIPOS_INGRESO</item>
+
+
+
+    </string-array>
+
+
+
+
+
+
+
+
+
+
+        <string name="LISTA_ESTADOS">SELECT CESTADOCNTR,CDESCONDCNTR,NAPTOCNTR FROM TBESTADOSCNTR WHERE NHABILITADO=1</string>
+        <string name="LISTA_SECUENCIAS">SELECT CIDSECUENCIA, CDESCRIPCION from TB26SECUENCIAS ORDER BY NORDEN</string>
+        <string name="LISTA_UBICACIONES_CON_SECUENCIA">SELECT CCODUBI,CDES1UBI FROM TBUBICACION WHERE CIDSECUENCIA=</string>
+        <string name="LISTA_COMPONENTES">SELECT CCODELE, CDES1ELE FROM TBELEMENTOS ORDER BY CCODELE</string>
+        <string name="LISTA_TIPOS_DE_DANIO">SELECT CCODDAN, CDES1DAN FROM TBDANOS ORDER BY CCODDAN</string>
+        <string name="LISTA_METODOS_DE_REPARACION">SELECT CCODMET, CDES1MET, CTIPCALCULO, NTARTAMANO  FROM TBMETODOREPAR ORDER BY CCODMET</string>
+        <string name="LISTAS_MOTONAVES_POR_LINEA">SELECT CIDMOTONAVE,CDESMOTONAVE FROM TB26MOTONAVESLINEAS WHERE CCTELNA=</string>
+
+
+        <string name="LISTA_TIPOS_CONTENEDOR">SELECT CTIPCNTR, CTIPDES FROM TBTIPOSCNTR ORDER BY CTIPDES</string>
+        <string name="LISTA_MATERIALES_CONTENEDOR">SELECT CMATCNTR, CMATDES FROM TBMATERIALCNTR</string>
+        <string name="LISTA_TAMANOS_CONTENEDOR">SELECT CTAMCNTR, CTAMDES  FROM TBTAMANOSCNTR</string>
+        <string name="LISTA_LINEAS">SELECT CCTELNA,CDESCTELNA FROM TBCLIENTESLNA ORDER BY CCTELNA</string>
+        <string name="LISTA_TIPOS_INGRESO">SELECT * FROM TBGRUPOMOVCNTR</string>
+
+    <string name="LISTA_PUERTOS">SELECT CCODSITCNTR,CDESSITCNTR FROM TBSITCNTR ORDER BY CCODSITCNTR</string>
+
+
+
+
+
+
+
+
+    <string name="FECHA_MOSTRAR">FECHA_MOSTRAR</string>
+
+
+    <string name="TBTURNOS">TBTURNOS</string>
+    <string name="TBCABMOVPATIO">TBCABMOVPATIO</string>
+    <string name="TBCLIENTESLNA">TBCLIENTESLNA</string>
+    <string name="TBCONTENEDORES">TBCONTENEDORES</string>
+    <string name="TBESTADOSCNTR">TBESTADOSCNTR</string>
+    <string name="TBINSPECTORES">TBINSPECTORES</string>
+    <string name="TBDETMOVPATIO">TBDETMOVPATIO</string>
+    <string name="CIDSECUENCIA">CIDSECUENCIA</string>
+    <string name="CDESCRIPCION">CDESCRIPCION</string>
+    <string name="TB26SECUENCIAS">TB26SECUENCIAS</string>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- CAMPOS TBTURNOS -->
+
+    <string name="CCLIENTE">CCLIENTE</string>
+    <string name="CTIPDOC">CTIPDOC</string>
+    <string name="NTURNO">NTURNO </string>
+    <string name="NANO">NANO </string>
+    <string name="NMES">NMES </string>
+    <string name="CCODCNTR">CCODCNTR </string>
+    <string name="NDIA">NDIA </string>
+    <string name="CBOOKING">CBOOKING </string>
+    <string name="CPLACA">CPLACA </string>
+    <string name="CCTELNA">CCTELNA</string>
+    <string name="COBSERVA">COBSERVA </string>
+    <string name="CDESTRANSPOR">CDESTRANSPOR </string>
+    <string name="DFECHALOG">DFECHALOG</string>
+    <string name="CUSUARIOLOG">CUSUARIOLOG</string>
+    <string name="SYSCOMPUTADOR">SYSCOMPUTADOR</string>
+    <string name="CDESCONDUCTOR">CDESCONDUCTOR</string>
+    <string name="CCODCNTR2">CCODCNTR2</string>
+    <string name="CCELULAR">CCELULAR </string>
+    <string name="NUM_ITEM">NUM_ITEM </string>
+    <string name="CUSOLOGICO">CUSOLOGICO </string>
+    <string name="CTIPOTURNO">CTIPOTURNO </string>
+    <string name="NATENDIDO">NATENDIDO</string>
+    <string name="DFECHACERRADO">DFECHACERRADO</string>
+    <string name="CNUMEROBL">CNUMEROBL</string>
+    <string name="CMOTONAVE">CMOTONAVE</string>
+    <string name="CVIAJE">CVIAJE </string>
+    <string name="NPESOCARGA">NPESOCARGA </string>
+    <string name="CGRUPOMOV">CGRUPOMOV </string>
+    <string name="CNITCLIENTE">CNITCLIENTE </string>
+    <string name="CNUMCOMODATO">CNUMCOMODATO </string>
+    <string name="CPTOORIGEN">CPTOORIGEN</string>
+
+
+
+
+
+
+
+    <!-- CAMPOS TBCABMOVPATIO -->
+    <string name="NSOLICITADOS">NSOLICITADOS</string>
+    <string name="CTIPOMOV">CTIPOMOV</string>
+    <string name="NNUMDOC">NNUMDOC</string>
+    <string name="CCODINSPECTOR">CCODINSPECTOR</string>
+
+    <string name="COBSERVACION">COBSERVACION</string>
+    <string name="DFECMVTO">DFECMVTO</string>
+
+
+    <string name="CFACTRANSPOR">CFACTRANSPOR</string>
+
+    <string name="CCTELNADES">CCTELNADES</string>
+    <string name="CDESCEDULA">CDESCEDULA</string>
+    <string name="CCODSITCNTR">CCODSITCNTR</string>
+    <string name="NFORPAGO">NFORPAGO</string>
+    <string name="CHORA">CHORA</string>
+    <string name="CPTODESTINO">CPTODESTINO</string>
+
+    <string name="CDESTELEFO">CDESTELEFO</string>
+    <string name="ANULADO">ANULADO</string>
+    <string name="CNUMREFER1">CNUMREFER1</string>
+
+
+    <string name="CESTFINCNTR">CESTFINCNTR</string>
+    <string name="CTIPDOCORI">CTIPDOCORI</string>
+    <string name="NNUMDOCORI">NNUMDOCORI</string>
+
+    <string name="DFECINGRESOMARS">DFECINGRESOMARS</string>
+    <string name="DFECAUTORIZMARS">DFECAUTORIZMARS</string>
+    <string name="NPESCARPUERTO">NPESCARPUERTO</string>
+    <string name="CDETALLECARGA">CDETALLECARGA</string>
+    <string name="NPESCARBASCULA">NPESCARBASCULA</string>
+    <string name="CNUMSELLOS">CNUMSELLOS</string>
+    <string name="DFECHAARRIBO">DFECHAARRIBO</string>
+
+
+
+
+
+
+
+    <!-- CAMPOS TBCLIENTESLNA  -->
+    <string name="CDESCTELNA">CDESCTELNA</string>
+    <string name="TER_RAZONS">TER_RAZONS </string>
+
+    <string name="CNITAGENTE">CNITAGENTE</string>
+    <string name="NCODCIUD">NCODCIUD</string>
+    <string name="NCODPAIS">NCODPAIS</string>
+    <string name="NCODDPTO">NCODDPTO</string>
+    <string name="CFORPAGO">CFORPAGO</string>
+    <string name="NTARHORHOM">NTARHORHOM</string>
+    <string name="CEMAILOPER">CEMAILOPER</string>
+    <string name="CCODCODE1">CCODCODE1</string>
+    <string name="CCODCODE2">CCODCODE2</string>
+    <string name="CCODCODE3">CCODCODE3</string>
+    <string name="NOBLUBICA">NOBLUBICA</string>
+    <string name="NTARUSD">NTARUSD</string>
+    <string name="CTIPCTELNA">CTIPCTELNA</string>
+    <string name="CEMAILCTELNA">CEMAILCTELNA</string>
+    <string name="CNITCTELNA">CNITCTELNA</string>
+    <string name="CNEMCTELNA">CNEMCTELNA</string>
+    <string name="CFACTURAR">CFACTURAR</string>
+    <string name="CSISCALCULO">CSISCALCULO</string>
+    <string name="NOBLAUTSAL">NOBLAUTSAL</string>
+    <string name="CSERVIDORFTPLNA">CSERVIDORFTPLNA</string>
+    <string name="CUSUARIOFTP">CUSUARIOFTP</string>
+    <string name="CPWDFTP">CPWDFTP</string>
+    <string name="CPUERTOFTP">CPUERTOFTP</string>
+    <string name="NFTPACTIVO">NFTPACTIVO</string>
+
+    <!-- CAMPOS TBCONTENEDORES  -->
+    <string name="CMATCNTR">CMATCNTR</string>
+    <string name="DFECHAFAB">DFECHAFAB</string>
+    <string name="NSHPOWNER">NSHPOWNER</string>
+    <string name="DFECSALIDA">DFECSALIDA</string>
+    <string name="CNUMSTACKING">CNUMSTACKING</string>
+    <string name="CNITCIALEA">CNITCIALEA</string>
+
+    <string name="CSIGLACNTR">CSIGLACNTR</string>
+    <string name="CTIPOCNTR">CTIPOCNTR</string>
+
+    <string name="CDIGVERCNTR">CDIGVERCNTR</string>
+
+    <string name="CCODACEP">CCODACEP</string>
+    <string name="CTAMCNTR">CTAMCNTR</string>
+
+    <string name="CCODISOCNTR">CCODISOCNTR</string>
+    <string name="CSERIECNTR">CSERIECNTR</string>
+
+    <string name="CCODEVELOG">CCODEVELOG</string>
+    <string name="NTARACNTR">NTARACNTR</string>
+    <string name="DFECSTEINP">DFECSTEINP</string>
+    <string name="NPESMAXCNTR">NPESMAXCNTR</string>
+    <string name="NINACTIVOCNTR">NINACTIVOCNTR</string>
+    <string name="NARRENDADO">NARRENDADO</string>
+
+    <!-- CAMPOS TBESTADOSCNTR-->
+
+    <string name="CDESALT">CDESALT</string>
+    <string name="NAPTOCNTR">NAPTOCNTR</string>
+    <string name="CESTADOCNTR">CESTADOCNTR</string>
+    <string name="CDESCONDCNTR">CDESCONDCNTR</string>
+    <string name="CESTALT">CESTALT</string>
+    <string name="CDESINGLES">CDESINGLES</string>
+
+    <!-- CAMPOS TBINSPECTORES -->
+    <string name="CNOMINSPECTOR">CNOMINSPECTOR</string>
+    <!-- CAMPOS TBHISTOCNTR -->
+    <string name="DFECSALCNTR">DFECSALCNTR</string>
+    <string name="DFECENTCNTR">DFECENTCNTR</string>
+
+    <!-- CAMPOS TBDETMOVPATIO -->
+
+    <string name="CCODUBI">CCODUBI</string>
+<string name="CCODDAN">CCODDAN</string>
+<string name="CCODELE">CCODELE</string>
+<string name="CCODMET">CCODMET</string>
+<string name="CDESREPA">CDESREPA</string>
+<string name="NLARGO">NLARGO</string>
+<string name="NANCHO">NANCHO</string>
+<string name="NUNIDADES">NUNIDADES</string>
+<string name="CCARGOA">CCARGOA</string>
+<string name="NHORASHOM">NHORASHOM</string>
+<string name="NVALOR">NVALOR</string>
+<string name="NTARIVA">NTARIVA</string>
+<string name="CTIPCALCULO">CTIPCALCULO</string>
+    <string name="NTARTAMANO">NTARTAMANO</string>
+
+
+    <string name="NCOSHORHOM">NCOSHORHOM</string>
+
+    <string name="NCOSTO">NCOSTO</string>
+
+    <string name="CGRUPOREP">CGRUPOREP</string>
+    <string name="CMONEDA">CMONEDA</string>
+    <string name="CCODPOS">CCODPOS</string>
+
+
+
+
+
+    <string name="DFECAUTTAL">DFECAUTTAL</string>
+    <string name="DFECTALLER">DFECTALLER</string>
+
+    <string name="CCODREPCNTR">CCODREPCNTR</string>
+
+    <string name="NTALLER">NTALLER</string>
+    <string name="NAUTORIZADO">NAUTORIZADO</string>
+    <string name="NWLT">NWLT</string>
+    <string name="CCPTOLINEA">CCPTOLINEA</string>
+
+    <!-- CAMPOS TBTABLETS -->
+    <string name="CNIT">CNIT</string>
+    <string name="CNOMBRE">CNOMBRE</string>
+    <string name="CURLLOGO">CURLLOGO</string>
+
+
+
+
+
+
+
+
+
+
+
+</resources>

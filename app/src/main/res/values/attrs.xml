@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<resources>
+    <attr name="vieneDeTabla" format="string" /> <!--tabla de la cual se saco el dato con un SELECT  -->
+    <attr name="nombreCampo" format="string"/>  <!-- NombreDelCampoEnLaBaseDeDatos -->
+    <attr name="nombreCampo.Destino" format="string"/>  <!-- NombreDelCampoEnLaBaseDeDatos (
+            Si se llama diferente de la tabla de origna y en donde se va a insertar) -->
+    <attr name="llaveEn" format="string" />      <!-- Tablas en las cuales se necesita para busqueda WHERE  -->
+    <attr name="vaParaTabla" format="string" />      <!-- Tabla en la cual se hara el INSERT  -->
+
+    <attr name="myInputType" format="enum">
+        <enum name="lista" value="1"/>
+        <enum name="editTextDialog" value="2"/>
+        <enum name="datePicker" value="3"/>
+
+   </attr>
+
+    <attr name="secondaryInputType" format="enum">
+        <enum name="lista" value="1"/>
+        <enum name="editTextDialog" value="2"/>
+        <enum name="datePicker" value="3"/>
+    </attr>
+    <attr name="obligatorio" format="boolean"/>
+
+
+
+    <declare-styleable name="MyEditText">
+        <attr name="vieneDeTabla"/>
+        <attr name="nombreCampo" />  <!-- NombreDelCampoEnLaBaseDeDatos -->
+        <attr name="llaveEn" />      <!-- Tablas en las cuales se necesita para busqueda WHERE  -->
+        <attr name="vaParaTabla" />      <!-- Tabla en la cual se hara el INSERT  -->
+        <attr name="nombreCampo.Destino"/>
+        <attr name="myInputType"/>
+        <attr name="obligatorio"/>
+        <attr name="secondaryInputType"/>
+        <!--
+            <enum name="left" value="0"/>
+            <enum name="right" value="1"/>
+
+        </attr>  -->
+    </declare-styleable>
+
+
+    <declare-styleable name="MyCheckBox">
+        <attr name="vieneDeTabla"/>
+        <attr name="nombreCampo" />  <!-- NombreDelCampoEnLaBaseDeDatos -->
+        <attr name="llaveEn" />      <!-- Tablas en las cuales se necesita para busqueda WHERE  -->
+        <attr name="vaParaTabla" />      <!-- Tabla en la cual se hara el INSERT  -->
+        <attr name="nombreCampo.Destino"/>
+        <attr name="myInputType"/>
+        <attr name="secondaryInputType"/>
+        <!--
+            <enum name="left" value="0"/>
+            <enum name="right" value="1"/>
+
+        </attr>  -->
+    </declare-styleable>
+
+
+
+</resources>

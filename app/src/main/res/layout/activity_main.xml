@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <ScrollView android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="20">
+<TableLayout
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:stretchColumns="*">
+
+
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/textView"
+            android:layout_span="10" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/labelNaviera"
+            android:text="Linea Naviera"
+            style="@style/MyLabelStyleBlack2"
+            android:layout_span="8"
+            android:layout_column="1"/>
+    </TableRow>
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Entrada"
+            android:id="@+id/button1"
+            android:layout_span="8"
+            android:layout_column="1"
+            android:onClick="nuevaEntradaEP"
+            android:drawableLeft="@drawable/anchor" />
+    </TableRow>
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Salida"
+            android:id="@+id/button3"
+            android:layout_span="8"
+            android:layout_column="1"
+            android:onClick="nuevaSalidaEP"
+            android:drawableLeft="@drawable/anchor" />
+
+    </TableRow>
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/labelTransporte"
+            android:text="Empresa de Transporte"
+            style="@style/MyLabelStyleBlack2"
+            android:layout_span="8"
+            android:layout_column="1" />
+    </TableRow>
+
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Entrada"
+            android:id="@+id/button2"
+            android:layout_span="8"
+            android:layout_column="1"
+            android:onClick="nuevaEntradaET"
+            android:drawableLeft="@drawable/bus_icono" />
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Salida"
+            android:id="@+id/button4"
+            android:layout_span="8"
+            android:layout_column="1"
+            android:onClick="nuevaSalidaET"
+            android:drawableLeft="@drawable/bus_icono" />
+    </TableRow>
+
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/labelConsultas"
+            android:text="Consultas"
+            style="@style/MyLabelStyleBlack2"
+            android:layout_span="8"
+            android:layout_column="1" />
+    </TableRow>
+
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Buscar Documento"
+            android:id="@+id/btnBuscarDocumento"
+            android:layout_column="1"
+            android:onClick="buscarDocumento"
+            android:layout_span="8"
+
+            android:drawableLeft="@drawable/printer_ico" />
+
+
+
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Modificar Documento"
+            android:id="@+id/btnModificarDoc"
+            android:layout_column="1"
+            android:onClick="modificarDocumento"
+            android:layout_span="8"
+            android:drawableLeft="@drawable/todo" />
+
+
+
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stock detallado por Linea"
+            android:id="@+id/btnStockDetallado"
+            android:layout_column="1"
+            android:layout_span="8"
+            android:onClick="ConsultaStockDetallado"
+            android:drawableLeft="@drawable/report" />
+    </TableRow>
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stock resumido"
+            android:id="@+id/btnStockResumido"
+            android:layout_column="1"
+            android:onClick="ConsultaStockResumido"
+            android:layout_span="8"
+            android:drawableLeft="@drawable/report" />
+
+
+
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Turnos Registrados"
+            android:id="@+id/btnTurnosRegistrados"
+            android:layout_column="1"
+            android:onClick="ConsultaTurnosRegistrados"
+            android:layout_span="8"
+            android:drawableLeft="@drawable/checked"
+             />
+
+
+
+    </TableRow>
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/labelPendientes"
+            android:text="Pendientes"
+            style="@style/MyLabelStyleBlack2"
+            android:layout_span="8"
+            android:layout_column="1" />
+    </TableRow>
+    <TableRow
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Turnos Sin Guardar"
+        android:id="@+id/btnTurnosPendientes"
+        android:onClick="turnosPendientes"
+        android:layout_span="8"
+        android:layout_column="1"
+        android:visibility="visible"
+        android:drawableLeft="@drawable/todo" />
+</TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test"
+            android:id="@+id/button"
+            android:onClick="probarFicha"
+            android:layout_span="8"
+            android:layout_column="1"
+            android:visibility="visible" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+
+    </TableRow>
+
+
+</TableLayout>
+</ScrollView>
+    </LinearLayout>

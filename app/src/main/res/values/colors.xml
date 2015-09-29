@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="AzulF">#FF7EA3CB</color>
+    <color name="AzulTeso">#ff12a5f4</color>
+    <color name="VerdeSuave">#D5EDDB</color>
+    <color name="RojoError">#96FFCC99</color>
+    <color name="Blanco">#ffffff</color>
+    <color name="Negro">#000000</color>
+
+
+
+</resources>

@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity" >
+
+
+
+            <!-- Refresh -->
+            <item
+                android:id="@+id/action_settings"
+
+                android:title="@string/action_settings"
+                />
+            <!-- Help -->
+            <item
+                android:id="@+id/action_help"
+
+                android:title="@string/action_help"
+                />
+
+
+
+
+
+
+</menu>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- the theme applied to the application or activity -->
+    <style name="CustomActionBarTheme"
+        parent="@style/Theme.AppCompat.Light">
+        <item name="android:actionBarStyle">@style/MyActionBarStyle</item>
+
+
+        <!-- Support library compatibility -->
+        <item name="actionBarStyle">@style/MyActionBarStyle</item>
+
+    </style>
+
+    <!-- ActionBar styles -->
+    <style name="MyActionBarStyle"
+        parent="@style/Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/AzulF</item>
+
+
+
+
+        <!-- Support library compatibility -->
+        <item name="background">@color/AzulF</item>
+
+        <item name="android:titleTextStyle">@style/MyActionBar.TitleTextStyle</item>
+
+    </style>
+
+    <style name="MyActionBarTabs"
+        parent="@style/Widget.AppCompat.ActionBar.TabView">
+        <item name="android:background">@drawable/tabs</item>
+        <item name="android:layout_gravity">center</item>
+
+        <!-- Support library compatibility -->
+        <item name="background">@drawable/tabs</item>
+
+    </style>
+
+    <style name="MyActionBar.TitleTextStyle" parent="android:TextAppearance">
+        <item name="android:textColor">@color/Blanco</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+
+    </style>
+</resources>

@@ -141,7 +141,8 @@ public class InspeccionDataSource  {
         String cntrFinal=datosContenedor.get(res.getString(R.string.CCODCNTR));
         //Si el usuario cambio el codigo del contenedor hay que actualizarlo en la tabla turnos tambien
         String sentenciaTurnos=null;
-        if(!cntrOriginal.equals(cntrFinal))
+
+        if(inspeccion.isUsaTurno() && !cntrOriginal.equals(cntrFinal))
         {
             sentenciaTurnos=Consultas.cambiarContenedorTurno(cntrFinal, generarCondicionTurnos( inspeccion.getInformacion(),res ) );
         }
@@ -405,8 +406,16 @@ public class InspeccionDataSource  {
 
         return tipoActividad;
     }
+    public String generarConsecutivoSinTurno(Inspeccion inspeccion,Resources res) throws Exception {
+        HashMap<String, String> info = inspeccion.getInformacion();
+        String consulta=Consultas.countDocsDelDia(info,res);
+        String countDocs=DAO.getInstance().consulta_1_Dato(consulta);
+        int numDocs=Integer.parseInt(countDocs);
+        info.put(res.getString(R.string.NTURNO), ""+(numDocs+1) );
+        return generarConsecutivo(info,res);
 
-    private  String generarConsecutivo(HashMap<String,String> informacion,Resources res)
+    }
+    public   String generarConsecutivo(HashMap<String,String> informacion,Resources res)
     {
 
         String consecutivo = "";

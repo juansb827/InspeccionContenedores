@@ -31,6 +31,7 @@ import android.widget.Toast;
 
 import com.juans.inspeccion.CustomView.CustomView;
 import com.juans.inspeccion.CustomView.MyEditText;
+import com.juans.inspeccion.Interfaz.ActivityHelper;
 import com.juans.inspeccion.Interfaz.Dialogs.BusquedaDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.CompletarCampoDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.ConsultaCortaDialog;
@@ -166,11 +167,8 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
             inspeccion.getSupportLoaderManager().initLoader(LOADER_EXTRA, null, consultasCallBacks);
 
 
-        try {
-            inicializarNoUsaTurno(savedInstanceState==null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+            inicializarNoUsaTurno(savedInstanceState==null,true);
 
     }
 
@@ -686,8 +684,23 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         return mensaje==null;
     }
 
+    public void cambiarEIR(String nuevoEIR)
+    {
+
+        //Por si algo lol
+        infoInspeccion.put(getString(R.string.NNUMDOC), nuevoEIR);
+        String numeroDocumentoOri = getResources().getString(R.string.NNUMDOCORI);
+
+        if (inspeccion.darTipoInspeccion().equals(InspeccionActivity.ENTRADA)) {
+            infoInspeccion.put(numeroDocumentoOri, nuevoEIR);
+        } else {
+
+            infoInspeccion.put(numeroDocumentoOri, inspeccion.getInspeccion().getDatosContenedor().get(numeroDocumentoOri));
+        }
+    }
     @Override
     public Object guardar() {
+
         String fecha_al_cargar_turno[] = inspeccion.getInspeccion().getFechaInspeccion();
         if (fecha_al_cargar_turno == null) {
 
@@ -768,72 +781,61 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         }
         cargarFecha();
         turno.setTexto(elTurno);
+        inicializarNoUsaTurno(true,false);
         actualizarMapa();
 
     }
 
 
-    private void inicializarNoUsaTurno(boolean firstRun) throws Exception
+    private void inicializarNoUsaTurno(boolean firstRun,boolean cargarCampos)
     {
           //usoLogico
 
         String tipoTurno=(inspeccion.getInspeccion().getTipoInspeccion());
-        EditText tx= (EditText) getView().findViewById(R.id.txtTipoTurno);
-        tx.setText(tipoTurno);
-        //tipoIngreso
-        EditText tipoIngreso= (EditText) getView().findViewById(R.id.txtTipoIngreso);
-//        tipoIngreso.setOnFocusChangeListener(this);
-
-        EditText usoLogico= (EditText) getView().findViewById(R.id.txtUsoLogico);
-        usoLogico.setText("EMPTY");
-  //      usoLogico.setOnFocusChangeListener(this);
+        infoInspeccion.put(getString(R.string.CTIPOTURNO),tipoTurno);
+        infoInspeccion.put(getString(R.string.NTURNO) ,"0");
+        infoInspeccion.put(getString(R.string.CTIPDOC) ,inspeccion.getInspeccion().getTipoDocumento());
+        infoInspeccion.put(getString(R.string.NNUMDOC),"0");
+        infoInspeccion.put(getString(R.string.CUSOLOGICO),"EMPTY");
+        infoInspeccion.put(getString(R.string.CGRUPOMOV),"IMPORTACION");
+        actualizarInterfaz();
 
         TableRow row1= (TableRow) getView().findViewById(R.id.rowlblUsoLogico);
         row1.setVisibility(View.VISIBLE);
         TableRow row2= (TableRow) getView().findViewById(R.id.rowtxtUsoLogico);
         row2.setVisibility(View.VISIBLE);
-          //listas
-            EditText lineaCorto= (EditText) getView().findViewById(R.id.txtLineaCorto);
-    //    lineaCorto.setOnFocusChangeListener(this);
-        EditText lineaLargo= (EditText) getView().findViewById(R.id.txtLineaLargo);
-      //  lineaLargo.setOnFocusChangeListener(this);
 
-        //nit
+
+
+
+       ArrayList<CustomView>  listaCampos=inspeccion.darListaCampos();
+        infoInspeccion=inspeccion.getInfoInspeccion();
+
+
+        if(cargarCampos) {
+            String tbTurno = getResources().getString(R.string.TBTURNOS);
+            for (int i = 0; i < listaCampos.size(); i++) {
+                CustomView cw = listaCampos.get(i);
+                if (cw.getVieneDe().equals(tbTurno))
+                    if (cw.getVieneDe().equals(tbTurno)) {
+                        cw.setObligatorio(true);
+                        if (cw instanceof EditText) {
+                            EditText ed = (EditText) cw;
+
+                            ed.setInputType(InputType.TYPE_CLASS_TEXT);
+                            ed.setOnFocusChangeListener(this);
+
+                        }
+                    }
+
+            }
+            EditText ed = (EditText) getView().findViewById(R.id.txtTurno);
+            ed.setEnabled(false);
+        }
+
         MyEditText nitCliente= (MyEditText) getView().findViewById(R.id.txtClienteNit);
         nitCliente.setInputType(InputType.TYPE_CLASS_NUMBER);
-        //nitCliente.setOnFocusChangeListener(this);
-        //sitio origen
-        EditText sitioOrigen= (EditText) getView().findViewById(R.id.txtSitioOrigen);
-       // sitioOrigen.setOnFocusChangeListener(this);
-        //MOTOnave
-        EditText motonave= (EditText) getView().findViewById(R.id.txtMotonave);
-        motonave.setInputType(InputType.TYPE_CLASS_TEXT);
-//        motonave.setOnFocusChangeListener(this);
 
-
-
-
-        ArrayList<CustomView>  listaCampos=inspeccion.darListaCampos();
-        infoInspeccion=inspeccion.getInfoInspeccion();
-        infoInspeccion.put(   getResources().getString(R.string.NTURNO),""+0);
-
-        String tbTurno=getResources().getString(R.string.TBTURNOS);
-        for(int i=0;i<listaCampos.size();i++){
-            CustomView cw=listaCampos.get(i);
-            if(   cw.getVieneDe().equals( tbTurno) )
-            if(   cw.getVieneDe().equals( tbTurno) )
-            {
-                if(cw instanceof EditText)
-                {
-                      EditText ed=(EditText)cw;
-                      ed.setInputType(InputType.TYPE_CLASS_TEXT);
-                    ed.setOnFocusChangeListener(this);
-                }
-            }
-
-        }
-        EditText ed= (EditText) getView().findViewById(R.id.txtTurno);
-        ed.setEnabled(false);
         if(firstRun) {
             buscarTipoActividad("EMPTY");
         }
@@ -1006,11 +1008,11 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
 
                 //no es true si alguna busqueda no necesita progresDialog
-                busqueda=true;
+                busqueda = true;
 
                 if (busqueda) {
                     inspeccion.mostrarProgressDialog("Buscando ", "Un momento por favor...", true);
-                    InspeccionActivity.loading=true;
+                    InspeccionActivity.loading = true;
                 }
                 Bundle bundle = new Bundle();
                 bundle.putSerializable(InspeccionActivity.LISTA_CAMPOS, inspeccion.darListaCampos());
@@ -1023,20 +1025,17 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
             @Override
             public void onLoadFinished(Loader<Object> loader, Object resultado) {
-                Inspeccion result=null;
-                if(resultado instanceof Inspeccion)
-                {
-                    result= (Inspeccion) resultado;
-                }
-                else if(resultado instanceof Exception)
-                {
+                Inspeccion result = null;
+                if (resultado instanceof Inspeccion) {
+                    result = (Inspeccion) resultado;
+                } else if (resultado instanceof Exception) {
                     inspeccion.cerrarProgressDialog();
-                    Exception ex= (Exception) resultado;
-                    Toast.makeText(MainActivity.context,"Error:"+ex.getMessage(),Toast.LENGTH_LONG).show();
+                    Exception ex = (Exception) resultado;
+                    Toast.makeText(MainActivity.context, "Error:" + ex.getMessage(), Toast.LENGTH_LONG).show();
                     inspeccion.getSupportLoaderManager().destroyLoader(LOADER);
                     return;
                 }
-                InspeccionActivity.loading=false;
+                InspeccionActivity.loading = false;
                 if (resultado == null) {
                     inspeccion.cerrarProgressDialog();
                     inspeccion.sePerdioLaConexion();
@@ -1096,18 +1095,16 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                     inspeccion.getInspeccion().setEstaEnPatio(result.estaEnPatio());
                     validarFormulario(false);
                     //No usa turno
-                    if(!inspeccion.usaTurno && inspeccion.darTipoInspeccion().equals(InspeccionActivity.ENTRADA))
-                    {
-                        boolean hayQueCrear=crearContenedor();
+                    if (!inspeccion.usaTurno && inspeccion.darTipoInspeccion().equals(InspeccionActivity.ENTRADA)) {
+                        boolean hayQueCrear = crearContenedor();
                         cambiarColorCampoContenedor(hayQueCrear);
                         inspeccion.getInspeccion().setEstaEnPatio(result.estaEnPatio());
                         inspeccion.getInspeccion().setHaySaldoBooking(result.isHaySaldoBooking());
-                        if(hayQueCrear) {
+                        if (hayQueCrear) {
                             YesNoDialog yesNoDialog = YesNoDialog.newInstance("Contendor no encontrado", "No se ha encontrado el contenedor: " + ultimoCodigoContenedor +
                                     " \n Desea crearlo?", "CREAR", "CANCELAR", p1.this, DIALOG_CREAR_CONTENEDOR);
                             yesNoDialog.show(getActivity().getFragmentManager(), "");
                         }
-
 
 
                     }
@@ -1141,26 +1138,22 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                     });
 
 
-                }else if(tipoBusqueda.equals(BUSCAR_NOMBRE_CLIENTE))
-                {
-                   inspeccion.cerrarProgressDialog();
-                    EditText nombreCliente= (EditText) getView().findViewById(R.id.txtClienteNombre);
-                    String nombre=(String) resultado;
-                    String nit=infoInspeccion.get(getString(R.string.CNITCLIENTE));
-                    if (nombre.isEmpty())
-                    {
-                    Toast.makeText(MainActivity.context,"No se encontro el NIT : "+nit,Toast.LENGTH_LONG).show();
-                    }
-                    else
-                    {
+                } else if (tipoBusqueda.equals(BUSCAR_NOMBRE_CLIENTE)) {
+                    inspeccion.cerrarProgressDialog();
+                    EditText nombreCliente = (EditText) getView().findViewById(R.id.txtClienteNombre);
+                    String nombre = (String) resultado;
+                    String nit = infoInspeccion.get(getString(R.string.CNITCLIENTE));
+                    if (nombre.isEmpty()) {
+                        Toast.makeText(MainActivity.context, "No se encontro el NIT : " + nit, Toast.LENGTH_LONG).show();
+                    } else {
                         nombreCliente.setText(nombre);
                     }
 
 
-                }else if(tipoBusqueda.equals(BUSCAR_TIPO_ACTIVIDAD)) {
+                } else if (tipoBusqueda.equals(BUSCAR_TIPO_ACTIVIDAD)) {
                     inspeccion.cerrarProgressDialog();
-                    EditText tipoActividad= (EditText) getView().findViewById(R.id.txtTipoActividad);
-                    tipoActividad.setText((String)resultado);
+                    EditText tipoActividad = (EditText) getView().findViewById(R.id.txtTipoActividad);
+                    tipoActividad.setText((String) resultado);
 
                 }
                 inspeccion.getSupportLoaderManager().destroyLoader(LOADER);

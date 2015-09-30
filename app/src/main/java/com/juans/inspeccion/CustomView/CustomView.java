@@ -23,6 +23,7 @@ public interface CustomView {
     public int getSecondaryInputType();
     public void setTexto(String texto);
     public boolean esObligatorio();
+    public void setObligatorio(boolean obligatario);
     public String getNombreLista();
     public void setNombreLista(String lista);
 

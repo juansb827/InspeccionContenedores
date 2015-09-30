@@ -129,6 +129,11 @@ public class MyCheckBox extends CheckBox implements CustomView {
     }
 
     @Override
+    public void setObligatorio(boolean obligatario) {
+        return ;
+    }
+
+    @Override
     public String getNombreLista() {
         return null;
     }

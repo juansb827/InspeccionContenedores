@@ -125,6 +125,11 @@ public class MyEditText extends EditText implements CustomView,Serializable {
     }
 
     @Override
+    public void setObligatorio(boolean _obligatorio) {
+    obligatorio=_obligatorio;
+    }
+
+    @Override
     public String getNombreLista() {
         return null;
     }

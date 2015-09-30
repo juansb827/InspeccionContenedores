@@ -381,6 +381,16 @@ public class DaniosManager implements Serializable {
     }
 
 
+    public void cambiarEIR(String nuevoEIR,Resources res)
+    {
+        for(int i=0;i<listaDanios.size();i++)
+        {
+            HashMap<String,String> detalles=listaDanios.get(i).getDetalles();
+            detalles.put(res.getString(R.string.NNUMDOC),nuevoEIR);
+
+        }
+    }
+
 
 
 }

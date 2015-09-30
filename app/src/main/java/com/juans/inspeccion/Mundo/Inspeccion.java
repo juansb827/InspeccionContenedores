@@ -25,6 +25,7 @@ public class Inspeccion implements Serializable{
     ArrayList<HashMap<String,String>> turnosPendientes;
     boolean estaEnPatio;
     boolean haySaldoBooking;
+    boolean usaTurno;
 
     /*
    /Usada solo para fotos
@@ -165,6 +166,14 @@ public class Inspeccion implements Serializable{
     }
     public String[] getFechaInspeccion() {
         return fechaInspeccion;
+    }
+
+    public boolean isUsaTurno() {
+        return usaTurno;
+    }
+
+    public void setUsaTurno(boolean usaTurno) {
+        this.usaTurno = usaTurno;
     }
 
     public ArrayList<HashMap<String,String>> getTurnosPendientes()

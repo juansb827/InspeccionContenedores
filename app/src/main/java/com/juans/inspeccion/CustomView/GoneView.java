@@ -34,6 +34,11 @@ public class GoneView implements CustomView, Serializable {
     }
 
     @Override
+    public void setObligatorio(boolean obligatario) {
+        return;
+    }
+
+    @Override
     public String getNombreLista() {
         return null;
     }

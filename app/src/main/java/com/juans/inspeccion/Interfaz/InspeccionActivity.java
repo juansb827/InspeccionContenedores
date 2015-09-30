@@ -37,6 +37,7 @@ import com.juans.inspeccion.Interfaz.Inspeccion_tabs.p1;
 import com.juans.inspeccion.Interfaz.Inspeccion_tabs.p2;
 import com.juans.inspeccion.Mundo.Album;
 import com.juans.inspeccion.Mundo.ColumnasTablas;
+import com.juans.inspeccion.Mundo.Consultas;
 import com.juans.inspeccion.Mundo.Danio;
 import com.juans.inspeccion.Mundo.Recibos.CreadorRecibos;
 import com.juans.inspeccion.Mundo.DAO;
@@ -187,6 +188,7 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
 
 
         cambiarTitulo();
+        inspeccionObject.setUsaTurno(usaTurno);
         final android.support.v7.app.ActionBar actionBar = getSupportActionBar();
 
 
@@ -752,6 +754,20 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
         }
 
     }
+    //debe ser llamado antes de guardar en P1
+    private void cambiarNumeroDocumento(String nuevoNumDoc)
+    {
+        Fragment fragment1 = (Fragment) viewPager.getAdapter().instantiateItem(viewPager, 0);
+        p1 frag1 = (p1) fragment1;
+        frag1.cambiarEIR(nuevoNumDoc);
+
+        inspeccionObject.getDaniosManager().cambiarEIR(nuevoNumDoc,getResources());
+
+
+
+
+
+    }
 
 
 
@@ -773,15 +789,23 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
 
             @Override
             protected String doInBackground(Void... params) {
+
                 InspeccionDataSource dataSource = new InspeccionDataSource();
 
                 try {
+
                     if(tipoAccion!=null && tipoAccion.equals(MODIFICAR_DOCUMENTO))
                     {
                         dataSource.re_insert(listaCampos,inspeccionObject,getResources());
                     }
-                    else
-                    dataSource.insert(listaCampos, inspeccionObject, getResources());
+                    else {
+                        if(!usaTurno)
+                        {
+
+                            cambiarNumeroDocumento(dataSource.generarConsecutivoSinTurno(inspeccionObject,getResources()));
+                        }
+                        dataSource.insert(listaCampos, inspeccionObject, getResources());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     return e.getMessage();

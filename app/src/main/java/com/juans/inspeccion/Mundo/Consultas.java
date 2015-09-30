@@ -252,6 +252,16 @@ public class Consultas {
 
     }
 
+    public static String countDocsDelDia(HashMap<String,String> info,Resources res)
+    {
+        String dia=info.get(res.getString(R.string.NDIA));
+        String mes=info.get(res.getString(R.string.NMES));
+        String ano=info.get(res.getString(R.string.NANO));
+        String sentencia="SELECT count(*) FROM TBCABMOVPATIO WHERE DATEDIFF(dd, DFECMVTO, '"+ano+mes+dia+"') = 0";
+        return sentencia;
+    }
+
+
 
 
 

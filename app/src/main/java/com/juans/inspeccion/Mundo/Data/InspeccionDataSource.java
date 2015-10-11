@@ -88,7 +88,7 @@ public class InspeccionDataSource  {
 
         HashMap<String,String> info=inspeccion.getInformacion();
         ArrayList<Danio> danios=inspeccion.getDaniosManager().getListaDanios();
-
+        String numdoc=info.get(res.getString(R.string.NNUMDOC));
         String destino=res.getString(R.string.TBCABMOVPATIO);
 
         for(int i=0;i<listaCampos.size();i++)
@@ -102,6 +102,11 @@ public class InspeccionDataSource  {
             }
             info.put(cw.getNombreCampoDestino(), texto);
 
+        }
+        //Al nousar turno, nnumdoc es =0 en la interfaz ,se perderia si no se hace esto
+        if(!inspeccion.isUsaTurno())
+        {
+            info.put(res.getString(R.string.NNUMDOC),numdoc);
         }
 
         HashMap<String, String> columnas = ColumnasTablas.getInstance().darTabla(destino);
@@ -363,8 +368,8 @@ public class InspeccionDataSource  {
             String tipoTurno=informacion.get(res.getString(R.string.CTIPOTURNO));
             if(!TextUtils.isEmpty(tipoTurno) && tipoTurno.equals(InspeccionActivity.SALIDA))
             {
-                Inspeccion infoBooking = readInfoBooking(informacion, res);
-                inspeccion.setInfoBooking(infoBooking.getInfoBooking());
+
+                inspeccion.setInfoBooking(readInfoBooking(informacion, res));
 
             }
 
@@ -483,14 +488,13 @@ public class InspeccionDataSource  {
 
     }
 
-    public Inspeccion readInfoBooking(HashMap<String,String> informacion,Resources res) throws ConnectionException {
-        Inspeccion inspeccion=new Inspeccion();
+    public ArrayList<HashMap<String, String>>  readInfoBooking(HashMap<String,String> informacion,Resources res) throws ConnectionException {
+
         String booking=informacion.get(res.getString(R.string.CBOOKING));
         String linea=informacion.get(res.getString(R.string.CCTELNA));
         ArrayList<HashMap<String, String>> infoBooking = Consultas.darInfoBooking(linea, booking);
-        if (infoBooking==null) return null;
-        inspeccion.setInfoBooking(infoBooking);
-        return inspeccion;
+
+        return infoBooking;
     }
 
     public Inspeccion readTurnosPendientes(HashMap<String,String> informacion,String tipoTurno,Resources res) throws ConnectionException, DataBaseException {

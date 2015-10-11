@@ -29,7 +29,7 @@ public class PendientesActivity extends ActionBarActivity {
         super.onResume();
         listaResumenes= Pendientes.darResumenTurnos(PendientesActivity.this
         );
-        listaPendientesAdapter.notifyDataSetChanged();
+        setAdapter();
 
     }
 
@@ -39,38 +39,41 @@ public class PendientesActivity extends ActionBarActivity {
         setContentView(R.layout.activity_pendientes);
         listaPendientesView= (ListView) findViewById(R.id.listaRegistrosPendientes);
         listaResumenes = Pendientes.darResumenTurnos(PendientesActivity.this);
-
-        try {
-
-
-            listaPendientesAdapter = new SimpleAdapter( getApplicationContext(), listaResumenes , R.layout.pendiente_listview_row,
-                    new String[]{"NTURNO", "CTIPOTURNO", "FECHA_MOSTRAR"}, new int[]{
-                    R.id.lblNumTurno, R.id.lblTipoTurno, R.id.lblFechaTurno}
-
-            );
-            listaPendientesView.setAdapter(listaPendientesAdapter);
-            listaPendientesView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        } catch (Exception e) {
-            e.printStackTrace();
-
-
-        }
-
-        listaPendientesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent= new  Intent(PendientesActivity.this, InspeccionActivity.class);
-                Inspeccion inspeccion=Pendientes.darListaTurnos(PendientesActivity.this).get(i);
-                String tipoDoc=inspeccion.getInformacion().get(getResources().getString(R.string.CTIPDOC));
-                intent.putExtra(Pendientes.PENDIENTE, inspeccion );
-                intent.putExtra(InspeccionActivity.INDICE_TURNO, i );
-                intent.putExtra(InspeccionActivity.TIPO_DOC, tipoDoc );
-
-                startActivity(intent);
-            }
-        });
+        setAdapter();
     }
+     private void setAdapter()
+     {
 
+         try {
+
+
+             listaPendientesAdapter = new SimpleAdapter( getApplicationContext(), listaResumenes , R.layout.pendiente_listview_row,
+                     new String[]{"NTURNO", "CTIPOTURNO", "FECHA_MOSTRAR"}, new int[]{
+                     R.id.lblNumTurno, R.id.lblTipoTurno, R.id.lblFechaTurno}
+
+             );
+             listaPendientesView.setAdapter(listaPendientesAdapter);
+             listaPendientesView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+         } catch (Exception e) {
+             e.printStackTrace();
+
+
+         }
+
+         listaPendientesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+             @Override
+             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                 Intent intent= new  Intent(PendientesActivity.this, InspeccionActivity.class);
+                 Inspeccion inspeccion=Pendientes.darListaTurnos(PendientesActivity.this).get(i);
+                 String tipoDoc=inspeccion.getInformacion().get(getResources().getString(R.string.CTIPDOC));
+                 intent.putExtra(Pendientes.PENDIENTE, inspeccion );
+                 intent.putExtra(InspeccionActivity.INDICE_TURNO, i );
+                 intent.putExtra(InspeccionActivity.TIPO_DOC, tipoDoc );
+
+                 startActivity(intent);
+             }
+         });
+     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

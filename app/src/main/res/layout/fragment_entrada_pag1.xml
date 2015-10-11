@@ -226,6 +226,53 @@
 
 
                 </TableRow>
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="10">
+
+                    <TextView
+                        style="@style/MyLabelStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:text="Linea"
+                        android:id="@+id/textView24"
+                        android:layout_span="10" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="10">
+
+                    <com.juans.inspeccion.CustomView.MyEditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/txtLineaCorto"
+                        android:layout_column="0"
+                        style="@style/NonEditableTextField"
+                        custom:vieneDeTabla="@string/TBTURNOS"
+                        custom:nombreCampo="@string/CCTELNA"
+                        custom:llaveEn="@string/TBCLIENTESLNA"
+                        custom:vaParaTabla="@string/TBCABMOVPATIO"
+                        android:layout_span="2"
+                        android:editable="false"
+                        />
+
+                    <com.juans.inspeccion.CustomView.MyEditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/txtLineaLargo"
+                        custom:vieneDeTabla="@string/TBCLIENTESLNA"
+                        custom:nombreCampo="@string/CDESCTELNA"
+
+                        style="@style/NonEditableTextField"
+                        android:layout_span="8" />
+
+                </TableRow>
+
+
 
                 <TableRow
 
@@ -399,53 +446,6 @@
 
 
                 </TableRow>
-
-                <TableRow
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="10">
-
-                    <TextView
-                        style="@style/MyLabelStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-
-                        android:text="Linea"
-                        android:id="@+id/textView24"
-                        android:layout_span="10" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="10">
-
-                    <com.juans.inspeccion.CustomView.MyEditText
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/txtLineaCorto"
-                        android:layout_column="0"
-                        style="@style/NonEditableTextField"
-                        custom:vieneDeTabla="@string/TBTURNOS"
-                        custom:nombreCampo="@string/CCTELNA"
-                        custom:llaveEn="@string/TBCLIENTESLNA"
-                        custom:vaParaTabla="@string/TBCABMOVPATIO"
-                        android:layout_span="2"
-                        android:editable="false"
-                        />
-
-                    <com.juans.inspeccion.CustomView.MyEditText
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/txtLineaLargo"
-                        custom:vieneDeTabla="@string/TBCLIENTESLNA"
-                        custom:nombreCampo="@string/CDESCTELNA"
-
-                        style="@style/NonEditableTextField"
-                        android:layout_span="8" />
-
-                </TableRow>
-
 
 
 

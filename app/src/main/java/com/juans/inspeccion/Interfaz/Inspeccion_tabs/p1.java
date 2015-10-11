@@ -80,6 +80,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
     private final static String BUSCAR_DANIOS_DE_CONTENEDOR = "BD";
     private final static String BUSCAR_NOMBRE_CLIENTE = "BNC";
     private final static String BUSCAR_TIPO_ACTIVIDAD = "BTAC";
+    private final static String BUSCAR_BOOKING="BBOOK";
     private final static int LOADER = 777;
     private final static int LOADER_EXTRA = 999;
     private final static int DIALOG_MODIFICAR_CONTENEDOR = 854;
@@ -166,9 +167,8 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         else if (loader2 != null)
             inspeccion.getSupportLoaderManager().initLoader(LOADER_EXTRA, null, consultasCallBacks);
 
-
-
-            inicializarNoUsaTurno(savedInstanceState==null,true);
+            if(!InspeccionActivity.usaTurno)
+             inicializarNoUsaTurno(savedInstanceState==null,true);
 
     }
 
@@ -222,6 +222,8 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                 }
             });
         }
+
+
 
         final AsyncTask hueTask = new AsyncTask() {
             @Override
@@ -583,6 +585,18 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         }
     }
 
+    private void buscarBooking(String booking)
+    {
+        if(TextUtils.isEmpty(booking))
+        {
+            Toast.makeText(MainActivity.context,"CAMPO VACIO",Toast.LENGTH_SHORT);
+        }
+        else {
+            tipoBusqueda = BUSCAR_BOOKING;
+            inspeccion.getSupportLoaderManager().initLoader(LOADER, null, consultasCallBacks);
+        }
+    }
+
 
 
     private void cambiarColorCampoContenedor(boolean crearContenedor) {
@@ -688,6 +702,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
     {
 
         //Por si algo lol
+
         infoInspeccion.put(getString(R.string.NNUMDOC), nuevoEIR);
         String numeroDocumentoOri = getResources().getString(R.string.NNUMDOCORI);
 
@@ -798,12 +813,40 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         infoInspeccion.put(getString(R.string.NNUMDOC),"0");
         infoInspeccion.put(getString(R.string.CUSOLOGICO),"EMPTY");
         infoInspeccion.put(getString(R.string.CGRUPOMOV),"IMPORTACION");
-        actualizarInterfaz();
+
 
         TableRow row1= (TableRow) getView().findViewById(R.id.rowlblUsoLogico);
+        if(row1!=null)
         row1.setVisibility(View.VISIBLE);
         TableRow row2= (TableRow) getView().findViewById(R.id.rowtxtUsoLogico);
+        if(row2!=null)
         row2.setVisibility(View.VISIBLE);
+
+        Button btnEditarBooking= (Button) getView().findViewById(R.id.btnEditarBooking);
+        if (btnEditarBooking!=null)
+        {
+           btnEditarBooking.setVisibility(View.VISIBLE);
+            btnEditarBooking.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   MyEditText txtL= (MyEditText) getView().findViewById(R.id.txtLineaCorto);
+
+                    String linea=txtL.getTexto();
+                    if(TextUtils.isEmpty(linea))
+                    {
+
+                        Toast.makeText(MainActivity.context,"DEBE SELECCIONAR UNA LINEA PRIMERO",Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+
+                        EditTextDialog.setPlaceHolder("NUMERO DE BOOKING");
+                        EditTextDialog ed = EditTextDialog.newInstance(InputType.TYPE_CLASS_TEXT, R.id.txtNumeroBooking, "", p1.this);
+                        ed.show(getActivity().getSupportFragmentManager(), "we");
+                    }
+
+                }
+            });
+        }
 
 
 
@@ -835,6 +878,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
         MyEditText nitCliente= (MyEditText) getView().findViewById(R.id.txtClienteNit);
         nitCliente.setInputType(InputType.TYPE_CLASS_NUMBER);
+        actualizarInterfaz();
 
         if(firstRun) {
             buscarTipoActividad("EMPTY");
@@ -851,7 +895,15 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
     @Override
     public void onDataReceive(Object _data, int iniciadoPor) {
         if (Varios.isActityEnding(getActivity())) return;
-        EditText temp = (EditText) getView().findViewById(iniciadoPor);
+        MyEditText temp = (MyEditText) getView().findViewById(iniciadoPor);
+        EditText template= (EditText) getView().findViewById(R.id.txtNano);
+        if (temp!=null && temp.getEstado()==CustomView.ESTADO_ERROR)
+        {
+            temp.setBackgroundDrawable(template.getBackground());
+        }
+
+
+
         FilaEnConsulta data = null;
         HashMap<String, String> dataH = null;
         if (_data instanceof FilaEnConsulta) {
@@ -931,6 +983,12 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                     temp.setText(usoLogico);
                     buscarTipoActividad(usoLogico);
                         break;
+                case R.id.txtNumeroBooking:
+                    String numBooking=data.getDato(0).toUpperCase().trim();
+                    temp.setText(numBooking);
+                    buscarBooking(numBooking);
+                      break;
+
 
 
 
@@ -1141,14 +1199,15 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                 } else if (tipoBusqueda.equals(BUSCAR_NOMBRE_CLIENTE)) {
                     inspeccion.cerrarProgressDialog();
                     EditText nombreCliente = (EditText) getView().findViewById(R.id.txtClienteNombre);
-                    String nombre = (String) resultado;
+                    String nombre = "";
                     String nit = infoInspeccion.get(getString(R.string.CNITCLIENTE));
                     if (nombre.isEmpty()) {
                         Toast.makeText(MainActivity.context, "No se encontro el NIT : " + nit, Toast.LENGTH_LONG).show();
                     } else {
-                        nombreCliente.setText(nombre);
-                    }
+                        nombre=(String) resultado;
 
+                    }
+                    nombreCliente.setText(nombre);
 
                 } else if (tipoBusqueda.equals(BUSCAR_TIPO_ACTIVIDAD)) {
                     inspeccion.cerrarProgressDialog();
@@ -1156,6 +1215,14 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                     tipoActividad.setText((String) resultado);
 
                 }
+                switch (tipoBusqueda)
+                {
+                    case BUSCAR_BOOKING:
+                        onLF_BuscarBooking(resultado);
+
+
+                }
+
                 inspeccion.getSupportLoaderManager().destroyLoader(LOADER);
 
 
@@ -1163,10 +1230,30 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
             @Override
             public void onLoaderReset(Loader<Object> loader) {
+                Log.e("P1","OnLoaderReset");
 
             }
         });
 
+
+    }
+
+    private void onLF_BuscarBooking(Object resultado)
+    {
+        inspeccion.cerrarProgressDialog();
+        ArrayList<HashMap<String, String>> lista = (ArrayList<HashMap<String, String>>) resultado;
+        MyEditText txtBooking = (MyEditText) getView().findViewById(R.id.txtNumeroBooking);
+
+
+        inspeccion.getInspeccion().setInfoBooking(lista);
+
+        String nit = infoInspeccion.get(getString(R.string.CNITCLIENTE));
+        if (lista==null || lista.size()==0) {
+            Toast.makeText(MainActivity.context, "No se encontro el booking :"+txtBooking.getTexto() + nit, Toast.LENGTH_LONG).show();
+        } else {
+            mostrarInfoBooking();
+
+        }
 
     }
 
@@ -1234,6 +1321,11 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                     case BUSCAR_TIPO_ACTIVIDAD:
                         result=dataSource.darTipoActividad(mapaCampos,res);
                         break;
+                    case BUSCAR_BOOKING:
+
+                        result=dataSource.readInfoBooking(mapaCampos,res);
+    break;
+
                 }
 
 

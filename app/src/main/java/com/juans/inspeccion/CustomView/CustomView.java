@@ -10,6 +10,11 @@ public interface CustomView {
     public static int DIALOGO_CON_DATE_PICKER=3;
 
 
+    public static int ESTADO_NORMAL=0;
+    public static int ESTADO_ERROR=0;
+    public static int ESTADO_WARNING=0;
+    public static int ESTADO_BIEN=0;
+
 
 
     public String getVieneDe();

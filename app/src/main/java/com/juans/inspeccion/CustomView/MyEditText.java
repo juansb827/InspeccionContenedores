@@ -23,6 +23,7 @@ public class MyEditText extends EditText implements CustomView,Serializable {
     private int myInputType;
     private int secondaryType;
     private boolean obligatorio;
+    private int estado=0;
 
 
     public MyEditText(Context context, AttributeSet attrs) {
@@ -139,7 +140,11 @@ public class MyEditText extends EditText implements CustomView,Serializable {
 
     }
 
+    public int getEstado() {
+        return estado;
+    }
 
-
-
+    public void setEstado(int estado) {
+        this.estado = estado;
+    }
 }

@@ -74,7 +74,7 @@ public class Consultas {
 
     public static ArrayList<HashMap<String, String>> darInfoBooking(String linea, String numBooking) throws ConnectionException {
 
-        String sentencia = "SELECT CTIPOCNTR,CTAMCNTR,CESTFINCNTR, NSOLICITADOS " +
+            String sentencia = "SELECT CTIPOCNTR,CTAMCNTR,CESTFINCNTR, NSOLICITADOS " +
                 "FROM TBDETBOOKCNTR" +
                 " WHERE CCTELNA='" + linea + "'   AND CNUMBOOKING='" + numBooking + "'";
 

@@ -3,8 +3,11 @@ package com.juans.inspeccion.Mundo;
 import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import com.juans.inspeccion.CustomView.CustomView;
+import com.juans.inspeccion.CustomView.MyEditText;
+import com.juans.inspeccion.R;
 import com.juans.inspeccion.Varios;
 
 import java.util.ArrayList;
@@ -16,18 +19,24 @@ import java.util.HashMap;
 public class Formularios {
 
     public static boolean comprobarCamposObligatorios(ArrayList<CustomView> listaCampos)
-    {
+    {   boolean falta=true;
         for(int i=0;i<listaCampos.size();i++)
         {
             if(listaCampos.get(i).esObligatorio())
             {
                 if(listaCampos.get(i).getTexto().trim().isEmpty())
                 {
-                    return false;
+                    CustomView cw=listaCampos.get(i);
+                    MyEditText ed= (MyEditText)  cw;
+                    ed.setBackgroundResource(R.drawable.error_ed_textfield_activated_holo_light);
+                    ed.setEstado(CustomView.ESTADO_ERROR);
+                    falta=false;
                 }
             }
         }
-        return true;
+
+        return falta;
+
     }
 
     public static void asignarInputDialog(ArrayList<CustomView> listaCampos, View.OnFocusChangeListener focusChangeListener)

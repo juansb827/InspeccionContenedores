@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -91,6 +92,7 @@ public class EditTextDialog extends DialogFragment {
 
 
         final EditText input = new EditText(getActivity().getBaseContext());
+
 
         input.setInputType(inputType);
         input.setText(textoInicial);

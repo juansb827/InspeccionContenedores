@@ -124,7 +124,7 @@ public class ColumnasTablas {
 
         if (info.exists()) info.delete();
         if (logo.exists()) logo.delete();
-        HashMap<String, String> infoEmpresa = Consultas.darInfoEmpresa();
+        infoEmpresa = Consultas.darInfoEmpresa();
         if (infoEmpresa == null) return;
 
         Log.e("GuardoLista", "Guardo InfoEmpresa");

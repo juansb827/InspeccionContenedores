@@ -52,6 +52,7 @@ import com.juans.inspeccion.Mundo.Formularios;
 import com.juans.inspeccion.Mundo.Inspeccion;
 import com.juans.inspeccion.Mundo.Listas;
 import com.juans.inspeccion.Mundo.MyCameraHelper;
+import com.juans.inspeccion.Mundo.Pendientes;
 import com.juans.inspeccion.Mundo.Util.FTPUpload;
 import com.juans.inspeccion.R;
 import com.juans.inspeccion.Varios;
@@ -79,6 +80,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
     private final static String BUSCAR_INFO_CONTENEDORES = "BIC";
     private final static String BUSCAR_DANIOS_DE_CONTENEDOR = "BD";
     private final static String BUSCAR_NOMBRE_CLIENTE = "BNC";
+    private final static String BUSCAR_AGENTE = "BAGNT";
     private final static String BUSCAR_TIPO_ACTIVIDAD = "BTAC";
     private final static String BUSCAR_BOOKING="BBOOK";
     private final static int LOADER = 777;
@@ -167,8 +169,8 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         else if (loader2 != null)
             inspeccion.getSupportLoaderManager().initLoader(LOADER_EXTRA, null, consultasCallBacks);
 
-            if(!InspeccionActivity.usaTurno)
-             inicializarNoUsaTurno(savedInstanceState==null,true);
+        if(!InspeccionActivity.usaTurno && InspeccionActivity.tipoAccion==null)
+            inicializarNoUsaTurno(savedInstanceState==null,false);
 
     }
 
@@ -205,7 +207,8 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         //
         Button tomarFoto = (Button) getView().findViewById(R.id.btnAgregarFoto);
         //No todas los formularios tienen opcion de foto
-        if (tomarFoto != null) {
+        if (tomarFoto != null ) {
+            if(InspeccionActivity.tipoAccion!=null) tomarFoto.setEnabled(false);
             tomarFoto.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -251,6 +254,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
         Button verFotos = (Button) getView().findViewById(R.id.btnVerFotos);
         if (verFotos != null) {
+            if(InspeccionActivity.tipoAccion!=null) verFotos.setEnabled(false);
             verFotos.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -340,7 +344,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                 }
                 if (cw instanceof EditText)
                 {
-                   EditText editText= (EditText) cw;
+                    EditText editText= (EditText) cw;
                     if( editText.getInputType()== InputType.TYPE_CLASS_DATETIME && !TextUtils.isEmpty(texto) )
                     {
                         texto= Formularios.dateFromDbParser(texto,"/",false);
@@ -560,6 +564,8 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
     }
 
+
+
     private void buscarNit(String nit)
     {
         if(TextUtils.isEmpty(nit))
@@ -575,6 +581,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
     private void buscarTipoActividad(String usoLogico)
     {
+        String pool;
         if(TextUtils.isEmpty(usoLogico))
         {
             Toast.makeText(MainActivity.context,"CAMPO VACIO",Toast.LENGTH_SHORT);
@@ -589,7 +596,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
     {
         if(TextUtils.isEmpty(booking))
         {
-            Toast.makeText(MainActivity.context,"CAMPO VACIO",Toast.LENGTH_SHORT);
+            Toast.makeText(MainActivity.context,"CAMPO VACIO",Toast.LENGTH_SHORT).show();
         }
         else {
             tipoBusqueda = BUSCAR_BOOKING;
@@ -682,13 +689,21 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         }
 
         if (inspeccion.darTipoInspeccion().equals(InspeccionActivity.SALIDA)) {
+            //Si no usa turno ,el booking solo se valida si existe
+            ArrayList<HashMap<String, String>> infoBook = inspeccion.getInspeccion().getInfoBooking();
+            if( !inspeccion.usaTurno && infoBook==null || infoBook.isEmpty() )
+            {
+
+            }
+            else {
 
 
-            if (! inspeccion.getInspeccion().isPerteneceEnBooking())
-                mensaje = "El contenedor no pertenece al Booking";
+                if (!inspeccion.getInspeccion().isPerteneceEnBooking())
+                    mensaje = "El contenedor no pertenece al Booking";
 
-            if (!inspeccion.getInspeccion().isHaySaldoBooking())
-                mensaje = "El booking ya fue atendido totalmente";
+                if (!inspeccion.getInspeccion().isHaySaldoBooking())
+                    mensaje = "El booking ya fue atendido totalmente";
+            }
         }
 
 
@@ -713,8 +728,23 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
             infoInspeccion.put(numeroDocumentoOri, inspeccion.getInspeccion().getDatosContenedor().get(numeroDocumentoOri));
         }
     }
+
+    public void actualizarFecha(String[] fecha)
+    {
+        String fechaEntera = Varios.fechaDAOtoString(fecha);
+        String horaConMinutos = Varios.fechaDAOtoHora(fecha);
+        String fechaInsercion = getResources().getString(R.string.DFECMVTO);
+        infoInspeccion.put(fechaInsercion, fechaEntera);
+
+        String fechaLog = getResources().getString(R.string.DFECHALOG);
+        infoInspeccion.put(fechaLog, fechaEntera);
+        String horaInsecion = getResources().getString(R.string.CHORA);
+        infoInspeccion.put(horaInsecion, horaConMinutos);
+
+    }
     @Override
-    public Object guardar() {
+    public Object  guardar()
+    {
 
         String fecha_al_cargar_turno[] = inspeccion.getInspeccion().getFechaInspeccion();
         if (fecha_al_cargar_turno == null) {
@@ -796,7 +826,9 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         }
         cargarFecha();
         turno.setTexto(elTurno);
-        inicializarNoUsaTurno(true,false);
+        if(InspeccionActivity.tipoAccion==null) {
+            inicializarNoUsaTurno(true, true);
+        }
         actualizarMapa();
 
     }
@@ -804,32 +836,44 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
     private void inicializarNoUsaTurno(boolean firstRun,boolean cargarCampos)
     {
-          //usoLogico
+        if(InspeccionActivity.usaTurno)return;
+        //usoLogico
 
         String tipoTurno=(inspeccion.getInspeccion().getTipoInspeccion());
+        int turno=Pendientes.darListaTurnos(MainActivity.context).size()+1;
+        //Campos que se cargan debido al TBTURNOS
+        infoInspeccion.put(getString(R.string.NTURNO) ,turno+"");
         infoInspeccion.put(getString(R.string.CTIPOTURNO),tipoTurno);
-        infoInspeccion.put(getString(R.string.NTURNO) ,"0");
         infoInspeccion.put(getString(R.string.CTIPDOC) ,inspeccion.getInspeccion().getTipoDocumento());
-        infoInspeccion.put(getString(R.string.NNUMDOC),"0");
+        infoInspeccion.put(getString(R.string.NNUMDOC),turno+"");
         infoInspeccion.put(getString(R.string.CUSOLOGICO),"EMPTY");
         infoInspeccion.put(getString(R.string.CGRUPOMOV),"IMPORTACION");
+        String codigoInspector = LoginActivity.darCodigoInspector().trim();
+        String nombreInspector = LoginActivity.darNombreInspector().trim();
 
+        infoInspeccion.put(getResources().getString(R.string.CCODINSPECTOR), codigoInspector);
+        infoInspeccion.put(getResources().getString(R.string.CNOMINSPECTOR), nombreInspector);
+
+        TableRow titulo= (TableRow) getView().findViewById(R.id.tableRowConductor1);
+        titulo.setVisibility(View.VISIBLE);
+        TableRow campo= (TableRow) getView().findViewById(R.id.tableRowConductor2);
+        campo.setVisibility(View.VISIBLE);
 
         TableRow row1= (TableRow) getView().findViewById(R.id.rowlblUsoLogico);
         if(row1!=null)
-        row1.setVisibility(View.VISIBLE);
+            row1.setVisibility(View.VISIBLE);
         TableRow row2= (TableRow) getView().findViewById(R.id.rowtxtUsoLogico);
         if(row2!=null)
-        row2.setVisibility(View.VISIBLE);
+            row2.setVisibility(View.VISIBLE);
 
         Button btnEditarBooking= (Button) getView().findViewById(R.id.btnEditarBooking);
         if (btnEditarBooking!=null)
         {
-           btnEditarBooking.setVisibility(View.VISIBLE);
+            btnEditarBooking.setVisibility(View.VISIBLE);
             btnEditarBooking.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                   MyEditText txtL= (MyEditText) getView().findViewById(R.id.txtLineaCorto);
+                    MyEditText txtL= (MyEditText) getView().findViewById(R.id.txtLineaCorto);
 
                     String linea=txtL.getTexto();
                     if(TextUtils.isEmpty(linea))
@@ -851,10 +895,10 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
 
 
-       ArrayList<CustomView>  listaCampos=inspeccion.darListaCampos();
+        ArrayList<CustomView>  listaCampos=inspeccion.darListaCampos();
         infoInspeccion=inspeccion.getInfoInspeccion();
 
-
+        Log.e("inicializaNousaTurnoA",""+cargarCampos);
         if(cargarCampos) {
             String tbTurno = getResources().getString(R.string.TBTURNOS);
             for (int i = 0; i < listaCampos.size(); i++) {
@@ -878,7 +922,9 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
         MyEditText nitCliente= (MyEditText) getView().findViewById(R.id.txtClienteNit);
         nitCliente.setInputType(InputType.TYPE_CLASS_NUMBER);
-        actualizarInterfaz();
+
+            actualizarInterfaz();
+
 
         if(firstRun) {
             buscarTipoActividad("EMPTY");
@@ -970,8 +1016,10 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                 case R.id.txtLineaCorto:
                     EditText linea1= (EditText) getView().findViewById(R.id.txtLineaCorto);
                     EditText linea2= (EditText) getView().findViewById(R.id.txtLineaLargo);
+
                     linea1.setText(data.getDato(0));
                     linea2.setText(data.getDato(1));
+
                     break;
                 case R.id.txtClienteNit:
                     String nit=data.getDato(0).toUpperCase().trim();
@@ -982,12 +1030,12 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                     String usoLogico=data.getDato(0).toUpperCase().trim();
                     temp.setText(usoLogico);
                     buscarTipoActividad(usoLogico);
-                        break;
+                    break;
                 case R.id.txtNumeroBooking:
                     String numBooking=data.getDato(0).toUpperCase().trim();
-                    temp.setText(numBooking);
+                    if(!TextUtils.isEmpty(numBooking)) temp.setText(numBooking);
                     buscarBooking(numBooking);
-                      break;
+                    break;
 
 
 
@@ -1031,15 +1079,32 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                 MyEditText txtCodContenedor = (MyEditText) getView().findViewById(R.id.txtNumContenedor);
                 listaCampos.add(txtCodContenedor);
 
-                 ViewGroup tabla2 = (ViewGroup) getView().findViewById(R.id.pag_1_info_contenedor);
+                ViewGroup tabla2 = (ViewGroup) getView().findViewById(R.id.pag_1_info_contenedor);
                 Formularios.recorrerTableLayout(tabla2, listaCampos);
 
                 Formularios.asignarInputDialog(listaCampos, p1.this);
 
+                String tbTurno = getResources().getString(R.string.TBTURNOS);
+                if(InspeccionActivity.usaTurno==false) {
+                    for (int i = 0; i < listaCampos.size(); i++) {
+                        CustomView cw = listaCampos.get(i);
+                        if (cw.getVieneDe().equals(tbTurno))
+                            if (cw.getVieneDe().equals(tbTurno)) {
+                                cw.setObligatorio(true);
+                                if (cw instanceof EditText) {
+                                    EditText ed = (EditText) cw;
+
+                                    ed.setInputType(InputType.TYPE_CLASS_TEXT);
+                                    ed.setOnFocusChangeListener(p1.this);
+
+                                }
+                            }
 
 
-
+                    }
                 }
+
+            }
 
 
             return null;
@@ -1091,6 +1156,12 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                     Exception ex = (Exception) resultado;
                     Toast.makeText(MainActivity.context, "Error:" + ex.getMessage(), Toast.LENGTH_LONG).show();
                     inspeccion.getSupportLoaderManager().destroyLoader(LOADER);
+                    //si falla en buscar agente
+                    if (tipoBusqueda.equals(BUSCAR_AGENTE))
+                    {
+                        infoInspeccion.put(getString(R.string.CCTELNA),"");
+                        infoInspeccion.put(getString(R.string.CDESCTELNA),"");
+                    }
                     return;
                 }
                 InspeccionActivity.loading = false;
@@ -1177,6 +1248,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                         Toast.makeText(MainActivity.context, error, Toast.LENGTH_SHORT).show();
 
                 } else if (tipoBusqueda.equals(BUSCAR_DANIOS_DE_CONTENEDOR)) {
+                    inspeccion.cerrarProgressDialog();
                     inspeccion.getInspeccion().getDaniosManager().setListaDanios(result.getDaniosManager().getListaDanios());
                     //actualiza la interfaz de la pag de danios
                     inspeccion.enviarInfo(1, null);
@@ -1199,13 +1271,10 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                 } else if (tipoBusqueda.equals(BUSCAR_NOMBRE_CLIENTE)) {
                     inspeccion.cerrarProgressDialog();
                     EditText nombreCliente = (EditText) getView().findViewById(R.id.txtClienteNombre);
-                    String nombre = "";
+                    String nombre = (String) resultado;
                     String nit = infoInspeccion.get(getString(R.string.CNITCLIENTE));
-                    if (nombre.isEmpty()) {
+                    if (TextUtils.isEmpty(nombre)) {
                         Toast.makeText(MainActivity.context, "No se encontro el NIT : " + nit, Toast.LENGTH_LONG).show();
-                    } else {
-                        nombre=(String) resultado;
-
                     }
                     nombreCliente.setText(nombre);
 
@@ -1219,6 +1288,10 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                 {
                     case BUSCAR_BOOKING:
                         onLF_BuscarBooking(resultado);
+                        break;
+                    case BUSCAR_AGENTE:
+                        //onLF_BuscarAgente(resultado);
+                        break;
 
 
                 }
@@ -1238,6 +1311,12 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
     }
 
+    private void onLF_BuscarAgente(Object resultado)
+    {
+        inspeccion.cerrarProgressDialog();
+        infoInspeccion.put(getString(R.string.TER_RAZONS),(String)resultado);
+
+    }
     private void onLF_BuscarBooking(Object resultado)
     {
         inspeccion.cerrarProgressDialog();
@@ -1249,7 +1328,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
         String nit = infoInspeccion.get(getString(R.string.CNITCLIENTE));
         if (lista==null || lista.size()==0) {
-            Toast.makeText(MainActivity.context, "No se encontro el booking :"+txtBooking.getTexto() + nit, Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.context, "No se encontro el booking :"+txtBooking.getTexto() , Toast.LENGTH_LONG).show();
         } else {
             mostrarInfoBooking();
 
@@ -1312,7 +1391,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                         result = dataSource.readDaniosCntr(mapaCampos, res);
                         break;
                     case BUSCAR_TURNOS_PENDIENTES:
-                        result = dataSource.readTurnosPendientes(mapaCampos, (String) params.get(InspeccionActivity.TIPO), res);
+                        result = dataSource.readTurnosPendientes(mapaCampos, (String) params.get(InspeccionActivity.TIPO),LoginActivity.getInspector(), res);
                         break;
                     case BUSCAR_NOMBRE_CLIENTE:
                         String nit=mapaCampos.get(res.getString(R.string.CNITCLIENTE) );
@@ -1322,9 +1401,11 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                         result=dataSource.darTipoActividad(mapaCampos,res);
                         break;
                     case BUSCAR_BOOKING:
-
                         result=dataSource.readInfoBooking(mapaCampos,res);
-    break;
+                        break;
+                    case BUSCAR_AGENTE:
+                        result=dataSource.darAgenteLinea(mapaCampos,res);
+                        break;
 
                 }
 

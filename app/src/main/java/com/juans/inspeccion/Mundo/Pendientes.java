@@ -1,6 +1,8 @@
 package com.juans.inspeccion.Mundo;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import com.juans.inspeccion.Interfaz.MainActivity;
@@ -82,7 +84,7 @@ public class Pendientes {
         }
             return inspeccion;
     }
-
+    @NonNull
     public static ArrayList<Inspeccion> darListaTurnos(Context c)
     {
        if(listaPendientes ==null)cargarListaTurnos(c);

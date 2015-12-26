@@ -392,5 +392,17 @@ public class DaniosManager implements Serializable {
     }
 
 
+    public void actualizarFechas(String[] fecha,Resources res) {
+        for(int i=0;i<listaDanios.size();i++)
+        {
+            HashMap<String,String> detalles=listaDanios.get(i).getDetalles();
+            String dfecmvto = res.getString(R.string.DFECMVTO);
+            String fechaStr = Varios.fechaDAOtoString(fecha);
+            String anio = res.getString(R.string.NANO);
+            detalles.put(dfecmvto, fechaStr);
+            detalles.put(anio, fecha[Consultas.FECHA_ANIO]);
 
+
+        }
+    }
 }

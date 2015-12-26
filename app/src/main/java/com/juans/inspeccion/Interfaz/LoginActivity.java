@@ -1,9 +1,11 @@
 package com.juans.inspeccion.Interfaz;
 
 import android.content.Intent;
+import android.hardware.usb.UsbInterface;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,7 +18,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.juans.inspeccion.ConnectionException;
 import com.juans.inspeccion.Mundo.DAO;
+import com.juans.inspeccion.Mundo.Data.UsuarioDataSource;
+import com.juans.inspeccion.Mundo.Usuario;
 import com.juans.inspeccion.R;
 
 import java.lang.reflect.Field;
@@ -24,9 +29,9 @@ import java.lang.reflect.Field;
 public class LoginActivity extends ActionBarActivity {
 
 
-    private static String codigoInspector;
-    private static String nombreInspector;
+
     private static boolean logeado;
+    private static Usuario inspector;
 
     TextView txtError;
     ImageView imgError;
@@ -36,14 +41,18 @@ public class LoginActivity extends ActionBarActivity {
 
     public static String darCodigoInspector()
     {
-        return codigoInspector==null?"":codigoInspector;
+        String idIn = String.format("%02d", inspector.getId());
+        return idIn;
     }
 
-    public static String darNombreInspector()
+    public static Usuario getInspector()
     {
-        return nombreInspector==null?"":nombreInspector;
+        return inspector;
     }
 
+    public static String darNombreInspector() {
+        return inspector.getNombre();
+    }
     public static boolean estaLogeado()    { return logeado;   }
 
 
@@ -171,55 +180,52 @@ public class LoginActivity extends ActionBarActivity {
 
 
 
-    private class Logear extends AsyncTask<String,Void,Void>
+    private class Logear extends AsyncTask<String,Void,Boolean>
     {
 
 
-        String nombre;
-        String codigo ;
-        String habilitado;
 
+        Usuario inspector;
         @Override
         protected void onPreExecute() {
             btnLogear.setEnabled(false);
         }
-        String[] inspector;
+
         @Override
-        protected Void doInBackground(String... strings) {
+        protected Boolean doInBackground(String ... codigo) {
+            int cod= Integer.parseInt(codigo[0]);
+            try {
+                inspector= UsuarioDataSource.findUserByid( cod,getResources());
+            } catch (ConnectionException e) {
+                e.printStackTrace();
+                return false;
+            }
 
-           inspector= DAO.getInstance().loginUsuario(strings[0]);
-            if (inspector==null) return null;
-           nombre=inspector[0];
-           codigo =inspector[1];
-           habilitado=inspector[2];
-           return null;
-
+            return true;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
+        protected void onPostExecute(Boolean aVoid) {
             btnLogear.setEnabled(true);
-            if(inspector==null)
+            if(aVoid==false)
             {
                 Toast.makeText(getApplicationContext(), "Error en conexion con base de datos",Toast.LENGTH_SHORT).show();
-                nombre="";
-                codigo ="";
-                habilitado="";
+
                 return;
             }
-            if (nombre.isEmpty())
+            if (inspector==null)
             {
                 Toast.makeText(getApplicationContext(), "Inspector no encontrado",Toast.LENGTH_SHORT).show();
             }
-            else if( habilitado.equals(0))
+            else if( !inspector.isHabilitado())
             {
                 Toast.makeText(getApplicationContext(), "El inspector se encuentra deshabilitado",Toast.LENGTH_SHORT).show();
             }
             else
             {
-                Toast.makeText(getApplicationContext(),"Bienvenido "+nombre, Toast.LENGTH_LONG).show();
-                codigoInspector=codigo;
-                nombreInspector=nombre;
+                Toast.makeText(getApplicationContext(),"Bienvenido "+inspector.getNombre(), Toast.LENGTH_LONG).show();
+
+                LoginActivity.inspector=inspector;
                 logeado=true;
                 Intent intent= new Intent(LoginActivity.this,MainActivity.class);
                 startActivity(intent);

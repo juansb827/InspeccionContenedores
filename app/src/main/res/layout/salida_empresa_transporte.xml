@@ -771,6 +771,7 @@
                         custom:myInputType="editTextDialog"/>
                 </TableRow>
 
+
                 <TableRow
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
@@ -784,6 +785,60 @@
                         android:text="Placa Vehiculo"
                         android:id="@+id/textView35"
                         android:layout_span="10" />
+                </TableRow>
+                <TableRow android:visibility="gone"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="10"
+                    android:id="@+id/tableRowConductor1">
+                    <TextView
+                        style="@style/MyLabelStyle"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+
+                        android:text="Cedula"
+                        android:id="@+id/lblCedula"
+                        android:layout_span="5" />
+
+                    <TextView
+                        style="@style/MyLabelStyle"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+
+                        android:text="Telefono"
+                        android:id="@+id/lblTelefono"
+                        android:layout_span="5" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="10"
+                    android:id="@+id/tableRowConductor2">
+                    <com.juans.inspeccion.CustomView.MyEditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/txtCedula"
+                        style="@style/EditableTextField"
+                        android:inputType="number"
+                        custom:vieneDeTabla="@string/TBTURNOS"
+                        custom:vaParaTabla="@string/TBCABMOVPATIO"
+                        custom:nombreCampo="@string/CDESCEDULA"
+                        android:layout_span="5"
+                        />
+                    <com.juans.inspeccion.CustomView.MyEditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/txtTelefono"
+                        style="@style/EditableTextField"
+                        android:inputType="number"
+                        custom:vieneDeTabla="@string/TBTURNOS"
+
+                        custom:nombreCampo="@string/CDESTELEFO"
+                        android:layout_span="5"
+                        />
+
+
                 </TableRow>
 
                 <TableRow

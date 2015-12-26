@@ -25,6 +25,7 @@ import com.juans.inspeccion.Mundo.DaniosManager;
 import com.juans.inspeccion.Mundo.FilaEnConsulta;
 import com.juans.inspeccion.Mundo.Formularios;
 import com.juans.inspeccion.Mundo.Inspeccion;
+import com.juans.inspeccion.Mundo.Usuario;
 import com.juans.inspeccion.R;
 
 import org.w3c.dom.Text;
@@ -301,8 +302,10 @@ public class InspeccionDataSource  {
         Inspeccion inspeccion=new Inspeccion();
         String tbTurnos=res.getString(R.string.TBTURNOS);
         ArrayList<String> adicionales=new ArrayList<>();
-        adicionales.add(res.getString(R.string.CDESCEDULA));
-        adicionales.add(res.getString(R.string.CCELULAR));
+        //Se agregaron a la interfaz, no es necesario hacer esto ahora
+//        adicionales.add(res.getString(R.string.CDESCEDULA));
+//        adicionales.add(res.getString(R.string.CCELULAR));
+        adicionales.add(res.getString(R.string.CEN_COSTO));
         adicionales.add(res.getString(R.string.NATENDIDO));
 
         HashMap<String,String> esquema=ColumnasTablas.getInstance().darTabla(tbTurnos);
@@ -497,11 +500,11 @@ public class InspeccionDataSource  {
         return infoBooking;
     }
 
-    public Inspeccion readTurnosPendientes(HashMap<String,String> informacion,String tipoTurno,Resources res) throws ConnectionException, DataBaseException {
+    public Inspeccion readTurnosPendientes(HashMap<String,String> informacion,String tipoTurno,Usuario usuario,Resources res) throws ConnectionException, DataBaseException {
         Inspeccion inspeccion=new Inspeccion();
         HashMap<String,String> condiciones=generarCondicionTurnos(informacion,res);
         condiciones.remove(res.getString(R.string.NTURNO));
-        String sentencia=Consultas.darTurnosRestantes(condiciones  , tipoTurno);
+        String sentencia=Consultas.darTurnosRestantes(condiciones  , tipoTurno,usuario.getPatio());
         ArrayList<HashMap<String,String>> lista = DAO.getInstance().generarHashConsultaLista(sentencia);
         inspeccion.setTurnosPendientes(lista);
         return inspeccion;
@@ -512,6 +515,11 @@ public class InspeccionDataSource  {
     //
     public String darNombreCliente(String nit) throws ConnectionException {
         return Consultas.darNombreTerceroConNit(nit);
+    }
+
+    public String darAgenteLinea(HashMap<String,String> info,Resources res) throws ConnectionException {
+        return Consultas.darNombreAgente( info.get(res.getString(R.string.CCTELNA) ));
+
     }
 
 }

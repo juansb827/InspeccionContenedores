@@ -99,7 +99,7 @@ public class MyCameraHelper {
     /*Folder-Carpeta donde van a ir todas las fotos que guarda la aplicacion
         * subFolder-Carpeta donde van las fotos de una inspeccion-Sera eliminada despues de ser enviadas
         * */
-    private static File createImageFile(String fileName,String Folder,String subFolder) throws IOException {
+    public static File createImageFile(String fileName,String Folder,String subFolder) throws IOException {
         // Create an image file name
 
         String storageDir = Environment.getExternalStorageDirectory() + "/"+Folder+"/"+subFolder;

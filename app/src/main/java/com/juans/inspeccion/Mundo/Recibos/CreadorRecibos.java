@@ -219,11 +219,11 @@ public class CreadorRecibos {
         if (tipoTurno!=null){ tipoTurno=tipoTurno.trim();
         if(tipoTurno.equals(InspeccionActivity.ENTRADA))
         {
-            tipo="GATE IN";
+            tipo="GATE IN (ENTRADA)";
         }
         else if(tipoTurno.equals(InspeccionActivity.SALIDA))
         {
-            tipo="GATE OUT";
+            tipo="GATE OUT (SALIDA)";
         }}
         comandos.escribirCentrado(tipo, ComandosImpresora.S3, true);
         comandos.saltoLinea();

@@ -119,6 +119,7 @@ public class MainActivity extends ActionBarActivity implements Formularios.DataP
     }
 
     public void nuevaEntradaEP(View v) {
+        InspeccionActivity.setTipoAccion(null);
         Intent intent = new Intent(this, InspeccionActivity.class);
 
         intent.putExtra(InspeccionActivity.TIPO, InspeccionActivity.ENTRADA);
@@ -127,6 +128,7 @@ public class MainActivity extends ActionBarActivity implements Formularios.DataP
     }
 
     public void nuevaEntradaET(View v) {
+        InspeccionActivity.setTipoAccion(null);
         Intent intent = new Intent(this, InspeccionActivity.class);
 
         intent.putExtra(InspeccionActivity.TIPO, InspeccionActivity.ENTRADA);
@@ -135,6 +137,7 @@ public class MainActivity extends ActionBarActivity implements Formularios.DataP
     }
 
     public void nuevaSalidaEP(View v) {
+        InspeccionActivity.setTipoAccion(null);
         Intent intent = new Intent(this, InspeccionActivity.class);
 
         intent.putExtra(InspeccionActivity.TIPO, InspeccionActivity.SALIDA);
@@ -143,6 +146,7 @@ public class MainActivity extends ActionBarActivity implements Formularios.DataP
     }
 
     public void nuevaSalidaET(View v) {
+        InspeccionActivity.setTipoAccion(null);
         Intent intent = new Intent(this, InspeccionActivity.class);
 
         intent.putExtra(InspeccionActivity.TIPO, InspeccionActivity.SALIDA);
@@ -255,6 +259,8 @@ public class MainActivity extends ActionBarActivity implements Formularios.DataP
                 intent.putExtra(InspeccionActivity.TIPO, (String) data);
                 intent.putExtra(InspeccionActivity.TIPO_DOC, InspeccionActivity.EP);
                 intent.putExtra(InspeccionActivity.VISUALIZAR, true);
+                intent.putExtra(InspeccionActivity.TIPO_ACCION, InspeccionActivity.VISUALIZAR);
+                InspeccionActivity.setTipoAccion(InspeccionActivity.VISUALIZAR);
                 intent.putExtra(InspeccionActivity.NUM_DOC, numDocBusqueda);
                 startActivity(intent);
             }
@@ -264,6 +270,7 @@ public class MainActivity extends ActionBarActivity implements Formularios.DataP
                 intent.putExtra(InspeccionActivity.TIPO, (String) data);
                 intent.putExtra(InspeccionActivity.TIPO_DOC, InspeccionActivity.EP);
                 intent.putExtra(InspeccionActivity.TIPO_ACCION, InspeccionActivity.MODIFICAR_DOCUMENTO);
+                InspeccionActivity.setTipoAccion(InspeccionActivity.MODIFICAR_DOCUMENTO);
                 intent.putExtra(InspeccionActivity.NUM_DOC, numDocBusqueda);
                 startActivity(intent);
             }

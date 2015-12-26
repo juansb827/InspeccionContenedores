@@ -33,7 +33,7 @@
                 android:id="@+id/pag_1_inspeccion"
                 android:stretchColumns="*"
                 android:orientation="vertical">
-                <TableRow android:visibility="visible"> <!-- TABLE ROW CON FILAS INVISIBLES -->
+                <TableRow android:visibility="gone"> <!-- TABLE ROW CON FILAS INVISIBLES -->
                     <com.juans.inspeccion.CustomView.MyEditText
                         android:id="@+id/txtTipoTurno"
 
@@ -370,6 +370,7 @@
                         custom:nombreCampo="@string/CCODEVELOG"
                         custom:vaParaTabla="@string/TBCABMOVPATIO"
 
+
                         />
 
                     <com.juans.inspeccion.CustomView.MyEditText
@@ -675,6 +676,66 @@
                 <TableRow
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:layout_weight="10"
+                    android:id="@+id/tableRowConductor1">
+                    <TextView
+                        style="@style/MyLabelStyle"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+
+                        android:text="Cedula"
+                        android:id="@+id/lblCedula"
+                        android:layout_span="5" />
+
+                    <TextView
+                        style="@style/MyLabelStyle"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+
+                        android:text="Telefono"
+                        android:id="@+id/lblTelefono"
+                        android:layout_span="5" />
+                    </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="10"
+                    android:id="@+id/tableRowConductor2">
+                    <com.juans.inspeccion.CustomView.MyEditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/txtCedula"
+                        style="@style/NonEditableTextField"
+                        android:inputType=""
+
+                        custom:vaParaTabla="@string/TBCABMOVPATIO"
+                        custom:nombreCampo="@string/CDESCEDULA"
+                        custom:vieneDeTabla="@string/TBTURNOS"
+                        android:layout_span="5"
+                        />
+                    <com.juans.inspeccion.CustomView.MyEditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/txtTelefono"
+                        style="@style/NonEditableTextField"
+
+
+
+                        custom:nombreCampo="@string/CCELULAR"
+                        custom:nombreCampo.Destino="@string/CDESTELEFO"
+                        android:layout_span="5"
+                        android:inputType="phone"
+                         />
+
+
+                </TableRow>
+
+
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="10">
 
                     <TextView
@@ -734,7 +795,7 @@
                     <com.juans.inspeccion.CustomView.MyEditText
 
                         android:id="@+id/txtNombreInspector"
-                        style="@style/EditableTextField"
+                        style="@style/NonEditableTextField"
                         android:layout_span="7"
                         custom:myInputType="editTextDialog"
                         custom:nombreCampo="@string/CNOMINSPECTOR"

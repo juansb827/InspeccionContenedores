@@ -245,6 +245,8 @@
 
     <!-- CAMPOS TBINSPECTORES -->
     <string name="CNOMINSPECTOR">CNOMINSPECTOR</string>
+    <string name="CEN_COSTO">CEN_COSTO</string>
+    <string name="NHABILITADO">NHABILITADO</string>
     <!-- CAMPOS TBHISTOCNTR -->
     <string name="DFECSALCNTR">DFECSALCNTR</string>
     <string name="DFECENTCNTR">DFECENTCNTR</string>
@@ -293,6 +295,7 @@
     <string name="CNIT">CNIT</string>
     <string name="CNOMBRE">CNOMBRE</string>
     <string name="CURLLOGO">CURLLOGO</string>
+    <string name="NMANEGATURNO">NMANEGATURNO</string>
 
 
 

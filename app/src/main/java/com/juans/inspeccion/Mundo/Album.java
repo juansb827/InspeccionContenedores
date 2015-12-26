@@ -74,4 +74,12 @@ public class Album implements Serializable{
 
     }
 
+    public void renombrarFotos(String nuevoNombre) throws IOException
+    {
+        while(fotos.size()!=0) {
+            eliminarFoto(0);
+            fotos_tomadas--;
+        }
+    }
+
 }

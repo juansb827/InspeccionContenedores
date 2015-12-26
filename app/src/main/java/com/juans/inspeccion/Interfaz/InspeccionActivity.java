@@ -54,7 +54,11 @@ import com.juans.inspeccion.Other.SimpleService;
 import com.juans.inspeccion.R;
 import com.juans.inspeccion.Varios;
 
+
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -62,9 +66,11 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
 
 
     public final static String CARPETA_FOTOS = "Inspecciones";
+
     public final static String VISUALIZAR = "VISUALIZAR";
     public final static String TIPO_ACCION="TIPO_ACCION";
     public final static String MODIFICAR_DOCUMENTO="MODIFICAR";
+
     public final static int LOADER_BUSCAR_DOCUMENTO = 0;
     public final static String NUM_DOC = "NUM_DOC";
     public final static String ENTRADA = "ENTRADA";
@@ -87,6 +93,10 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
     public static boolean soloLectura;
     public static boolean loading=false;
     public static String tipoAccion;
+    public static void setTipoAccion(String ntipo)
+    {
+        tipoAccion=ntipo;
+    }
 
     ViewPager viewPager = null;
     private ArrayList<CustomView> listaCampos;
@@ -94,6 +104,7 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
     private Inspeccion inspeccionObject;
     private int indiceTurno;
     ProgressDialog pDialog;
+    private String[] fecha;
 
     private void cambiarTitulo() {
         String titulo = "";
@@ -155,6 +166,8 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
             inspeccionObject = (Inspeccion) savedInstanceState.getSerializable(INSPECCION);
 
         } else {
+            String manejaTurno=ColumnasTablas.getInstance().darInfoEmpresa().get(getString(R.string.NMANEGATURNO));
+            usaTurno=TextUtils.equals(manejaTurno,"1");
             loading=false;
             Inspeccion pendiente = (Inspeccion) intent.getSerializableExtra(Pendientes.PENDIENTE);
             if (pendiente != null) {
@@ -217,7 +230,7 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
         });
 
         boolean visualizar = intent.getBooleanExtra(VISUALIZAR, false);
-         tipoAccion =intent.getStringExtra(TIPO_ACCION);
+
         if (visualizar || tipoAccion!=null) {
 
             getSupportLoaderManager().initLoader(LOADER_BUSCAR_DOCUMENTO, intent.getExtras(), this);
@@ -246,7 +259,7 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
         myAdapter.addTab(new p1(),"INFORMACION");
 
                 if (darTipoEmpresa().equals(EP)) {
-            myAdapter.addTab(new p2(),"DANIOS");
+            myAdapter.addTab(new p2(),"DAÑOS");
 
         }
 
@@ -309,6 +322,8 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
         MenuItem terminar_luego = menu.findItem(R.id.action_terminar_luego);
         MenuItem guardar = menu.findItem(R.id.action_guardar_todo);
         MenuItem imprimir=menu.findItem(R.id.action_imprimir);
+        MenuItem test1=menu.findItem(R.id.action_test_1);
+        test1.setVisible(false);
 
         if (soloLectura) {
 
@@ -362,9 +377,10 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
         if (id == R.id.action_guardar_todo) {
             //Ambas paginas validan sus campos para saber si se puede guardar
             if ((boolean) frag1.guardar()) {
-                if (frag2 == null) guardar();
+
+                if (frag2 == null) guardar(frag1,frag2);
                 else if ((boolean) frag2.guardar()) {
-                    guardar();
+                    guardar(frag1,frag2);
                 }
             }
 
@@ -409,6 +425,16 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
         {
             Intent intent=new Intent(this,ImpresoraActivity.class);
             startActivity(intent);
+        }
+
+        if(id==R.id.action_test_1)
+        {
+            Log.e("Hue","CambioAhue");
+            try {
+                renombrarFotos("21412", "heuhue32");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
 
@@ -718,6 +744,11 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
 
     }
 
+    public String[] getFechaActual() {
+
+        return fecha;
+    }
+
 
     class MyAdapter extends FragmentPagerAdapter {
 
@@ -772,7 +803,7 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
 
 
 
-    private void guardar() {
+    private void guardar(final InspeccionFragment pag1,InspeccionFragment pag2) {
 
 
         CustomView txtTurno = (CustomView) findViewById(R.id.txtTurno);
@@ -780,7 +811,7 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
         final String tablaDanios = getResources().getString(R.string.TBDETMOVPATIO);
 
         AsyncTask<Void, Void, String> guardarTodo = new AsyncTask<Void, Void, String>() {
-
+            String nuevoNum=null;
             @Override
             protected void onPreExecute() {
 
@@ -793,18 +824,33 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
                 InspeccionDataSource dataSource = new InspeccionDataSource();
 
                 try {
+                    String fecha[] =DAO.getInstance().darFecha();
+                    p1 tab1=(p1) pag1;
+
+                    inspeccionObject.getDaniosManager().actualizarFechas(fecha, getResources());
 
                     if(tipoAccion!=null && tipoAccion.equals(MODIFICAR_DOCUMENTO))
                     {
+                        String fechaEntera = Varios.fechaDAOtoString(fecha);
+                        String fechaLog = getResources().getString(R.string.DFECHALOG);
+                        inspeccionObject.getInformacion().put(fechaLog, fechaEntera);
                         dataSource.re_insert(listaCampos,inspeccionObject,getResources());
+
                     }
                     else {
+                        tab1.actualizarFecha(fecha);
                         if(!usaTurno)
                         {
-
-                            cambiarNumeroDocumento(dataSource.generarConsecutivoSinTurno(inspeccionObject,getResources()));
+                            nuevoNum=dataSource.generarConsecutivoSinTurno(inspeccionObject,getResources());
+                            cambiarNumeroDocumento(nuevoNum);
+                            String agenteLinea=dataSource.darAgenteLinea( inspeccionObject.getInformacion() , getResources());
+                            inspeccionObject.getInformacion().put(getString(R.string.TER_RAZONS),agenteLinea);
                         }
                         dataSource.insert(listaCampos, inspeccionObject, getResources());
+                        if(!usaTurno)
+                        {
+                            renombrarFotos(nuevoNum,inspeccionObject.getInformacion().get(getString(R.string.CCODCNTR)));
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -824,13 +870,70 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
                     imprimirDespuesDeGuardar();
                     MenuItem menuItem=menu.findItem(R.id.action_imprimir_y_borrar);
                     menuItem.setVisible(true);
+
                 }
             }
         };
         guardarTodo.execute();
 
     }
+    public void renombrarFotos(String numDoc,String codCntr) throws IOException {
 
+        String subCarpeta=darSubCarpetaFotos(numDoc, codCntr);
+
+
+
+        Album general=inspeccionObject.getFotosGenerales();
+        File oldFolder=null;
+        //Cambia las generales
+        for(int i=0;i<general.getFotos().size();i++)
+        {
+
+            File oldname=new File(general.getFotos().get(i));
+            if(i==0) oldFolder=oldname.getParentFile();
+            String nuevoNombre =subCarpeta+"_"+i;
+            File newname= MyCameraHelper.createImageFile(nuevoNombre,CARPETA_FOTOS,subCarpeta);
+            oldname.renameTo(newname);
+            Intent intent =
+                    new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            intent.setData(Uri.fromFile(oldname));
+            sendBroadcast(intent);
+            Intent intent2 =
+                    new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            intent2.setData(Uri.fromFile(newname));
+            sendBroadcast(intent2);
+            general.getFotos().set(i,newname.getPath());
+
+        }
+        ArrayList<Danio> danios=inspeccionObject.getDaniosManager().getListaDanios();
+        //Cambia las de los daños
+        for(int i=0;i<danios.size();i++)
+        {
+            Album album=danios.get(i).getAlbum();
+            for(int j=0;j<album.getFotos().size();j++)
+            {
+                String rutaFoto=album.getFotos().get(j);
+                File oldName=new File(rutaFoto);
+                String nombreFoto=subCarpeta+"_DANIO#"+i+"_"+j;
+                File newName= MyCameraHelper.createImageFile(nombreFoto,CARPETA_FOTOS,subCarpeta);
+                oldName.renameTo(newName);
+
+                Intent intent =
+                        new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                intent.setData(Uri.fromFile(oldName));
+                sendBroadcast(intent);
+                Intent intent2 =
+                        new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                intent2.setData(Uri.fromFile(newName));
+                sendBroadcast(intent2);
+                album.getFotos().set(j,newName.getPath());
+
+            }
+        }
+
+        FileUtils.deleteDirectory(oldFolder);
+
+    }
     public void enviarFotos() {
         String carpetaDeLaInspeccion = Environment.getExternalStorageDirectory() + "/" + CARPETA_FOTOS;
         String numdoc = getInfoInspeccion().get(getResources().getString(R.string.NNUMDOC));

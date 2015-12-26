@@ -195,10 +195,10 @@ public class Consultas {
         return sentencia;
     }
 
-    public static String darTurnosRestantes(HashMap<String,String> llaves,String tipoTurno)
+    public static String darTurnosRestantes(HashMap<String,String> llaves,String tipoTurno,String patio)
     {
         String sentencia="SELECT NTURNO, CCODCNTR,CPLACA,CCTELNA FROM TBTURNOS WHERE "+DAO.agregarCondiciones(llaves)+
-                " AND NATENDIDO='0' AND CTIPOTURNO='"+tipoTurno+"' ORDER BY DFECHALOG";
+                " AND NATENDIDO='0' AND CTIPOTURNO='"+tipoTurno+"' AND CEN_COSTO='"+patio+"' ORDER BY DFECHALOG";
 
         return sentencia;
     }

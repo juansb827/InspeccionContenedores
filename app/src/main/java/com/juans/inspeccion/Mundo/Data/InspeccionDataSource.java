@@ -226,28 +226,6 @@ public class InspeccionDataSource  {
 
     }
 
-
-
-//    @Override
-//    public boolean delete(Test entity) {
-//        if (entity == null) {
-//            return false;
-//        }
-//        int result = mDatabase.delete(TABLE_NAME,
-//                COLUMN_ID + " = " + entity.getId(), null);
-//        return result != 0;
-//    }
-//    @Override
-//    public boolean update(Test entity) {
-//        if (entity == null) {
-//            return false;
-//        }
-//        int result = mDatabase.update(TABLE_NAME,
-//                generateContentValuesFromObject(entity), COLUMN_ID + " = "
-//                        + entity.getId(), null);
-//        return result != 0;
-//    }
-
     public Inspeccion read(String codCntr, String tipoInspeccion,String tipoOperacion,Resources res) throws ConnectionException, InvalidOperationException, DiccionariosException, DataBaseException {
 
 
@@ -296,7 +274,9 @@ public class InspeccionDataSource  {
 
 
 
-
+    /*/
+    BUSCAR CABECERA
+     */
     //Generar una inspeccion usando parametros que vienen del formulario para la consulta
     public Inspeccion read(ArrayList<CustomView> listaCampos,Resources res) throws ConnectionException {
         Inspeccion inspeccion=new Inspeccion();
@@ -305,16 +285,33 @@ public class InspeccionDataSource  {
         //Se agregaron a la interfaz, no es necesario hacer esto ahora
 //        adicionales.add(res.getString(R.string.CDESCEDULA));
 //        adicionales.add(res.getString(R.string.CCELULAR));
+        //Campos que no estanen la interfaz pero se necesitan traer
         adicionales.add(res.getString(R.string.CEN_COSTO));
         adicionales.add(res.getString(R.string.NATENDIDO));
+        adicionales.add(res.getString(R.string.NATENDIDO));
+
+        adicionales.add(res.getString(R.string.CNUMSELLOS));
+        adicionales.add(res.getString(R.string.CDETALLECARGA));
+        //CPTODESTINO se maneja desde la interfaz porque tiene difernetes nombres en las tablas
+        adicionales.add(res.getString(R.string.CPTODESTINO));
+        adicionales.add(res.getString(R.string.NPESCARPUERTO));
+        adicionales.add(res.getString(R.string.NPESCARBASCULA));
+
+
+
+
 
         HashMap<String,String> esquema=ColumnasTablas.getInstance().darTabla(tbTurnos);
         String sentenciaInfo=DAO.getInstance().buscarCamposFormulario(tbTurnos,listaCampos,adicionales,esquema);
         HashMap<String,String> informacion= DAO.getInstance().generarHashConConsulta(sentenciaInfo);
 
+
+
         if(informacion==null) return null;
         //Si informacion.size==0 no encontro el turno
         if(informacion.size()==0) return inspeccion;
+
+
 
 
         inspeccion.setInformacion(informacion);
@@ -324,6 +321,9 @@ public class InspeccionDataSource  {
         if(! disponible) return inspeccion;
         //Completa los detalles (cosas de la inspeccion que no vienen del turno)
             //agregar el  tipo de actividad ()
+
+        String puertoDestino=informacion.get(res.getString(R.string.CPTODESTINO));
+        informacion.put(res.getString(R.string.CPTOORIGEN), puertoDestino);
 
         String tipoActividad=darTipoActividad(informacion,res);
         Log.e("TIPOACTIVIDAD",tipoActividad);

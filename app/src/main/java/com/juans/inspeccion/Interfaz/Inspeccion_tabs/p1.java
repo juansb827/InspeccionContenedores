@@ -163,6 +163,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         createLoaderCallBacks();
         Loader loader1 = inspeccion.getSupportLoaderManager().getLoader(LOADER);
         Loader loader2 = inspeccion.getSupportLoaderManager().getLoader(LOADER_EXTRA);
+
         if (loader1 != null)
             inspeccion.getSupportLoaderManager().initLoader(LOADER, null, consultasCallBacks);
 
@@ -826,8 +827,10 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         }
         cargarFecha();
         turno.setTexto(elTurno);
-        if(InspeccionActivity.tipoAccion==null) {
+        if(InspeccionActivity.tipoAccion==null && !InspeccionActivity.usaTurno) {
+
             inicializarNoUsaTurno(true, true);
+
         }
         actualizarMapa();
 
@@ -836,7 +839,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
     private void inicializarNoUsaTurno(boolean firstRun,boolean cargarCampos)
     {
-        if(InspeccionActivity.usaTurno)return;
+        if(!InspeccionActivity.usaTurno)return;
         //usoLogico
 
         String tipoTurno=(inspeccion.getInspeccion().getTipoInspeccion());
@@ -926,7 +929,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
             actualizarInterfaz();
 
 
-        if(firstRun) {
+        if(firstRun )  {  //Si hay una busqueda en curso
             buscarTipoActividad("EMPTY");
         }
     }
@@ -1122,10 +1125,11 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
     public void createLoaderCallBacks() {
 
 
-        System.out.println(consultasCallBacks = new LoaderManager.LoaderCallbacks<Object>() {
+        consultasCallBacks = new LoaderManager.LoaderCallbacks<Object>() {
 
             @Override
             public Loader<Object> onCreateLoader(int id, Bundle args) {
+                String tip=tipoBusqueda;
                 boolean busqueda = false;
                 actualizarMapa();
 
@@ -1148,6 +1152,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
             @Override
             public void onLoadFinished(Loader<Object> loader, Object resultado) {
+                String tip=tipoBusqueda;
                 Inspeccion result = null;
                 if (resultado instanceof Inspeccion) {
                     result = (Inspeccion) resultado;
@@ -1306,7 +1311,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                 Log.e("P1","OnLoaderReset");
 
             }
-        });
+        };
 
 
     }

@@ -27,9 +27,9 @@ public class Inspeccion implements Serializable{
     boolean haySaldoBooking;
     boolean usaTurno;
 
-    /*
-   /Usada solo para fotos
-    */
+    /**
+    * Usada solo para fotos
+    **/
     public Inspeccion(String parentFolder)
     {
         this.parentFolder=parentFolder;

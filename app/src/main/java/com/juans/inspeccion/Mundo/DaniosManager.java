@@ -1,12 +1,15 @@
 package com.juans.inspeccion.Mundo;
 
 import android.content.res.Resources;
+import android.text.TextUtils;
 
 import com.juans.inspeccion.ConnectionException;
 import com.juans.inspeccion.DataBaseException;
 import com.juans.inspeccion.Interfaz.MainActivity;
 import com.juans.inspeccion.R;
 import com.juans.inspeccion.Varios;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -378,6 +381,52 @@ public class DaniosManager implements Serializable {
 
 
         return encontroTarifa;
+    }
+
+    public void recalcularValorDanios(Resources res){
+        for (Danio danio:listaDanios){
+            float valorTotal=calcularValorDanio(danio.getDetalles(),res);
+            danio.getDetalles().put(COSTO_TOTAL_DANIO,valorTotal+"");
+        }
+        recalcularValorTotal();
+    }
+
+
+    /**
+    Cuando se carga una lista de daños de la base de datos
+    (AL INTENTAR MODIFICAR GUIA)
+    cada daño viene sin "COSTO_TOTAL_DANIO", es necesario calcularlo para
+    poder mostrar el costo total
+
+     @param  danio  hashmap que contiene la informacion de un daño
+     */
+    public static float calcularValorDanio(HashMap<String,String> danio,Resources res){
+        //Extrae el valor del daño
+        String mValor=danio.get(res.getString(R.string.NVALOR));
+        float valor;
+        if(TextUtils.isEmpty(mValor)) valor=0;
+        else valor=Float.parseFloat(mValor);
+        //Extra el valor de las horas hombre
+        String mCostoHoras=danio.get(res.getString(R.string.NCOSHORHOM));
+        float costoHoras;
+        if(TextUtils.isEmpty(mCostoHoras)) costoHoras=0;
+        else costoHoras=Float.parseFloat(mCostoHoras);
+        //Extrae el iva
+        String mIva=danio.get(res.getString(R.string.NTARIVA));
+        float iva;
+        if(TextUtils.isEmpty(mIva)) iva=0;
+        else iva=Float.parseFloat(mIva);
+
+        //Calcula el valor total del daño
+        float total_danio=valor + costoHoras;
+        float iva_danio=(total_danio)*(iva/100);
+        total_danio=total_danio+iva_danio;
+
+        return total_danio;
+
+
+
+
     }
 
 

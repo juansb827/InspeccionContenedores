@@ -210,7 +210,7 @@ public class InspeccionDataSource  {
 
 
     }
-    //todo Usar el metadata y las primary key de las tablas en vez hacer esto
+    //TODO:  Usar el metadata y las primary key de las tablas en vez hacer esto
     private  HashMap<String,String> generarCondicionTurnos(HashMap<String,String> mapa,Resources res)
     {
        HashMap<String,String> condiciones=new HashMap<>();

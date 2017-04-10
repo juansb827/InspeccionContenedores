@@ -325,6 +325,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
             public void onLoadFinished(Loader<Object[]> loader, Object[] data) {
                 inspeccion.cerrarProgressDialog();
                 InspeccionActivity.loading=false;
+                //en COSTO_TOTAL_DANIO esta el valor del daño
                 Danio danio = (Danio) data[0];
                 boolean busqueda = (boolean) data[1];
                 boolean no_aplica = (boolean) data[2];
@@ -492,8 +493,13 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
     @Override
     public void recibirInfo(Object... object) {
+
+        inspeccion.darDaniosManager().recalcularValorDanios(getResources());
+        actualizarValorTotal();
+
         setAdaptador(getView());
         infoInspeccion=inspeccion.getInfoInspeccion();
+
 
     }
 

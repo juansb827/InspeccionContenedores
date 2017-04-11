@@ -820,43 +820,22 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
 
             @Override
             protected String doInBackground(Void... params) {
-
                 InspeccionDataSource dataSource = new InspeccionDataSource();
-
                 try {
-                    String fecha[] =DAO.getInstance().darFecha();
-                    p1 tab1=(p1) pag1;
-
-                    inspeccionObject.getDaniosManager().actualizarFechas(fecha, getResources());
-
-                    if(tipoAccion!=null && tipoAccion.equals(MODIFICAR_DOCUMENTO))
-                    {
-                        String fechaEntera = Varios.fechaDAOtoString(fecha);
-                        String fechaLog = getResources().getString(R.string.DFECHALOG);
-                        inspeccionObject.getInformacion().put(fechaLog, fechaEntera);
-                        dataSource.re_insert(listaCampos,inspeccionObject,getResources());
-
-                    }
-                    else {
-                        tab1.actualizarFecha(fecha);
-                        if(!usaTurno)
-                        {
-                            nuevoNum=dataSource.generarConsecutivoSinTurno(inspeccionObject,getResources());
-                            cambiarNumeroDocumento(nuevoNum);
-                            String agenteLinea=dataSource.darAgenteLinea( inspeccionObject.getInformacion() , getResources());
-                            inspeccionObject.getInformacion().put(getString(R.string.TER_RAZONS),agenteLinea);
+                    if (InspeccionActivity.tipoAccion == null || !InspeccionActivity.tipoAccion.equals(InspeccionActivity.MODIFICAR_DOCUMENTO)) {
+                        if (!InspeccionActivity.usaTurno) {
+                            InspeccionActivity.this.cambiarNumeroDocumento(dataSource.generarConsecutivoSinTurno(InspeccionActivity.this.inspeccionObject, InspeccionActivity.this.getResources()));
+                            InspeccionActivity.this.inspeccionObject.getInformacion().put(InspeccionActivity.this.getString(R.string.TER_RAZONS), dataSource.darAgenteLinea(InspeccionActivity.this.inspeccionObject.getInformacion(), InspeccionActivity.this.getResources()));
                         }
-                        dataSource.insert(listaCampos, inspeccionObject, getResources());
-                        if(!usaTurno)
-                        {
-                            renombrarFotos(nuevoNum,inspeccionObject.getInformacion().get(getString(R.string.CCODCNTR)));
-                        }
+                        dataSource.insert(InspeccionActivity.this.listaCampos, InspeccionActivity.this.inspeccionObject, InspeccionActivity.this.getResources());
+                    } else {
+                        dataSource.re_insert(InspeccionActivity.this.listaCampos, InspeccionActivity.this.inspeccionObject, InspeccionActivity.this.getResources());
                     }
+                    return null;
                 } catch (Exception e) {
                     e.printStackTrace();
                     return e.getMessage();
                 }
-                return null;
             }
 
             @Override
@@ -877,6 +856,12 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
         guardarTodo.execute();
 
     }
+    /**
+     * Usado cuando no hay turno
+     * El nombre de cada foto es de acuerdo al NUMDOC
+       En guias sin turno ell NUMDOC se sabe hasta despues de grabar en la base de datos
+       entonces es necesario renombrar las fotos
+     **/
     public void renombrarFotos(String numDoc,String codCntr) throws IOException {
 
         String subCarpeta=darSubCarpetaFotos(numDoc, codCntr);

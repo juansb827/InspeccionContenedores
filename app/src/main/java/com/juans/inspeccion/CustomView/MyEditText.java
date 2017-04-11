@@ -6,6 +6,7 @@ import android.text.Editable;
 import android.util.AttributeSet;
 import android.widget.EditText;
 
+
 import com.juans.inspeccion.R;
 
 import java.io.Serializable;

@@ -250,6 +250,10 @@ public class InspeccionDataSource  {
 
         }
 
+        //
+        String telefono=informacion.get(res.getString(R.string.CDESTELEFO));
+        informacion.put(res.getString(R.string.CCELULAR),telefono);
+
         HashMap<String,String> datosContenedor=DAO.getInstance().generarHashConConsulta(Consultas.consultaDatosContenedor(codCntr));
         String cestadocntr=res.getString(R.string.CESTADOCNTR);
         datosContenedor.put(cestadocntr,informacion.get(cestadocntr));
@@ -290,9 +294,9 @@ public class InspeccionDataSource  {
         adicionales.add(res.getString(R.string.NATENDIDO));
         adicionales.add(res.getString(R.string.NATENDIDO));
 
+        //Campos que vanpara la tabla de cabecera pero no estan en la interfaz
         adicionales.add(res.getString(R.string.CNUMSELLOS));
         adicionales.add(res.getString(R.string.CDETALLECARGA));
-        //CPTODESTINO se maneja desde la interfaz porque tiene difernetes nombres en las tablas
         adicionales.add(res.getString(R.string.CPTODESTINO));
         adicionales.add(res.getString(R.string.NPESCARPUERTO));
         adicionales.add(res.getString(R.string.NPESCARBASCULA));

@@ -598,7 +598,8 @@
                         android:layout_span="4"
                         custom:nombreCampo="@string/CMOTONAVE"
                         custom:vieneDeTabla="@string/TBTURNOS"
-                        custom:vaParaTabla="@string/TBCABMOVPATIO"/>
+                        custom:vaParaTabla="@string/TBCABMOVPATIO"
+                        />
 
                     <com.juans.inspeccion.CustomView.MyEditText
                         android:layout_width="wrap_content"

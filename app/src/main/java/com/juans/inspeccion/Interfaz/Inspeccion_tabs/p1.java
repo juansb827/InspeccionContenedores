@@ -677,9 +677,9 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         }
 
         boolean estaEnpatio = inspeccion.getInspeccion().estaEnPatio();
-        if (!estaEnpatio && inspeccion.darTipoInspeccion().equals(InspeccionActivity.SALIDA))
+        if (!estaEnpatio && inspeccion.darTipoInspeccion().equals(InspeccionActivity.SALIDA) && InspeccionActivity.tipoAccion==null)
             mensaje = "El contenedor NO se encuentra en el patio";
-        else if (estaEnpatio && inspeccion.darTipoInspeccion().equals(InspeccionActivity.ENTRADA))
+        else if (estaEnpatio && inspeccion.darTipoInspeccion().equals(InspeccionActivity.ENTRADA) && InspeccionActivity.tipoAccion==null )
             mensaje = "El contenedor YA se encuentra en el patio";
 
 
@@ -779,10 +779,11 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
         MyEditText txtTipoDocumento = (MyEditText) getView().findViewById(R.id.txtTipoDocumento);
         MyEditText txtNumDocumento = (MyEditText) getView().findViewById(R.id.txtNumeroDocumento);
-        if (inspeccion.darTipoInspeccion().equals(InspeccionActivity.ENTRADA)) {
+        if (inspeccion.darTipoInspeccion().equals(InspeccionActivity.ENTRADA) && InspeccionActivity.tipoAccion==null) {
             infoInspeccion.put(tipoDocumentoOri, txtTipoDocumento.getTexto());
             infoInspeccion.put(numeroDocumentoOri, txtNumDocumento.getTexto());
-        } else {
+        } else if(inspeccion.darTipoInspeccion().equals(InspeccionActivity.SALIDA) && InspeccionActivity.tipoAccion==null) {
+            //LA SALIDA OBTIENE EL "NUM DOC ORI " DEL CONTENEDOR
             infoInspeccion.put(tipoDocumentoOri, inspeccion.getInspeccion().getDatosContenedor().get(tipoDocumentoOri));
             infoInspeccion.put(numeroDocumentoOri, inspeccion.getInspeccion().getDatosContenedor().get(numeroDocumentoOri));
         }
@@ -1067,58 +1068,24 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
     class CargarListaCampos extends AsyncTask<Void, Void, Void> {
 
 
-        @Override
         protected Void doInBackground(Void... params) {
-            if (getView() != null) {
-
-
-                inspeccion.inicializarListaCampos();
-                ArrayList<CustomView> listaCampos = inspeccion.darListaCampos();
-
-
-                ViewGroup tabla = (ViewGroup) getView().findViewById(R.id.pag_1_inspeccion);
-                Formularios.recorrerTableLayout(tabla, listaCampos);
-
-                MyEditText txtCodContenedor = (MyEditText) getView().findViewById(R.id.txtNumContenedor);
-                listaCampos.add(txtCodContenedor);
-
-                ViewGroup tabla2 = (ViewGroup) getView().findViewById(R.id.pag_1_info_contenedor);
-                Formularios.recorrerTableLayout(tabla2, listaCampos);
-
+            if (p1.this.getView() != null) {
+                p1.this.inspeccion.inicializarListaCampos();
+                ArrayList<CustomView> listaCampos = p1.this.inspeccion.darListaCampos();
+                Formularios.recorrerTableLayout(  (ViewGroup) getView().findViewById(R.id.pag_1_inspeccion)  , listaCampos);
+                listaCampos.add((MyEditText) getView().findViewById(R.id.txtNumContenedor));
+                Formularios.recorrerTableLayout((ViewGroup) getView().findViewById(R.id.pag_1_info_contenedor), listaCampos);
                 Formularios.asignarInputDialog(listaCampos, p1.this);
-
-                String tbTurno = getResources().getString(R.string.TBTURNOS);
-                if(InspeccionActivity.usaTurno==false) {
-                    for (int i = 0; i < listaCampos.size(); i++) {
-                        CustomView cw = listaCampos.get(i);
-                        if (cw.getVieneDe().equals(tbTurno))
-                            if (cw.getVieneDe().equals(tbTurno)) {
-                                cw.setObligatorio(true);
-                                if (cw instanceof EditText) {
-                                    EditText ed = (EditText) cw;
-
-                                    ed.setInputType(InputType.TYPE_CLASS_TEXT);
-                                    ed.setOnFocusChangeListener(p1.this);
-
-                                }
-                            }
-
-
-                    }
-                }
-
             }
-
-
             return null;
         }
 
-        @Override
         protected void onPostExecute(Void aVoid) {
-            if (isAdded() && inspeccion.isCargarPendiente()) {
-                actualizarInterfaz();
+            if (p1.this.isAdded() && p1.this.inspeccion.isCargarPendiente()) {
+                p1.this.actualizarInterfaz();
             }
         }
+
     }
 
 

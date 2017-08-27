@@ -8,8 +8,8 @@ android {
         applicationId "com.juans.inspeccion"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 6
-        versionName "1.5"
+        versionCode 7
+        versionName "1.6"
     }
     buildTypes {
         release {
@@ -35,4 +35,9 @@ dependencies {
     compile files('libs/EZioAD.jar')
     compile files('libs/commons-net-3.3.jar')
     compile files('libs/commons-io-2.4.jar')
+    compile 'com.newrelic.agent.android:android-agent:5.+'
+
 }
+
+apply plugin: 'com.android.application'
+apply plugin: 'newrelic'

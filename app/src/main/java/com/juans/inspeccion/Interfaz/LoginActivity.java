@@ -19,11 +19,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.juans.inspeccion.ConnectionException;
+import com.juans.inspeccion.DataBaseException;
 import com.juans.inspeccion.Mundo.DAO;
 import com.juans.inspeccion.Mundo.Data.UsuarioDataSource;
 import com.juans.inspeccion.Mundo.Usuario;
 import com.juans.inspeccion.R;
-
+import com.newrelic.agent.android.NewRelic;
 import java.lang.reflect.Field;
 
 public class LoginActivity extends ActionBarActivity {
@@ -60,6 +61,10 @@ public class LoginActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) { new ActivityHelper(this);
+        NewRelic.withApplicationToken(
+                "AAb11447a860836440baa49dff086d5f254b1b4426"
+        ).start(this.getApplication());
+
         try {
             ViewConfiguration config = ViewConfiguration.get(this);
             Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
@@ -197,6 +202,7 @@ public class LoginActivity extends ActionBarActivity {
             try {
                 inspector= UsuarioDataSource.findUserByid( cod,getResources());
             } catch (ConnectionException e) {
+
                 e.printStackTrace();
                 return false;
             }

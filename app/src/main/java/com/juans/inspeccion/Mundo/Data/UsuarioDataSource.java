@@ -3,6 +3,7 @@ package com.juans.inspeccion.Mundo.Data;
 import android.content.res.Resources;
 
 import com.juans.inspeccion.ConnectionException;
+import com.juans.inspeccion.DataBaseException;
 import com.juans.inspeccion.Mundo.DAO;
 import com.juans.inspeccion.Mundo.Usuario;
 import com.juans.inspeccion.R;
@@ -17,6 +18,9 @@ public class UsuarioDataSource {
     public static Usuario findUserByid(int id,Resources res) throws ConnectionException {
         String consulta="SELECT * FROM TBINSPECTORES WHERE CCODINSPECTOR="+id;
         HashMap<String,String> mapa = DAO.getInstance().generarHashConConsulta(consulta);
+        if(mapa.size()==0){
+            return null;
+        }
         Usuario usuario=new Usuario();
 
 

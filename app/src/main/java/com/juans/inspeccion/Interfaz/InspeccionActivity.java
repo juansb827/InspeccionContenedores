@@ -378,7 +378,7 @@ public class InspeccionActivity extends ActionBarActivity implements ActionBar.T
             //Ambas paginas validan sus campos para saber si se puede guardar
             if ((boolean) frag1.guardar()) {
 
-                if (frag2 == null) guardar(frag1,frag2);
+                if (frag2 == null) guardar(frag1,null);
                 else if ((boolean) frag2.guardar()) {
                     guardar(frag1,frag2);
                 }

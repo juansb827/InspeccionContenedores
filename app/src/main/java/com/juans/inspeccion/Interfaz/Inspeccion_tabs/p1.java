@@ -692,7 +692,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         if (inspeccion.darTipoInspeccion().equals(InspeccionActivity.SALIDA)) {
             //Si no usa turno ,el booking solo se valida si existe
             ArrayList<HashMap<String, String>> infoBook = inspeccion.getInspeccion().getInfoBooking();
-            if( !inspeccion.usaTurno && infoBook==null || infoBook.isEmpty() )
+            if( infoBook==null || infoBook.isEmpty() ) //!inspeccion.usaTurno && infoBook==null) || infoBook.isEmpty()
             {
 
             }

@@ -289,6 +289,7 @@ public class InspeccionDataSource  {
         //Se agregaron a la interfaz, no es necesario hacer esto ahora
 //        adicionales.add(res.getString(R.string.CDESCEDULA));
 //        adicionales.add(res.getString(R.string.CCELULAR));
+
         //Campos que no estanen la interfaz pero se necesitan traer
         adicionales.add(res.getString(R.string.CEN_COSTO));
         adicionales.add(res.getString(R.string.NATENDIDO));
@@ -300,6 +301,12 @@ public class InspeccionDataSource  {
         adicionales.add(res.getString(R.string.CPTODESTINO));
         adicionales.add(res.getString(R.string.NPESCARPUERTO));
         adicionales.add(res.getString(R.string.NPESCARBASCULA));
+        adicionales.add(res.getString(R.string.NPESCARBASCULA));
+
+        adicionales.add(res.getString(R.string.NPESOCARGA));
+        adicionales.add(res.getString(R.string.CNUMCOMODATO));
+        adicionales.add(res.getString(R.string.CNUMEROBL));
+
 
 
 

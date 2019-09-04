@@ -1,20 +1,15 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-
-    xmlns:custom="http://schemas.android.com/apk/res-auto"
-
-    tools:context="com.juans.inspeccion.Interfaz.FichaContenedorActivity"
-    android:orientation="vertical"
-    android:focusableInTouchMode="true"
-    >
-
 
     <ScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+
+        tools:context="com.juans.inspeccion.Interfaz.FichaContenedorActivity"
+        android:orientation="vertical"
+        android:focusableInTouchMode="true"
         android:id="@+id/scrollView" >
 
         <TableLayout
@@ -155,17 +150,18 @@
             <TableRow
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent">
+
                 <com.juans.inspeccion.CustomView.MyCheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Ship Owner?"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
                     android:id="@+id/checkShipOwner"
+                    style="@style/EditableTextField"
+                    android:layout_width="234dp"
+                    android:layout_height="wrap_content"
                     android:layout_span="4"
                     android:checked="false"
-                    style="@style/EditableTextField"
+                    android:text="Ship Owner?"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
                     custom:nombreCampo="@string/NSHPOWNER"
-                    custom:vaParaTabla="@string/TBCONTENEDORES"/>
+                    custom:vaParaTabla="@string/TBCONTENEDORES" />
 
                 <com.juans.inspeccion.CustomView.MyEditText
                     android:layout_width="match_parent"
@@ -410,7 +406,7 @@
 
             </TableRow>
 
-            <TableRow>
+            <TableRow >
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -458,6 +454,56 @@
 
             </TableRow>
 
+            <TableRow>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="Placa Sello"
+                    android:id="@+id/labelPlacaSelloRef1"
+                    android:layout_span="5"
+                    style="@style/MyLabelStyle" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="Placa Seguridad"
+                    android:id="@+id/labelPlacaSeguridadRef1"
+                    android:layout_span="5"
+                    style="@style/MyLabelStyle" />
+
+
+            </TableRow>
+
+            <TableRow>
+
+                <com.juans.inspeccion.CustomView.MyEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/txtPlacaSelloRef1"
+                    android:layout_span="5"
+                    style="@style/EditableTextField"
+                    custom:nombreCampo="@string/CREFERPLACA1"
+                    custom:vaParaTabla="@string/TBCONTENEDORES"
+                    custom:myInputType="editTextDialog"
+                    android:maxLength="20"/>
+
+                <com.juans.inspeccion.CustomView.MyEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/txtPlacaSeguridadRef1"
+                    android:layout_span="5"
+                    style="@style/EditableTextField"
+                    custom:nombreCampo="@string/CREFERPLACA2"
+                    custom:vaParaTabla="@string/TBCONTENEDORES"
+                    custom:obligatorio="true"
+                    custom:myInputType="editTextDialog"
+                    android:maxLength="20"/>
+
+
+            </TableRow>
+
             <TableRow android:visibility="gone">
 
 
@@ -488,5 +534,3 @@
 
         </TableLayout>
     </ScrollView>
-
-</LinearLayout>

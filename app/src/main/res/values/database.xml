@@ -234,6 +234,9 @@
     <string name="NINACTIVOCNTR">NINACTIVOCNTR</string>
     <string name="NARRENDADO">NARRENDADO</string>
 
+    <string name="CREFERPLACA1">CREFERPLACA1</string>
+    <string name="CREFERPLACA2">CREFERPLACA2</string>
+
     <!-- CAMPOS TBESTADOSCNTR-->
 
     <string name="CDESALT">CDESALT</string>

@@ -17,7 +17,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -62,7 +62,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class InspeccionActivity extends ActionBarActivity implements ActionBar.TabListener, Formularios.DataPass, LoaderManager.LoaderCallbacks<Object> {
+public class InspeccionActivity extends AppCompatActivity implements ActionBar.TabListener, Formularios.DataPass, LoaderManager.LoaderCallbacks<Object> {
 
 
     public final static String CARPETA_FOTOS = "Inspecciones";

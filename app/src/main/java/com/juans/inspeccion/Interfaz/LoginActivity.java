@@ -3,7 +3,7 @@ package com.juans.inspeccion.Interfaz;
 import android.content.Intent;
 import android.hardware.usb.UsbInterface;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -27,7 +27,7 @@ import com.juans.inspeccion.R;
 import com.newrelic.agent.android.NewRelic;
 import java.lang.reflect.Field;
 
-public class LoginActivity extends ActionBarActivity {
+public class LoginActivity extends AppCompatActivity {
 
 
 

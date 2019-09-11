@@ -1,13 +1,13 @@
 package com.juans.inspeccion.Interfaz;
 
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.juans.inspeccion.R;
 
-public class VisualizarActivity extends ActionBarActivity {
+public class VisualizarActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

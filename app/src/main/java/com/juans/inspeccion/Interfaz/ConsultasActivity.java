@@ -5,7 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,7 +23,7 @@ import com.juans.inspeccion.Interfaz.Dialogs.CompletarCampoDialog;
 import java.io.File;
 import java.util.ArrayList;
 
-public class ConsultasActivity extends ActionBarActivity implements Formularios.DataPass{
+public class ConsultasActivity extends AppCompatActivity implements Formularios.DataPass{
 
     public final static String HACER_CONSULTA_STOCK_DETALLADO="STOCK_DETALLADO";
     public final static String HACER_CONSULTA_STOCK_RESUMIDO="STOCK_RESUMIDO";

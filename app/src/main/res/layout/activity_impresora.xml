@@ -20,58 +20,57 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="30sp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Nombre impresora"
         android:id="@+id/lblNombreImpresora"
         android:textSize="25dp"
-        android:layout_weight="10"
+
         android:textStyle="bold" />
 
     <EditText
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="50sp"
         android:id="@+id/txtNombreImpresora"
         android:layout_marginBottom="10dp"
         android:textStyle="italic"
-        android:textSize="25dp"
-        android:layout_weight="10"
+        android:textSize="25sp"
+
 
         />
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="30sp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Direccion dispositivo"
         android:id="@+id/lblMacAdress"
         android:textSize="25dp"
-        android:layout_weight="10"
         android:textStyle="bold" />
 
     <EditText
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="50sp"
         android:id="@+id/txtDireccionImpresora"
         android:layout_marginBottom="10dp"
         android:textStyle="italic"
-        android:textSize="25dp"
-        android:layout_weight="10"
+        android:textSize="25sp"
                           />
     <Button
     android:layout_width="300dp"
-    android:layout_height="0dp"
+    android:layout_height="wrap_content"
     android:text="Lista de dispositivos"
     android:id="@+id/btnListarDispositivos"
-    android:layout_weight="10"/>
+        android:layout_gravity="center_horizontal"
+    />
     <Button
         android:id="@+id/btnProbarImpresora"
         android:layout_width="300dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:text="Probar Impresora"
 
-        android:layout_weight="10"
-        android:onClick="ConsultaStockResumido" />
+        android:layout_gravity="center_horizontal"
+         />
 
     <TextView
         android:layout_width="match_parent"

@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 
-public class ImpresoraActivity extends ActionBarActivity implements Formularios.DataPass{
+public class ImpresoraActivity extends AppCompatActivity implements Formularios.DataPass{
     int REQUEST_ENABLE_BT=1;
 
     int pudoConectar;

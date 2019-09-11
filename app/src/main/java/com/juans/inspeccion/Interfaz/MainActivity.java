@@ -8,7 +8,7 @@ import android.os.Handler;
 import android.support.v4.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -43,7 +43,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 
-public class MainActivity extends ActionBarActivity implements Formularios.DataPass, LoaderManager.LoaderCallbacks<Object>, Observer {
+public class MainActivity extends AppCompatActivity implements Formularios.DataPass, LoaderManager.LoaderCallbacks<Object>, Observer {
 
 
     public static Context context;

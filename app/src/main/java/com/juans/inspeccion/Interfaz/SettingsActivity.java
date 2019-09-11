@@ -5,7 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.PersistableBundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class SettingsActivity extends ActionBarActivity implements View.OnFocusChangeListener, Formularios.DataPass {
+public class SettingsActivity extends AppCompatActivity implements View.OnFocusChangeListener, Formularios.DataPass {
 
 
     private boolean connected=false;

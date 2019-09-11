@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -39,7 +39,7 @@ import com.juans.inspeccion.Varios;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class FichaContenedorActivity extends ActionBarActivity implements Formularios.DataPass, View.OnFocusChangeListener, InspeccionFragment, LoaderManager.LoaderCallbacks<Object> {
+public class FichaContenedorActivity extends AppCompatActivity implements Formularios.DataPass, View.OnFocusChangeListener, InspeccionFragment, LoaderManager.LoaderCallbacks<Object> {
 
     public final static String TYPE = "TYPE";
     public final static String CREATE = "CREATE";

@@ -5,9 +5,7 @@
     android:layout_height="fill_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:focusableInTouchMode="true"
-    android:paddingLeft="50dp"
-    android:paddingTop="50dp"
-    android:paddingRight="50dp"
+    android:padding="15dp"
 
 
     xmlns:custom="http://schemas.android.com/apk/res-auto"
@@ -15,11 +13,11 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Configuracion Base de Datos"
         android:id="@+id/textView"
-        android:textSize="30dp"
+        android:textSize="30sp"
         android:gravity="center_vertical|center_horizontal"
         android:textStyle="bold" />
 
@@ -33,111 +31,105 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:paddingLeft="50dp"
-    android:paddingTop="50dp"
-    android:paddingRight="50dp"
     android:id="@+id/linear_layour_settings">
 
 
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="30sp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/db_server"
         android:id="@+id/lblServerAdress"
         android:textSize="25dp"
-        android:layout_weight="10"
+
         android:textStyle="bold" />
 
     <com.juans.inspeccion.CustomView.MyEditText
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="50sp"
         android:id="@+id/txtServerAdress"
         android:layout_marginBottom="10dp"
         android:textStyle="italic"
-        android:textSize="25dp"
-        android:layout_weight="10"
+        android:textSize="25sp"
+
         custom:myInputType="editTextDialog"
         />
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="30sp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/db_name"
         android:id="@+id/lblDataBase"
-        android:textSize="25dp"
-        android:layout_weight="10"
+        android:textSize="25sp"
+
         android:textStyle="bold" />
 
     <com.juans.inspeccion.CustomView.MyEditText
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="50sp"
         android:id="@+id/txtDataBase"
         android:layout_marginBottom="10dp"
         android:textStyle="italic"
-        android:textSize="25dp"
+        android:textSize="25sp"
 
-        android:layout_weight="10"
+
         custom:myInputType="editTextDialog"/>
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="30sp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/db_connection_user"
         android:id="@+id/lblUser"
         android:gravity="left"
-        android:textSize="25dp"
-        android:layout_weight="10"
+        android:textSize="25sp"
+
         android:textStyle="bold" />
 
     <com.juans.inspeccion.CustomView.MyEditText
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="50sp"
         android:id="@+id/txtUser"
-        android:layout_marginBottom="10dp"
+
         android:textStyle="italic"
-        android:textSize="25dp"
-        android:layout_weight="10"
+        android:textSize="25sp"
+
         custom:myInputType="editTextDialog"/>
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="30sp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/db_connection_password"
         android:id="@+id/lblPassword"
-        android:textSize="25dp"
-        android:layout_weight="10"
+        android:textSize="25sp"
+
         android:textStyle="bold" />
 
     <com.juans.inspeccion.CustomView.MyEditText
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="50sp"
         android:inputType="textPassword"
-        android:ems="10"
         android:id="@+id/txtPassword"
-        android:layout_marginBottom="10dp"
         android:textStyle="italic"
         android:textSize="25dp"
-        android:layout_weight="10"
         custom:myInputType="editTextDialog"/>
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="30sp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/db_server_instance"
         android:id="@+id/lblServerInstance"
         android:textSize="25dp"
-        android:layout_weight="10"
+
         android:textStyle="bold" />
 
     <com.juans.inspeccion.CustomView.MyEditText
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:id="@+id/txtServerInstance"
         android:layout_marginBottom="10dp"
         android:textStyle="italic"
@@ -148,67 +140,60 @@
 
     <Button
         android:layout_width="250dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
         android:text="@string/db_test_connection"
         android:id="@+id/btnTestConnection"
 
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="15" />
-
-    <Button
-        android:layout_width="250dp"
-        android:layout_height="0dp"
-        android:text="@string/db_save_connection"
-        android:id="@+id/btnSaveConnection"
-        android:layout_gravity="center_horizontal"
-        android:enabled="false"
-        android:layout_weight="15" />
+        android:layout_gravity="center_horizontal" />
 
     <Button
         android:layout_width="250dp"
         android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:text="@string/db_save_connection"
+        android:id="@+id/btnSaveConnection"
+        android:layout_gravity="center_horizontal"
+        android:enabled="false"
+         />
+
+    <Button
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
         android:text="Configurar Impresora"
         android:id="@+id/btnConfigImpresora"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="5"
-        android:textSize="20sp"
         android:onClick="configurarImpresora" />
 
 
     <Button
         android:layout_width="250dp"
         android:layout_height="wrap_content"
+        android:textSize="15sp"
         android:text="Actualizar Diccionarios"
         android:id="@+id/btnActualizarXML"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="5"
         android:onClick="borrarTablasXML" />
     <Button
         android:layout_width="250dp"
         android:layout_height="wrap_content"
+        android:textSize="15sp"
         android:text="Actualizar Datos Empresa"
         android:id="@+id/btnActualizaInfoMepresa"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="5"
         android:onClick="borrarInfoEmpresa" />
     <Button
         android:layout_width="250dp"
         android:layout_height="wrap_content"
+        android:textSize="15sp"
         android:text="Actualizar Listas"
         android:id="@+id/btnActualizarListas"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="5"
         android:onClick="actualizarListas" />
 
 
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:id="@+id/editText2"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="10"
-        android:visibility="invisible" />
 
 </LinearLayout>
     </ScrollView>

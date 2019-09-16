@@ -178,7 +178,7 @@ public class ConsultasActivity extends AppCompatActivity implements Formularios.
                 }
 
               String consulta=strings[0];
-            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File path = getFilesDir();
             File folder = new File(path, "Contenedores");
             folder.mkdir();
 

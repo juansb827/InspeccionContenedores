@@ -31,7 +31,7 @@ android {
         exclude 'META-INF/NOTICE.txt'
     }
     android {
-        useLibrary 'org.apache.http.legacy'
+        //useLibrary 'org.apache.http.legacy'
     }
 }
 
@@ -46,6 +46,8 @@ dependencies {
     implementation files('libs/commons-net-3.3.jar')
     implementation files('libs/commons-io-2.4.jar')
     implementation 'com.newrelic.agent.android:android-agent:5.+'
+    implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
+
 
 }
 

@@ -1,5 +1,6 @@
 package com.juans.inspeccion;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -12,6 +13,10 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
+import android.os.StrictMode;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -28,6 +33,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -37,16 +43,19 @@ public class Varios {
 
 
    public static void abrirExcel(Context c, File file)
+
    {
-       PackageManager packageManager = c.getPackageManager();
-       Intent testIntent = new Intent(Intent.ACTION_VIEW);
-       testIntent.setType("application/vnd.ms-excel");
-       List list = packageManager.queryIntentActivities(testIntent, PackageManager.MATCH_DEFAULT_ONLY);
+
        Intent intent = new Intent();
        intent.setAction(Intent.ACTION_VIEW);
-       Uri uri = Uri.fromFile(file);
-       intent.setDataAndType(uri, "application/vnd.ms-excel");
+       intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+       Uri contentUri = FileProvider.getUriForFile(c, BuildConfig.APPLICATION_ID + ".provider"
+               , file);
+
+       intent.setDataAndType(contentUri, "application/vnd.ms-excel");
        c.startActivity(intent);
+
    }
 
     public static void abrirPDF(Context c, File file)

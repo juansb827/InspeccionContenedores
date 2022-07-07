@@ -1,5 +1,6 @@
 package com.juans.inspeccion.Mundo;
 
+import android.Manifest;
 import android.app.Activity;
 
 import android.content.Context;
@@ -12,6 +13,7 @@ import android.graphics.Paint;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -20,6 +22,8 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * Created by Juan on 03/05/2015.
@@ -34,6 +38,13 @@ public class MyCameraHelper {
 
     public static boolean openCamera(Fragment c,String fileName,String folder,String subFolder)
     {
+        if (1==1)return openCamera(c.getActivity(), fileName, folder, subFolder, c);
+        String[] galleryPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+        if (!EasyPermissions.hasPermissions(c.getActivity(), galleryPermissions)) {
+            EasyPermissions.requestPermissions(c.getActivity(), "Access for storage",
+                    101, galleryPermissions);
+        }
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(c.getActivity().getPackageManager()) != null) {
@@ -54,6 +65,8 @@ public class MyCameraHelper {
 
                 filePath=photoFile.getPath();
                 if(filePath==null) return false;
+                StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+                StrictMode.setVmPolicy(builder.build());
                 c.startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
 
                 return true;
@@ -63,8 +76,15 @@ public class MyCameraHelper {
         return false;
     }
 
-    public static boolean openCamera(Activity c,String fileName,String folder,String subFolder)
+    public static boolean openCamera(Activity c,String fileName,String folder,String subFolder, Fragment f)
     {
+        String[] galleryPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+        if (!EasyPermissions.hasPermissions(c, galleryPermissions)) {
+            EasyPermissions.requestPermissions(c, "Access for storage",
+                    101, galleryPermissions);
+        }
+
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(c.getPackageManager()) != null) {
@@ -83,7 +103,13 @@ public class MyCameraHelper {
 
                  filePath=photoFile.getPath();
                 if(filePath==null) return false;
-                c.startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+               StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+               StrictMode.setVmPolicy(builder.build());
+               if (f != null) {
+                   f.startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+               } else {
+                   c.startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+               }
 
                 return true;
             }

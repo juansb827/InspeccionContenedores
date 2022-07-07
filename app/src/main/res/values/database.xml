@@ -297,6 +297,7 @@
     <!-- CAMPOS TBTABLETS -->
     <string name="CNIT">CNIT</string>
     <string name="CNOMBRE">CNOMBRE</string>
+    <string name="CNOTAS">CURLLOGO</string>
     <string name="CURLLOGO">CURLLOGO</string>
     <string name="NMANEGATURNO">NMANEGATURNO</string>
 

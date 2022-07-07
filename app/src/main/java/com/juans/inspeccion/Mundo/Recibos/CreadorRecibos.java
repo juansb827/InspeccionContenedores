@@ -73,6 +73,9 @@ public class CreadorRecibos {
     }
 
     private static void agregarFinal(ComandosImpresora comandos, Inspeccion ins,Resources res) {
+        HashMap<String, String> infoEmpresa = ColumnasTablas.getInstance().darInfoEmpresa();
+        String notasFinal= infoEmpresa.get(res.getString(R.string.CNOTAS));
+        notasFinal = notasFinal == null ? "" : notasFinal;
         HashMap<String,String> cabecera=ins.getInformacion();
 
         String estado=cabecera.get(res.getString(R.string.CESTADOCNTR));
@@ -137,7 +140,16 @@ public class CreadorRecibos {
         comandos.escribirCentrado("Inspector", ComandosImpresora.S3, false);
         comandos.saltoLinea(150);
         comandos.ponerLinea();
-        comandos.saltoLinea(10);
+        comandos.saltoLinea(50);
+        // notas
+
+        String[] lineaNotas = notasFinal.split("(\r\n|\r)");
+        for (String lineaNota: lineaNotas) {
+            comandos.escribir(lineaNota, ComandosImpresora.S2, 0, false);
+            comandos.saltoLinea(20);
+        }
+
+        comandos.saltoLinea(50);
         comandos.escribir("Firma del conductor", ComandosImpresora.S3, 100, false);
         comandos.saltoLinea(50);
         comandos.escribir("El consignatario o el embarcador son responsables", ComandosImpresora.S2, 0, false);

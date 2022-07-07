@@ -219,7 +219,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
                         String subFolder = inspeccion.darSubCarpetaFotos(numDoc, codcntr);
 
                         String nombreArchivo = subFolder + "_" + inspeccion.darAlbumGeneral().getFotos_tomadas();
-                        boolean abrirCamara = MyCameraHelper.openCamera(inspeccion, nombreArchivo, InspeccionActivity.CARPETA_FOTOS, subFolder);
+                        boolean abrirCamara = MyCameraHelper.openCamera(inspeccion, nombreArchivo, InspeccionActivity.CARPETA_FOTOS, subFolder, null);
                         if (!abrirCamara)
                             Toast.makeText(getActivity(), "Error abriendo la camara", Toast.LENGTH_SHORT).show();
                     }

@@ -61,9 +61,11 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) { new ActivityHelper(this);
+        /**
         NewRelic.withApplicationToken(
                 "AAb11447a860836440baa49dff086d5f254b1b4426"
         ).start(this.getApplication());
+         */
 
         try {
             ViewConfiguration config = ViewConfiguration.get(this);

@@ -52,4 +52,4 @@ dependencies {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'newrelic'
+//apply plugin: 'newrelic'

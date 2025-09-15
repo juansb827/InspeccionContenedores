@@ -5,10 +5,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.v4.app.LoaderManager;
+import androidx.loader.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -312,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements Formularios.DataP
 
 
     @Override
-    public android.support.v4.content.Loader<Object> onCreateLoader(int id, Bundle args) {
+    public androidx.loader.content.Loader<Object> onCreateLoader(int id, Bundle args) {
         if (!retrying) loading = true;
 
         if (loading)
@@ -325,7 +325,7 @@ public class MainActivity extends AppCompatActivity implements Formularios.DataP
     }
 
     @Override
-    public void onLoadFinished(android.support.v4.content.Loader<Object> loader, Object data) {
+    public void onLoadFinished(androidx.loader.content.Loader<Object> loader, Object data) {
 
         //setSupportProgressBarIndeterminateVisibility(false);
         //progressBar.setVisibility(View.GONE);
@@ -350,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements Formularios.DataP
     }
 
     @Override
-    public void onLoaderReset(android.support.v4.content.Loader<Object> loader) {
+    public void onLoaderReset(androidx.loader.content.Loader<Object> loader) {
         Log.e("Loader", "onLoaderReset");
 
     }

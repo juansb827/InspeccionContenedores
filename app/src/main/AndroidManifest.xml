@@ -48,7 +48,9 @@
         </activity>
         <activity
             android:name=".Interfaz.LoginActivity"
-            android:label="Focus Inspeccion" >
+            android:label="Focus Inspeccion"
+            android:exported="true"
+             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -77,7 +79,8 @@
             android:label="@string/title_activity_camera" >
         </activity>
 
-        <receiver android:name=".Other.NetWorkChangeReceiver" >
+        <receiver android:name=".Other.NetWorkChangeReceiver"
+         android:exported="true" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
 

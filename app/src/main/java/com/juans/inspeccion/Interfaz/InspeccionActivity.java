@@ -11,14 +11,14 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.ActionBar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.ActionBar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -202,13 +202,13 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
 
         cambiarTitulo();
         inspeccionObject.setUsaTurno(usaTurno);
-        final android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        final androidx.appcompat.app.ActionBar actionBar = getSupportActionBar();
 
 
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
        // addTabs(actionBar);
       //  MyAdapter myAdapter = new MyAdapter(getSupportFragmentManager());
-         myAdapter=new MyPagerAdapter(getSupportFragmentManager(),viewPager,getSupportActionBar());
+         myAdapter=new MyPagerAdapter(getSupportFragmentManager(),viewPager);
         addTabs(null);
         viewPager.setAdapter(myAdapter);
         viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -547,17 +547,17 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
     }
 
     @Override
-    public void onTabSelected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction fragmentTransaction) {
+    public void onTabSelected(ActionBar.Tab tab, androidx.fragment.app.FragmentTransaction fragmentTransaction) {
         viewPager.setCurrentItem(tab.getPosition());
     }
 
     @Override
-    public void onTabUnselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction fragmentTransaction) {
+    public void onTabUnselected(ActionBar.Tab tab, androidx.fragment.app.FragmentTransaction fragmentTransaction) {
 
     }
 
     @Override
-    public void onTabReselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction fragmentTransaction) {
+    public void onTabReselected(ActionBar.Tab tab, androidx.fragment.app.FragmentTransaction fragmentTransaction) {
 
     }
 

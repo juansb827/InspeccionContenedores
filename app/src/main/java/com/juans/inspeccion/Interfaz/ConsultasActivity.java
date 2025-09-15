@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -125,7 +125,7 @@ public class ConsultasActivity extends AppCompatActivity implements Formularios.
             if(tipoConsulta.equals(HACER_CONSULTA_STOCK_DETALLADO)) {
                 if(!ConsultasActivity.this.isFinishing()  ) {
                     FragmentManager fm=getSupportFragmentManager();
-                    android.support.v4.app.FragmentTransaction ft =fm.beginTransaction();
+                    androidx.fragment.app.FragmentTransaction ft =fm.beginTransaction();
 
 
                     CompletarCampoDialog dg=CompletarCampoDialog.newInstance(lineas, "LINEAS", ConsultasActivity.this, R.id.txtEstadoFinal);

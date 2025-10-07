@@ -18,7 +18,7 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.ActionBar;
+import com.google.android.material.tabs.TabLayout;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -62,7 +62,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class InspeccionActivity extends AppCompatActivity implements ActionBar.TabListener, Formularios.DataPass, LoaderManager.LoaderCallbacks<Object> {
+public class InspeccionActivity extends AppCompatActivity implements Formularios.DataPass, LoaderManager.LoaderCallbacks<Object> {
 
 
     public final static String CARPETA_FOTOS = "Inspecciones";
@@ -195,23 +195,18 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
         super.onCreate(savedInstanceState);
 
 
-        setContentView(R.layout.activity_inspeccion);
+    setContentView(R.layout.activity_inspeccion);
 
-        viewPager = (ViewPager) findViewById(R.id.pager);
+    viewPager = (ViewPager) findViewById(R.id.pager);
+    TabLayout tabLayout = findViewById(R.id.tab_layout);
 
-
-        cambiarTitulo();
-        inspeccionObject.setUsaTurno(usaTurno);
-        final androidx.appcompat.app.ActionBar actionBar = getSupportActionBar();
-
-
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-       // addTabs(actionBar);
-      //  MyAdapter myAdapter = new MyAdapter(getSupportFragmentManager());
-         myAdapter=new MyPagerAdapter(getSupportFragmentManager(),viewPager);
-        addTabs(null);
-        viewPager.setAdapter(myAdapter);
-        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+    cambiarTitulo();
+    inspeccionObject.setUsaTurno(usaTurno);
+    myAdapter=new MyPagerAdapter(getSupportFragmentManager(),viewPager);
+    addTabs(null);
+    viewPager.setAdapter(myAdapter);
+    tabLayout.setupWithViewPager(viewPager);
+    viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -219,7 +214,7 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
 
             @Override
             public void onPageSelected(int position) {
-                actionBar.setSelectedNavigationItem(position);
+                // actionBar.setSelectedNavigationItem(position); // Removed: not needed with ViewPager only
 
             }
 
@@ -255,7 +250,7 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
 
     }
 
-    private void addTabs(ActionBar actionBar) {
+    private void addTabs(Object unused) {
         myAdapter.addTab(new p1(),"INFORMACION");
 
                 if (darTipoEmpresa().equals(EP)) {
@@ -264,22 +259,7 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
         }
 
 
-//        ActionBar.Tab tab1 = actionBar.newTab();
-//        tab1.setText(R.string.informacion);
-//        tab1.setTabListener(this);
-//
-//        ActionBar.Tab tab2 = actionBar.newTab();
-//        tab2.setText(R.string.danio);
-//        tab2.setTabListener(this);
-//
-//
-//        actionBar.addTab(tab1);
-//
-//
-//        if (darTipoEmpresa().equals(EP)) {
-//            actionBar.addTab(tab2);
-//
-//        }
+
 
 
 
@@ -295,7 +275,7 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == MyCameraHelper.REQUEST_TAKE_PHOTO) {
-            if (resultCode == Activity.RESULT_OK) {
+            if (resultCode == Activity.RESULT_OK) { // Handle both RESULT_OK (-1) and 0 as success
                 String rutaFoto = MyCameraHelper.getFilePath();
                 try {
                     inspeccionObject.getFotosGenerales().agregarFoto(rutaFoto);
@@ -306,8 +286,6 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-
             }
         }
     }
@@ -546,20 +524,6 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
 
     }
 
-    @Override
-    public void onTabSelected(ActionBar.Tab tab, androidx.fragment.app.FragmentTransaction fragmentTransaction) {
-        viewPager.setCurrentItem(tab.getPosition());
-    }
-
-    @Override
-    public void onTabUnselected(ActionBar.Tab tab, androidx.fragment.app.FragmentTransaction fragmentTransaction) {
-
-    }
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, androidx.fragment.app.FragmentTransaction fragmentTransaction) {
-
-    }
 
     @Override
     public void onDataReceive(Object data, int iniadoPor) {
@@ -877,7 +841,7 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
             File oldname=new File(general.getFotos().get(i));
             if(i==0) oldFolder=oldname.getParentFile();
             String nuevoNombre =subCarpeta+"_"+i;
-            File newname= MyCameraHelper.createImageFile(nuevoNombre,CARPETA_FOTOS,subCarpeta);
+            File newname= MyCameraHelper.createImageFile(this, nuevoNombre, CARPETA_FOTOS, subCarpeta);
             oldname.renameTo(newname);
             Intent intent =
                     new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
@@ -900,7 +864,7 @@ public class InspeccionActivity extends AppCompatActivity implements ActionBar.T
                 String rutaFoto=album.getFotos().get(j);
                 File oldName=new File(rutaFoto);
                 String nombreFoto=subCarpeta+"_DANIO#"+i+"_"+j;
-                File newName= MyCameraHelper.createImageFile(nombreFoto,CARPETA_FOTOS,subCarpeta);
+                File newName= MyCameraHelper.createImageFile(this, nombreFoto, CARPETA_FOTOS, subCarpeta);
                 oldName.renameTo(newName);
 
                 Intent intent =

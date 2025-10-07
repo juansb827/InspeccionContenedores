@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     lint {
         //checkReleaseBuilds false
@@ -34,6 +34,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'com.juans.inspeccion'
 }
 
 dependencies {
@@ -53,6 +54,7 @@ dependencies {
     implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
     //implementation 'pub.devrel:easypermissions:2.0.1'
     implementation 'pub.devrel:easypermissions:3.0.0'
+    implementation 'com.google.android.material:material:1.11.0'
 }
 
 //apply plugin: 'newrelic'

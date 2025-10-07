@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internal storage -->
+    <files-path name="internal_files" path="." />
+    
+    <!-- External storage -->
+    <external-files-path name="external_files" path="." />
+    
+    <!-- Cache directory -->
+    <cache-path name="cache" path="." />
+    
+    <!-- External cache -->
+    <external-cache-path name="external_cache" path="." />
+    
+    <!-- Public external storage -->
+    <external-path name="external" path="." />
+    
+    <!-- If you need specific subdirectories, add them like this: -->
+    <!-- <files-path name="images" path="images/" /> -->
+    <!-- <external-files-path name="downloads" path="Download/" /> -->
+</paths>

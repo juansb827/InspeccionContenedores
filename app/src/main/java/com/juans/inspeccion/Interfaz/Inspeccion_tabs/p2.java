@@ -248,8 +248,8 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
                     String nombreFoto="DANIO#"+numeroDanio+"_"+albumCargado.getFotos_tomadas();
                     String nombreArchivo = subFolder + "_" + nombreFoto;
 
-                    boolean abrirCamara= MyCameraHelper.openCamera(p2.this.getActivity(), nombreArchivo, InspeccionActivity.CARPETA_FOTOS, subFolder, p2.this);
-                    if(!abrirCamara) Toast.makeText(getActivity(),"Error abriendo la camara",Toast.LENGTH_SHORT).show();
+//                    boolean abrirCamara= MyCameraHelper.openCamera(p2.this.getActivity(), nombreArchivo, InspeccionActivity.CARPETA_FOTOS, subFolder, p2.this);
+  //                  if(!abrirCamara) Toast.makeText(getActivity(),"Error abriendo la camara",Toast.LENGTH_SHORT).show();
                 }
             }
         });

@@ -64,7 +64,21 @@ import java.util.HashMap;
 /**
  * Created by Juan on 26/03/2015.
  */
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import android.Manifest;
+import android.net.Uri;
+
 public class p1 extends Fragment implements View.OnFocusChangeListener, InspeccionFragment, Formularios.DataPass {
+    // Store parameters for camera if permission is needed
+    private String pendingFileName = null;
+    private String pendingFolder = null;
+    private String pendingSubFolder = null;
+        // ActivityResultLauncher for camera and permissions
+        private ActivityResultLauncher<String> requestCameraPermissionLauncher;
+        private ActivityResultLauncher<Intent> takePictureLauncher;
+        private Uri cameraPhotoUri;
+        private String cameraPhotoPath;
     InspeccionActivity inspeccion;
     TextView lbNumContenedor;
     TableLayout tablaInfoContenedor;
@@ -91,6 +105,21 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
 
     private HashMap<String, String> infoInspeccion;
+
+    // Helper to launch camera intent after permission is granted
+    private void launchCameraIntent() {
+        if (pendingFileName == null || pendingFolder == null || pendingSubFolder == null) {
+            Toast.makeText(getActivity(), "No hay información de archivo para la foto", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        MyCameraHelper.CameraIntentResult result = MyCameraHelper.buildCameraIntent(getActivity(), pendingFileName, pendingFolder, pendingSubFolder);
+        if (result == null) {
+            Toast.makeText(getActivity(), "Error creando el intent de cámara", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        cameraPhotoPath = result.filePath;
+        takePictureLauncher.launch(result.intent);
+    }
 
     private final static int DIALOG_CREAR_CONTENEDOR=5473;
     private static String ultimoCodigoContenedor;
@@ -152,6 +181,42 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         infoInspeccion = inspeccion.getInfoInspeccion();
         handler = new Handler();
 
+            // Register permission launcher
+            requestCameraPermissionLauncher = registerForActivityResult(
+                    new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+                    isGranted -> {
+                        if (isGranted) {
+                            launchCameraIntent();
+                        } else {
+                            Toast.makeText(getActivity(), "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+            );
+
+            // Register camera launcher
+            takePictureLauncher = registerForActivityResult(
+                    new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            // Photo taken successfully
+                            try {
+                                if (cameraPhotoPath != null) {
+                                    inspeccion.darAlbumGeneral().agregarFoto(cameraPhotoPath);
+                                    Toast.makeText(getActivity(), "Foto guardada", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getActivity(), "Error al guardar la foto: ", Toast.LENGTH_LONG).show();
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(getActivity(), "Error al guardar la foto: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            Toast.makeText(getActivity(), "No se tomó la foto", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+            );
+
     }
 
     @Override
@@ -210,21 +275,22 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         //No todas los formularios tienen opcion de foto
         if (tomarFoto != null ) {
             if(InspeccionActivity.tipoAccion!=null) tomarFoto.setEnabled(false);
-            tomarFoto.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String numDoc = infoInspeccion.get(getResources().getString(R.string.NNUMDOC));
-                    String codcntr = infoInspeccion.get(getResources().getString(R.string.CCODCNTR));
-                    if (!TextUtils.isEmpty(numDoc)) {
-                        String subFolder = inspeccion.darSubCarpetaFotos(numDoc, codcntr);
-
-                        String nombreArchivo = subFolder + "_" + inspeccion.darAlbumGeneral().getFotos_tomadas();
-                        boolean abrirCamara = MyCameraHelper.openCamera(inspeccion, nombreArchivo, InspeccionActivity.CARPETA_FOTOS, subFolder, null);
-                        if (!abrirCamara)
-                            Toast.makeText(getActivity(), "Error abriendo la camara", Toast.LENGTH_SHORT).show();
+                tomarFoto.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String numDoc = "temp";//infoInspeccion.get(getResources().getString(R.string.NNUMDOC));
+                        String codcntr = infoInspeccion.get(getResources().getString(R.string.CCODCNTR));
+                        if (!TextUtils.isEmpty(numDoc)) {
+                            String subFolder = inspeccion.darSubCarpetaFotos(numDoc, codcntr);
+                            String nombreArchivo = subFolder + "_" + inspeccion.darAlbumGeneral().getFotos_tomadas();
+                            pendingFileName = nombreArchivo;
+                            pendingFolder = InspeccionActivity.CARPETA_FOTOS;
+                            pendingSubFolder = subFolder;
+                            // Request camera permission
+                            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+                        }
                     }
-                }
-            });
+                });
         }
 
 

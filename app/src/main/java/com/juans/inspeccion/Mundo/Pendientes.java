@@ -64,6 +64,23 @@ public class Pendientes {
         darListaTurnos(context); // Refuse to overwrite a damaged store.
         commit(context, new ArrayList<>());
     }
+    public static synchronized int findIndex(String id, Context context) {
+        ArrayList<Inspeccion> values = StoredInspections.read(context, StoredInspections.DRAFTS);
+        for (int i = 0; i < values.size(); i++) if (values.get(i).getPhotoId().equals(id)) return i;
+        return -1;
+    }
+    public static synchronized void upsert(Inspeccion inspection, Context context) {
+        ArrayList<Inspeccion> next = StoredInspections.read(context, StoredInspections.DRAFTS);
+        int index = -1;
+        for (int i = 0; i < next.size(); i++) if (next.get(i).getPhotoId().equals(inspection.getPhotoId())) { index = i; break; }
+        if (index == -1) next.add(inspection); else next.set(index, inspection);
+        commit(context, next);
+    }
+    public static synchronized void remove(String id, Context context) {
+        ArrayList<Inspeccion> next = StoredInspections.read(context, StoredInspections.DRAFTS);
+        for (int i = next.size() - 1; i >= 0; i--) if (next.get(i).getPhotoId().equals(id)) next.remove(i);
+        commit(context, next);
+    }
     private static void commit(Context context, ArrayList<Inspeccion> next) {
         StoredInspections.write(context, StoredInspections.DRAFTS, next);
         listaPendientes = next;

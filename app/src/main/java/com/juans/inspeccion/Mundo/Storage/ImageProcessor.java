@@ -57,17 +57,20 @@ public final class ImageProcessor {
 
     public static File process(File original) throws IOException {
         Bitmap bitmap = decode(() -> new FileInputStream(original), 1280, Integer.MAX_VALUE);
-        File result = File.createTempFile("processed-", ".jpg", original.getParentFile());
+        File result = null;
         boolean success = false;
-        try (FileOutputStream out = new FileOutputStream(result)) {
-            if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)) throw new IOException("No se pudo comprimir la foto");
-            out.flush();
-            out.getFD().sync();
+        try {
+            result = File.createTempFile("processed-", ".jpg", original.getParentFile());
+            try (FileOutputStream out = new FileOutputStream(result)) {
+                if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)) throw new IOException("No se pudo comprimir la foto");
+                out.flush();
+                out.getFD().sync();
+            }
             success = true;
             return result;
         } finally {
             bitmap.recycle();
-            if (!success) result.delete();
+            if (!success && result != null) result.delete();
         }
     }
 }

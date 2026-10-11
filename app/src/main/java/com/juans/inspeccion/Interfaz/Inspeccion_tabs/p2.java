@@ -92,31 +92,6 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
     TableLayout tablaDanios;
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode== MyCameraHelper.REQUEST_TAKE_PHOTO)
-        {
-            if(resultCode== Activity.RESULT_OK)
-            {
-                String rutaFoto=MyCameraHelper.getFilePath();
-                try {
-
-
-                    albumCargado.agregarFoto(rutaFoto);
-                    Intent intent =
-                            new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                    intent.setData(Uri.fromFile(new File(rutaFoto)));
-                    getActivity().sendBroadcast(intent);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-
-            }
-        }
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         // String tipoInspeccion = inspeccion.darTipoInspeccion();
@@ -169,6 +144,9 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
 
         }
+
+        if (itemSeleccionado == -1 && inspeccion.getEditingAlbum() != null) albumCargado = inspeccion.getEditingAlbum();
+        if (albumCargado != null) inspeccion.setEditingAlbum(albumCargado);
 
         listaDaniosView = (ListView) getView().findViewById(R.id.danioListView);
         ScrollView daniosSV = (ScrollView) getView().findViewById(R.id.danioScrollView);
@@ -234,24 +212,11 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
         {
 
         }
-        btnTomarFoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                String numDoc = infoInspeccion.get(getResources().getString(R.string.NNUMDOC));
-                String codcntr = infoInspeccion.get(getResources().getString(R.string.CCODCNTR));
-                if (!TextUtils.isEmpty(numDoc)) {
-                    String subFolder = inspeccion.darSubCarpetaFotos(numDoc, codcntr);
-                        int numeroDanio=itemSeleccionado==-1?inspeccion.darListaDanios().size():itemSeleccionado;
-                    //EJ  DANIO3_3
-                    if(albumCargado==null ) albumCargado=new Album();
-                    String nombreFoto="DANIO#"+numeroDanio+"_"+albumCargado.getFotos_tomadas();
-                    String nombreArchivo = subFolder + "_" + nombreFoto;
-
-//                    boolean abrirCamara= MyCameraHelper.openCamera(p2.this.getActivity(), nombreArchivo, InspeccionActivity.CARPETA_FOTOS, subFolder, p2.this);
-  //                  if(!abrirCamara) Toast.makeText(getActivity(),"Error abriendo la camara",Toast.LENGTH_SHORT).show();
-                }
-            }
+        btnTomarFoto.setOnClickListener(v -> {
+            int damageIndex = itemSeleccionado == -1 ? inspeccion.darListaDanios().size() : itemSeleccionado;
+            if (albumCargado == null) albumCargado = new Album();
+            inspeccion.setEditingAlbum(albumCargado);
+            inspeccion.takePhoto(albumCargado, damageIndex);
         });
 
         btnVerAlbum.setOnClickListener(new View.OnClickListener() {
@@ -261,8 +226,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
                 Album album=albumCargado;
                 if(album!=null && album.getFotos().size()!=0) {
-                    PhotoGridDialog photoGridDialog = PhotoGridDialog.newInstance(albumCargado);
-                    photoGridDialog.show(inspeccion.getSupportFragmentManager(), "LOLLOL");
+                    inspeccion.showPhotoAlbum(albumCargado);
                 }
             }
         });
@@ -509,6 +473,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
         }
         danioCargado = null;
         albumCargado=null;
+        inspeccion.setEditingAlbum(null);
         itemSeleccionado=-1;
         btnActualizarDanio.setEnabled(false);
         btnEliminarDanio.setEnabled(false);

@@ -67,6 +67,19 @@ public class MediaPhotoStore implements PhotoStore {
             String folder = "Pictures/Inspecciones/" + safe(inspection) + "/";
             String base = safe(name.replaceFirst("(?i)\\.jpg$", ""));
             String display = base + ".jpg";
+            if (Build.VERSION.SDK_INT <= 28) {
+                File dir = new File(Environment.getExternalStorageDirectory(), folder);
+                if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("No se pudo crear la carpeta pública");
+                File destination = new File(dir, display);
+                ExportFiles.write(destination, out -> copyPhoto(source, out));
+                // Old MediaStore must register only the fully written public file.
+                Uri registered = findDestination(folder, display);
+                if (registered == null) registered = createDestination(folder, display);
+                Publication complete = new Publication(registered.toString(), true);
+                journal.put(id, complete);
+                AtomicObjects.write(journalFile, journal);
+                return complete.uri;
+            }
             Uri uri = entry == null ? findDestination(folder, display) : Uri.parse(entry.uri);
             if (uri == null) uri = createDestination(folder, display);
             entry = new Publication(uri.toString(), false);
@@ -74,11 +87,7 @@ public class MediaPhotoStore implements PhotoStore {
             AtomicObjects.write(journalFile, journal);
             try (OutputStream out = context.getContentResolver().openOutputStream(uri, "wt")) {
                 if (out == null) throw new IOException("No se pudo abrir la foto para escritura");
-                byte[] buffer = new byte[32768];
-                long total = 0;
-                int count;
-                while ((count = source.read(buffer)) != -1) { out.write(buffer, 0, count); total += count; }
-                if (total == 0) throw new IOException("La foto está vacía");
+                copyPhoto(source, out);
                 out.flush();
             } catch (RuntimeException e) { throw new IOException("No se pudo publicar la foto", e); }
             if (Build.VERSION.SDK_INT >= 29) {
@@ -90,6 +99,12 @@ public class MediaPhotoStore implements PhotoStore {
             AtomicObjects.write(journalFile, journal);
             return entry.uri;
         }
+    }
+
+    private static void copyPhoto(InputStream source, OutputStream out) throws IOException {
+        byte[] buffer = new byte[32768]; long total = 0; int count;
+        while ((count = source.read(buffer)) != -1) { out.write(buffer, 0, count); total += count; }
+        if (total == 0) throw new IOException("La foto está vacía");
     }
 
     private Uri findDestination(String folder, String display) throws IOException {

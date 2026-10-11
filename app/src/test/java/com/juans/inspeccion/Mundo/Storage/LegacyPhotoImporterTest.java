@@ -44,6 +44,51 @@ public class LegacyPhotoImporterTest {
             try { LegacyPhotoImporter.relativePath(path); fail(); } catch (IOException expected) { }
         }
     }
+    @Test public void documentAssignmentKeepsRemoteNamingSeparateFromImportedDisplayName() throws Exception {
+        Inspeccion inspection = new Inspeccion(); Album album = inspection.getFotosGenerales();
+        String old = "/sdcard/Inspecciones/EIR/temp_0.jpg"; album.getFotos().add(old);
+        album.setRemoteName(old, "ENTRADA_EP_123_CNTR_0.jpg");
+        FakePhotos photos = new FakePhotos();
+        LegacyPhotoImporter importer = new LegacyPhotoImporter(RuntimeEnvironment.getApplication(), photos);
+        assertTrue(importer.importAll(path -> new ByteArrayInputStream(new byte[]{1}), Collections.singleton(inspection)).isEmpty());
+        assertEquals("ENTRADA_EP_123_CNTR_0.jpg", album.remoteName(album.getFotos().get(0), photos));
+    }
+    @Test public void canceledImportLeavesReleasedStoresByteForByteUnchanged() throws Exception {
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        Map<String, byte[]> originals = new HashMap<>();
+        for (String name : new String[]{StoredInspections.DRAFTS, StoredInspections.UPLOADS}) {
+            File file = context.getFileStreamPath(name);
+            try (InputStream fixture = getClass().getResourceAsStream("/released-d9c52d3/" + name)) {
+                java.nio.file.Files.copy(fixture, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+            originals.put(name, java.nio.file.Files.readAllBytes(file.toPath()));
+        }
+        FakePhotos photos = new FakePhotos();
+        assertTrue(new LegacyPhotoImporter(context, photos).importSaved(null).isEmpty());
+        for (Map.Entry<String, byte[]> entry : originals.entrySet())
+            assertArrayEquals(entry.getValue(), java.nio.file.Files.readAllBytes(context.getFileStreamPath(entry.getKey()).toPath()));
+        assertEquals(0, photos.imports);
+    }
+    @Test public void importMergesIntoDraftsSavedDuringCopyWithoutOverwritingEdits() throws Exception {
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        Inspeccion original = new Inspeccion(), added = new Inspeccion();
+        original.getFotosGenerales().getFotos().add("/sdcard/Inspecciones/EIR/old.jpg");
+        StoredInspections.write(context, StoredInspections.DRAFTS, new ArrayList<>(Collections.singleton(original)));
+        FakePhotos photos = new FakePhotos();
+        LegacyPhotoImporter importer = new LegacyPhotoImporter(context, photos);
+        assertTrue(importer.importSaved(path -> {
+            ArrayList<Inspeccion> latest = StoredInspections.read(context, StoredInspections.DRAFTS);
+            latest.get(0).getInformacion().put("edited", "yes"); latest.add(added);
+            StoredInspections.write(context, StoredInspections.DRAFTS, latest);
+            return new ByteArrayInputStream(new byte[]{1,2,3});
+        }).isEmpty());
+        ArrayList<Inspeccion> latest = StoredInspections.read(context, StoredInspections.DRAFTS);
+        assertEquals(2, latest.size()); assertEquals("yes", latest.get(0).getInformacion().get("edited"));
+        assertEquals(added.getPhotoId(), latest.get(1).getPhotoId());
+        assertTrue(latest.get(0).getFotosGenerales().getFotos().get(0).startsWith("content://"));
+        assertTrue(importer.importSaved(path -> { throw new AssertionError("Already imported"); }).isEmpty());
+        assertEquals(1, photos.imports);
+    }
     static class FakePhotos implements PhotoStore {
         final Map<String, byte[]> bytes = new HashMap<>(); int imports;
         public String importPhoto(InputStream in, String inspection, String name, String id) throws IOException {

@@ -75,11 +75,6 @@
             android:name=".Interfaz.VisualizarActivity"
             android:label="@string/title_activity_visualizar" >
         </activity>
-        <activity
-            android:name=".Interfaz.CameraActivity"
-            android:label="@string/title_activity_camera" >
-        </activity>
-
         <receiver android:name=".Other.NetWorkChangeReceiver"
          android:exported="true" >
             <intent-filter>

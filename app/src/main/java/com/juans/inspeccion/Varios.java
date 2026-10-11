@@ -42,33 +42,11 @@ import java.util.List;
 public class Varios {
 
 
-   public static void abrirExcel(Context c, File file)
-
-   {
-
-       Intent intent = new Intent();
-       intent.setAction(Intent.ACTION_VIEW);
-       intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-       Uri contentUri = FileProvider.getUriForFile(c, BuildConfig.APPLICATION_ID + ".provider"
-               , file);
-
-       intent.setDataAndType(contentUri, "application/vnd.ms-excel");
-       c.startActivity(intent);
-
-   }
-
-    public static void abrirPDF(Context c, File file)
-    {
-        PackageManager packageManager = c.getPackageManager();
-        Intent testIntent = new Intent(Intent.ACTION_VIEW);
-        testIntent.setType("application/application/pdf");
-        List list = packageManager.queryIntentActivities(testIntent, PackageManager.MATCH_DEFAULT_ONLY);
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        Uri uri = Uri.fromFile(file);
-        intent.setDataAndType(uri, "application/pdf");
-        c.startActivity(intent);
+    public static void abrirExcel(Context context, File file) {
+        com.juans.inspeccion.Mundo.Storage.ExportFiles.open(context, file, "application/vnd.ms-excel");
+    }
+    public static void abrirPDF(Context context, File file) {
+        com.juans.inspeccion.Mundo.Storage.ExportFiles.open(context, file, "application/pdf");
     }
     public static float floatCon2Decimales(float f)
     {

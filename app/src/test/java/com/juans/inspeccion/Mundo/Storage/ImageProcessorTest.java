@@ -33,14 +33,22 @@ public class ImageProcessorTest {
         assertEquals(120, bitmap.getWidth()); assertEquals(240, bitmap.getHeight());
     }
     @Test public void everyExifOrientationHasCorrectRotationAndMirroring() {
+        float[][] expected = {{1,0,0,1}, {-1,0,0,1}, {-1,0,0,-1}, {1,0,0,-1},
+                {0,1,1,0}, {0,1,-1,0}, {0,-1,-1,0}, {0,-1,1,0}};
         for (int orientation = 1; orientation <= 8; orientation++) {
             Matrix m = ImageProcessor.orientationMatrix(orientation);
             float[] vectors = {1, 0, 0, 1}; m.mapVectors(vectors);
+            assertArrayEquals(expected[orientation-1], vectors, 0.001f);
             float determinant = vectors[0] * vectors[3] - vectors[1] * vectors[2];
             boolean mirrored = orientation == 2 || orientation == 4 || orientation == 5 || orientation == 7;
             assertEquals(mirrored ? -1f : 1f, determinant, 0.001f);
             assertEquals(orientation >= 5 ? 0f : 1f, Math.abs(vectors[0]), 0.001f);
         }
+    }
+    @Test public void largePhotosAreSampledThenConstrainedToExistingWidthLimit() throws Exception {
+        File source = picture(2560, 640, ExifInterface.ORIENTATION_NORMAL);
+        Bitmap bitmap = ImageProcessor.decode(() -> new FileInputStream(source), 1280, Integer.MAX_VALUE);
+        assertEquals(1280, bitmap.getWidth()); assertEquals(320, bitmap.getHeight()); bitmap.recycle();
     }
     private File picture(int w, int h, int orientation) throws Exception {
         File source = File.createTempFile("photo", ".jpg", RuntimeEnvironment.getApplication().getFilesDir());

@@ -14,7 +14,9 @@ public class Album implements Serializable {
     private static final long serialVersionUID = 4164294007417506670L;
     private int fotos_tomadas;
     private ArrayList<String> fotos = new ArrayList<>();
-    private String id;
+    private String id = UUID.randomUUID().toString();
+    private transient boolean upgradedIds;
+    public boolean upgradedIds() { return upgradedIds; }
     private HashMap<String, String> remoteNames = new HashMap<>();
 
     public String getId() {
@@ -30,6 +32,7 @@ public class Album implements Serializable {
         if (reference == null || !reference.startsWith("content://")) throw new IOException("Importe las fotos antiguas desde Configuración");
         if (!fotos.contains(reference)) { fotos.add(reference); fotos_tomadas++; }
     }
+    public String recordedRemoteName(String reference) { return remoteNames.get(reference); }
     public void setRemoteName(String reference, String name) { remoteNames.put(reference, name); }
     public String remoteName(String reference, PhotoStore store) throws IOException {
         String name = remoteNames.get(reference);
@@ -56,6 +59,7 @@ public class Album implements Serializable {
         in.defaultReadObject();
         if (fotos == null) fotos = new ArrayList<>();
         if (remoteNames == null) remoteNames = new HashMap<>();
+        upgradedIds = id == null;
         getId();
     }
 }

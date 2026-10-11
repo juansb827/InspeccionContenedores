@@ -10,7 +10,7 @@ import java.util.UUID;
 public final class CaptureCoordinator {
     private final PhotoStore photos;
     private final File journal;
-    private Session session;
+    private volatile Session session;
 
     public CaptureCoordinator(PhotoStore photos, File journal) throws IOException {
         this.photos = photos;
@@ -19,8 +19,25 @@ public final class CaptureCoordinator {
         catch (ClassNotFoundException | RuntimeException e) { throw new IOException("No se pudo recuperar la captura; el registro se conserva", e); }
     }
 
-    public synchronized boolean isBusy() { return session != null && !session.finished; }
-    public synchronized Session session() { return session; }
+    public boolean isBusy() { return session != null && !session.finished; }
+    public Session session() { return session; }
+
+    public synchronized void updateCompletedSnapshot(Inspeccion inspection, Album editing) throws IOException {
+        if (session != null && session.finished && session.inspectionId.equals(inspection.getPhotoId())) {
+            session.inspection = inspection;
+            Album album = inspection.findAlbum(session.albumId);
+            if (album != null) session.album = album;
+            else if (editing != null && editing.getId().equals(session.albumId)) session.album = editing;
+            AtomicObjects.write(journal, session);
+        }
+    }
+
+    public synchronized void acknowledgeSavedState() throws IOException {
+        if (session != null && session.finished) {
+            AtomicObjects.write(journal, null);
+            session = null;
+        }
+    }
 
     public synchronized Uri begin(Inspeccion inspection, Album album, String name, String remoteName) throws IOException {
         if (isBusy()) throw new IOException("Hay una foto pendiente de recuperación");
@@ -31,6 +48,13 @@ public final class CaptureCoordinator {
         catch (IOException e) { destination.delete(); throw e; }
         session = next;
         return photos.captureUri(destination);
+    }
+
+    public interface Camera { void launch(Uri destination); }
+    public synchronized void launch(Camera camera) throws IOException {
+        if (!isBusy() || session.cameraReturned) return;
+        try { camera.launch(photos.captureUri(new File(session.path))); }
+        catch (android.content.ActivityNotFoundException e) { discard(); throw e; }
     }
 
     public synchronized void cameraResult(boolean success) throws IOException {
@@ -65,9 +89,16 @@ public final class CaptureCoordinator {
     public synchronized void discard() throws IOException {
         if (!isBusy()) return;
         // Published copies are retained; discarding an interrupted capture must not delete gallery media.
-        AtomicObjects.write(journal, null);
-        new File(session.path).delete();
-        session = null;
+        boolean hasPhotos = !session.album.getFotos().isEmpty();
+        for (Album album : session.inspection.allAlbums()) hasPhotos |= !album.getFotos().isEmpty();
+        Session previous = session;
+        if (hasPhotos) {
+            // Preserve earlier completed photos if a later camera request is canceled.
+            session.finished = true;
+            try { AtomicObjects.write(journal, session); }
+            catch (IOException e) { session.finished = false; throw e; }
+        } else { AtomicObjects.write(journal, null); session = null; }
+        new File(previous.path).delete();
     }
 
     public static final class Session implements Serializable {

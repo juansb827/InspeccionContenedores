@@ -3,12 +3,9 @@ package com.juans.inspeccion.Mundo.Recibos;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Environment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,34 +46,19 @@ public class CreadorFacturasPDF {
     private static Font smallBoldCourier = new Font(Font.FontFamily.COURIER, 12,
             Font.BOLD);
 
-    public static File generarFactura(Inspeccion inspeccion,String[] fechaAlGenerar,Resources resources, File file) {
-
-
-
-
-        try {
-            FileOutputStream fos;
-
-            fos = new FileOutputStream(file);
-//                float Width=800;
-//                float Height=1600;
-//                Rectangle pageSize=new Rectangle(Width,Height);
-
+    public static File generarFactura(android.content.Context context, Inspeccion inspeccion,
+                                       String[] fechaAlGenerar, String name) throws java.io.IOException {
+        File file = com.juans.inspeccion.Mundo.Storage.ExportFiles.destination(context, name);
+        return com.juans.inspeccion.Mundo.Storage.ExportFiles.write(file, output -> {
             Document document = new Document();
             document.setMargins(125, 125, 36, 36);
-            PdfWriter writer = PdfWriter.getInstance(document, fos);
+            PdfWriter.getInstance(document, output);
             document.open();
-
-
-            addMetaData(document);
-            //agregarContenido(document,turno,fechaAlGenerar,resources);
-
-
-            document.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return file;
+            try {
+                addMetaData(document);
+                agregarContenido(document, inspeccion, fechaAlGenerar, context);
+            } finally { document.close(); }
+        });
     }
 
     // iText allows to add metadata to the PDF which can be viewed in your Adobe
@@ -90,14 +72,14 @@ public class CreadorFacturasPDF {
         document.addCreator("Focus");
     }
 
-    private static void agregarContenido(Document document,Inspeccion turno,String[] fechaGen,Resources res)
-            throws DocumentException {
-
+    private static void agregarContenido(Document document,Inspeccion turno,String[] fechaGen,android.content.Context context)
+            throws DocumentException, java.io.IOException {
+        Resources res = context.getResources();
         Paragraph preface = new Paragraph();
         preface.setAlignment(Element.ALIGN_CENTER);
         preface.setLeading(0, 2f);
 
-        Image img = buscarLogo();
+        Image img = buscarLogo(context);
 
         if (img != null) {
             img.setAlignment(Element.ALIGN_CENTER);
@@ -110,7 +92,8 @@ public class CreadorFacturasPDF {
 
         preface.add(new Paragraph("EQUIPMENT INTERCHANGE RECEIPT", smallCourier));
 
-        String[] fecha=null;
+        String[] fecha=turno.getFechaInspeccion();
+        if (fecha == null) fecha = fechaGen;
         int hora1= Integer.parseInt(fecha[Consultas.FECHA_HORA]);
         int minuto1=Integer.parseInt(fecha[Consultas.FECHA_MINUTOS]);
         String fecha1=fecha[Consultas.FECHA_DIA]+"-"+fecha[Consultas.FECHA_MES]+"-"+fecha[Consultas.FECHA_ANIO]+"     "           //fecha al completar el turno
@@ -123,14 +106,15 @@ public class CreadorFacturasPDF {
 
 
         preface.add(new Paragraph( fecha1, smallCourier));
-        HashMap<String,String> cabecera=null;
-        String tipoTurno=cabecera.get(res.getString(R.string.CTIPOTURNO));
+        HashMap<String,String> cabecera=new HashMap<>(turno.getInformacion());
+        cabecera.putAll(turno.getDatosContenedor());
+        String tipoTurno=value(cabecera, res.getString(R.string.CTIPOTURNO));
         String tipo="-";
-        if(tipoTurno.equals("ebrae"))
+        if("ENTRADA".equals(tipoTurno))
         {
             tipo="GATE IN";
         }
-        else if(tipoTurno.equals("sañoda"))
+        else if("SALIDA".equals(tipoTurno))
         {
             tipo="GATE OUT";
         }
@@ -144,8 +128,8 @@ public class CreadorFacturasPDF {
         contenido.setLeading(0, 2f);
 
         Chunk NroEIR1 = new Chunk("Nro de EIR     :", smallCourier);
-        String tipoDoc=cabecera.get(res.getString(R.string.CTIPDOC));
-        String numDoc=cabecera.get(res.getString(R.string.NNUMDOC));
+        String tipoDoc=value(cabecera, res.getString(R.string.CTIPDOC));
+        String numDoc=value(cabecera, res.getString(R.string.NNUMDOC));
         String docMostrar=tipoDoc+"-"+numDoc;
         Chunk NroEIR2 = new Chunk(docMostrar, smallBoldCourier);
         Phrase NroEIR = new Phrase(NroEIR1);
@@ -153,7 +137,7 @@ public class CreadorFacturasPDF {
         contenido.add(NroEIR);
 
 
-        String numBooking=cabecera.get(res.getString(R.string.CBOOKING));
+        String numBooking=value(cabecera, res.getString(R.string.CBOOKING));
         if(numBooking==null)
         {
             numBooking="-";
@@ -164,13 +148,13 @@ public class CreadorFacturasPDF {
         booking.add(booking2);
         contenido.add(booking);
 
-        String codcntr=cabecera.get(res.getString(R.string.CCODCNTR));
+        String codcntr=value(cabecera, res.getString(R.string.CCODCNTR));
         if(codcntr==null)   codcntr="-";
-        String tamcntr=cabecera.get(res.getString(R.string.CTAMCNTR));
+        String tamcntr=value(cabecera, res.getString(R.string.CTAMCNTR));
         if(tamcntr==null)   tamcntr="-";
-        String tipocntr=cabecera.get(res.getString(R.string.CTIPOCNTR));
+        String tipocntr=value(cabecera, res.getString(R.string.CTIPOCNTR));
         if(tipocntr==null)   tipocntr="-";
-        String codiso=cabecera.get(res.getString(R.string.CCODISOCNTR));
+        String codiso=value(cabecera, res.getString(R.string.CCODISOCNTR));
         if(codiso==null)   codiso="-";
 
 
@@ -180,11 +164,11 @@ public class CreadorFacturasPDF {
         cntr.add(detalles);
         contenido.add(cntr);
 
-        String linea=cabecera.get(res.getString(R.string.CCTELNA));
-        String lineaDes=cabecera.get(res.getString(R.string.CDESCTELNA));
-        String motonave=cabecera.get(res.getString(R.string.CMOTONAVE));
-        String viaje=cabecera.get(res.getString(R.string.CVIAJE));
-        String tipoMov=cabecera.get(res.getString(R.string.CUSOLOGICO));
+        String linea=value(cabecera, res.getString(R.string.CCTELNA));
+        String lineaDes=value(cabecera, res.getString(R.string.CDESCTELNA));
+        String motonave=value(cabecera, res.getString(R.string.CMOTONAVE));
+        String viaje=value(cabecera, res.getString(R.string.CVIAJE));
+        String tipoMov=value(cabecera, res.getString(R.string.CUSOLOGICO));
         contenido.add(new Paragraph("\nLinea    : "+linea,
                 smallCourier));
 
@@ -204,22 +188,22 @@ public class CreadorFacturasPDF {
 
         document.add(contenido);
 
-        PdfPTable tablaDanios= crearTablaDaños(DaniosManager.darListaSoloDetalles(null), res);
+        PdfPTable tablaDanios= crearTablaDaños(DaniosManager.darListaSoloDetalles(turno.getDaniosManager().getListaDanios()), res);
         document.add(tablaDanios);
 
 
         Paragraph contenido2 = new Paragraph();
         contenido2.setLeading(0, 2f);
 
-        String estado=cabecera.get(res.getString(R.string.CESTADOCNTR));
-        String uso=cabecera.get(res.getString(R.string.CESTFINCNTR));
-        String transportador=cabecera.get(res.getString(R.string.CDESTRANSPOR));
-        String conductor=cabecera.get(res.getString(R.string.CDESCONDUCTOR));
-        String cedula=cabecera.get(res.getString(R.string.CDESCEDULA));
-        String celular=cabecera.get(res.getString(R.string.CCELULAR));
-        String cplaca=cabecera.get(res.getString(R.string.CPLACA));
-        String cobserva=cabecera.get(res.getString(R.string.COBSERVACION));
-        String nomInspector=cabecera.get(res.getString(R.string.CNOMINSPECTOR));
+        String estado=value(cabecera, res.getString(R.string.CESTADOCNTR));
+        String uso=value(cabecera, res.getString(R.string.CESTFINCNTR));
+        String transportador=value(cabecera, res.getString(R.string.CDESTRANSPOR));
+        String conductor=value(cabecera, res.getString(R.string.CDESCONDUCTOR));
+        String cedula=value(cabecera, res.getString(R.string.CDESCEDULA));
+        String celular=value(cabecera, res.getString(R.string.CCELULAR));
+        String cplaca=value(cabecera, res.getString(R.string.CPLACA));
+        String cobserva=value(cabecera, res.getString(R.string.COBSERVACION));
+        String nomInspector=value(cabecera, res.getString(R.string.CNOMINSPECTOR));
 
 
 
@@ -277,25 +261,22 @@ public class CreadorFacturasPDF {
 
     }
 
-    private static Image buscarLogo() {
-        Image img = null;
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File file = new File(path, "/Contenedores/" + "logocentralpark.jpg");
-        try {
-            InputStream ims = new FileInputStream(file);
-            Bitmap bmp = BitmapFactory.decodeStream(ims);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            img = Image.getInstance(stream.toByteArray());
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return img;
+    private static String value(HashMap<String, String> fields, String key) {
+        String value = fields.get(key);
+        return value == null || value.isEmpty() ? "-" : value;
     }
 
+    private static Image buscarLogo(android.content.Context context) throws java.io.IOException, BadElementException {
+        try (InputStream input = context.getAssets().open("logo_centralpark.png");
+             ByteArrayOutputStream bytes = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = input.read(buffer)) != -1) bytes.write(buffer, 0, read);
+            Image image = Image.getInstance(bytes.toByteArray());
+            image.scaleToFit(160, 80);
+            return image;
+        }
+    }
 
     private static PdfPTable crearTablaObservaciones(String observaciones)
             throws BadElementException {

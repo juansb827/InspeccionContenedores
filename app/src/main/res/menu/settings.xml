@@ -6,4 +6,5 @@
         android:title="@string/action_settings"
         android:orderInCategory="100"
         app:showAsAction="never" />
+    <item android:id="@+id/action_import_legacy_photos" android:title="Importar fotos antiguas" app:showAsAction="never" />
 </menu>

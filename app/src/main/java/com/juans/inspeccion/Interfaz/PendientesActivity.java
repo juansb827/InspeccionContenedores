@@ -22,13 +22,25 @@ public class PendientesActivity extends AppCompatActivity {
     ListView listaPendientesView;
     SimpleAdapter listaPendientesAdapter;
     ArrayList<HashMap<String, String>> listaResumenes;
+    private boolean draftReadError;
+    private void loadDrafts() {
+        try {
+            Pendientes.cargarListaTurnos(this);
+            listaResumenes = Pendientes.darResumenTurnos(this);
+            draftReadError = false;
+        } catch (Exception e) {
+            draftReadError = true;
+            listaResumenes = new ArrayList<>();
+            new android.app.AlertDialog.Builder(this).setTitle("Borradores no disponibles")
+                    .setMessage(e.getMessage()).setPositiveButton("Aceptar", null).show();
+        }
+    }
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        listaResumenes= Pendientes.darResumenTurnos(PendientesActivity.this
-        );
+        loadDrafts();
         setAdapter();
 
     }
@@ -38,7 +50,7 @@ public class PendientesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pendientes);
         listaPendientesView= (ListView) findViewById(R.id.listaRegistrosPendientes);
-        listaResumenes = Pendientes.darResumenTurnos(PendientesActivity.this);
+        loadDrafts();
         setAdapter();
     }
      private void setAdapter()
@@ -89,8 +101,9 @@ public class PendientesActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_borrar_pendientes) {
-            Pendientes.borrarTodo();
-            listaPendientesAdapter.notifyDataSetChanged();
+            if (draftReadError) return true;
+            try { Pendientes.borrarTodo(this); loadDrafts(); setAdapter(); }
+            catch (Exception e) { android.widget.Toast.makeText(this, e.getMessage(), android.widget.Toast.LENGTH_LONG).show(); }
 
             return true;
         }

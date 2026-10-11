@@ -162,6 +162,7 @@ public class ConsultasActivity extends AppCompatActivity implements Formularios.
 
     private class ConsultaExcel extends AsyncTask<String,Void,File>
     {
+        private String exportError;
 
         @Override
         protected void onPreExecute() {
@@ -172,39 +173,25 @@ public class ConsultasActivity extends AppCompatActivity implements Formularios.
         protected File doInBackground(String... strings) {
 
 
-                if(!ConsultasActivity.this.isFinishing())
-                {
-                    ConsultasActivity.this.finish();
-                }
+            try {
+                File file = com.juans.inspeccion.Mundo.Storage.ExportFiles.destination(ConsultasActivity.this, tipoConsulta + ".xls");
+                DAO.getInstance().generarExcelConsulta(strings[0], file, 1000);
+                return file;
+            } catch (Exception e) { exportError = e.getMessage(); return null; }
 
-              String consulta=strings[0];
-            File path = getFilesDir();
-            File folder = new File(path, "Contenedores");
-            folder.mkdir();
-
-            File archivoExcel=new File(path, "/Contenedores/"+tipoConsulta+".xls");
-            //String[] fecha=DAO.getInstance().darFecha();
-            //String marcaArchivo=fecha[FECHA_DIA]+"-"+fecha[FECHA_MES]+"-"+fecha[FECHA_ANIO]+"   "+fecha[FECHA_HORA]+"_"+fecha[FECHA_MINUTOS];
-            DAO.getInstance().generarExcelConsulta(consulta, archivoExcel, 1000);
-              return  archivoExcel;
         }
 
         @Override
         protected void onPostExecute(File file) {
-            try {
-                Varios.abrirExcel(ConsultasActivity.this, file);
-            }catch (ActivityNotFoundException e)
-            {
-                Toast.makeText(getBaseContext(),"NECESITA INSTALAR UN VISUALIZADOR DE ARCHIVOS EXCEL",Toast.LENGTH_LONG).show();
+            if (isFinishing() || isDestroyed()) return;
+            if (file == null) {
+                Toast.makeText(ConsultasActivity.this, exportError == null ? "No se pudo generar el archivo" : exportError, Toast.LENGTH_LONG).show();
+                return;
             }
-
-            if(ConsultasActivity.this!=null || !ConsultasActivity.this.isFinishing())
-            {
-                ConsultasActivity.this.finish();
-
-            }
-
-
+            try { Varios.abrirExcel(ConsultasActivity.this, file); }
+            catch (ActivityNotFoundException e) {
+                Toast.makeText(ConsultasActivity.this, "NECESITA INSTALAR UN VISUALIZADOR DE ARCHIVOS EXCEL", Toast.LENGTH_LONG).show();
+            } catch (RuntimeException e) { Toast.makeText(ConsultasActivity.this, "No se pudo abrir el archivo: " + e.getMessage(), Toast.LENGTH_LONG).show(); }
         }
     }
 

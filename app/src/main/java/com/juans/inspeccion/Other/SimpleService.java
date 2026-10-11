@@ -38,7 +38,7 @@ public class SimpleService extends Service {
 
     @Override
     public void onCreate() {
-        fotosPendientes = new FotosPendientes();
+        fotosPendientes = new FotosPendientes(this);
        super.onCreate();
         myythread = new MyThread(interval);
     }
@@ -59,6 +59,7 @@ public class SimpleService extends Service {
         Log.e("Service","onstartCommand"+intent);
         //intent es null cuando  es activado por el network receiver
 
+        if (intent == null) { stopSelf(); return START_NOT_STICKY; }
         if (connectionParams == null) {
             connectionParams = (HashMap<String, String>) intent.getSerializableExtra(PARAMS);
         }
@@ -117,11 +118,12 @@ public class SimpleService extends Service {
             try {
 
 
-                FTPUpload ftpUpload = new FTPUpload("", 0, "", "");
+                try (FTPUpload ftpUpload = new FTPUpload("", 0, "", "")) {
                 ftpUpload.conect();
                 while (fotosPendientes.hayPendientes()) {
                     boolean subio = fotosPendientes.subirFotosServidor(ftpUpload);
                     if (!subio) return false;
+                }
                 }
 
 

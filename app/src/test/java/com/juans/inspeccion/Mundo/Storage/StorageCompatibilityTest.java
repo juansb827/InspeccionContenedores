@@ -35,6 +35,7 @@ public class StorageCompatibilityTest {
             assertEquals(2, inspection.allAlbums().size());
             assertNotEquals(inspection.allAlbums().get(0).getId(), inspection.allAlbums().get(1).getId());
             assertTrue(inspection.allAlbums().get(0).getFotos().get(0).contains("/Inspecciones/"));
+            assertEquals(inspection.getPhotoId(), StoredInspections.read(context, name).get(0).getPhotoId());
             StoredInspections.write(context, name, values);
             assertEquals(inspection.getPhotoId(), StoredInspections.read(context, name).get(0).getPhotoId());
         }
@@ -70,6 +71,15 @@ public class StorageCompatibilityTest {
         album.borrarAlbum();
         assertTrue(album.getFotos().isEmpty());
         assertEquals(1, album.getFotos_tomadas());
+    }
+    @Test public void uuidUpdatesRemainCorrectWhenAnotherDraftWasRemoved() {
+        Inspeccion first = new Inspeccion(), second = new Inspeccion();
+        Pendientes.upsert(first, context); Pendientes.upsert(second, context);
+        Pendientes.remove(first.getPhotoId(), context);
+        second.getInformacion().put("edited", "yes"); Pendientes.upsert(second, context);
+        ArrayList<Inspeccion> values = StoredInspections.read(context, StoredInspections.DRAFTS);
+        assertEquals(1, values.size()); assertEquals(second.getPhotoId(), values.get(0).getPhotoId());
+        assertEquals("yes", values.get(0).getInformacion().get("edited"));
     }
     private static class BrokenObject implements Serializable {
         private void writeObject(ObjectOutputStream out) throws IOException { throw new IOException("simulated failure"); }

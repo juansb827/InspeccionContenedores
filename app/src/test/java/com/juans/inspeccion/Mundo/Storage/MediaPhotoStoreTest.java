@@ -58,6 +58,13 @@ public class MediaPhotoStoreTest {
         assertTrue(uri.startsWith("content://media/"));
         assertTrue(provider.rows.get(1L).getAsString(MediaStore.Images.Media.DATA).contains("Pictures/Inspecciones/inspection/photo.jpg"));
         assertFalse(provider.rows.get(1L).containsKey(MediaStore.Images.Media.IS_PENDING));
+        try (InputStream in = store.open(uri)) { assertEquals(1, in.read()); }
+    }
+    @Test public void failedExplicitDeletionKeepsAlbumReference() throws Exception {
+        com.juans.inspeccion.Mundo.Album album = new com.juans.inspeccion.Mundo.Album();
+        album.agregarFoto("content://media/external/images/media/99");
+        try { album.deletePhoto(context, 0); fail(); } catch (IOException expected) { }
+        assertEquals(1, album.getFotos().size());
     }
     public static class MediaProvider extends ContentProvider {
         final Map<Long, ContentValues> rows = new LinkedHashMap<>();
@@ -66,7 +73,10 @@ public class MediaPhotoStoreTest {
         public String getType(Uri uri) { return "image/jpeg"; }
         public Uri insert(Uri uri, ContentValues values) {
             long id = rows.size() + 1; rows.put(id, new ContentValues(values));
-            files.put(id, new File(getContext().getFilesDir(), "media-" + id));
+            String data = values.getAsString(MediaStore.Images.Media.DATA);
+            File file = data == null ? new File(getContext().getFilesDir(), "media-" + id) : new File(data);
+            if (data != null) assertTrue("Public photo must be fully written before registration", file.length() > 0);
+            files.put(id, file);
             return Uri.parse("content://media/external/images/media/" + id);
         }
         public Cursor query(Uri uri, String[] projection, String selection, String[] args, String sort) {

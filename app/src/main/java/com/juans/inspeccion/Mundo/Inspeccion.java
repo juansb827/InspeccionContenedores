@@ -11,7 +11,7 @@ import java.util.HashMap;
 public class Inspeccion implements Serializable{
     // Generated from the released d9c52d3 sources; do not change for new fields.
     private static final long serialVersionUID = 7140579573600875404L;
-    private String photoId;
+    private String photoId = java.util.UUID.randomUUID().toString();
 
     public String getPhotoId() {
         if (photoId == null) photoId = java.util.UUID.randomUUID().toString();
@@ -31,9 +31,11 @@ public class Inspeccion implements Serializable{
         return null;
     }
 
-    public void initializePhotoIds() {
+    public boolean initializePhotoIds() {
+        boolean changed = photoId == null;
         getPhotoId();
-        for (Album album : allAlbums()) album.getId();
+        for (Album album : allAlbums()) { changed |= album.upgradedIds(); album.getId(); }
+        return changed;
     }
 
 
@@ -215,6 +217,7 @@ public class Inspeccion implements Serializable{
 
     public void limpiar()
     {
+        photoId = java.util.UUID.randomUUID().toString();
         informacion.clear();
         datosContenedor.clear();
         daniosManager.borrarDanios();

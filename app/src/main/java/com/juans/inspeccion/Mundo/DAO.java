@@ -991,24 +991,10 @@ public class DAO  {
 
     }
 
-    public File tablaFilasAExcel(ArrayList<FilaEnConsulta> tabla,String nombreArchivo)
+    public File tablaFilasAExcel(ArrayList<FilaEnConsulta> tabla, File tablaExcel) throws IOException
     {
-        File tablaExcel=null;
-        try {
-            //http://www.andykhan.com/jexcelapi/tutorial.html
-
-            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File folder = new File(path, "Contenedores");
-            folder.mkdir();
-             tablaExcel=new File(path, "/Contenedores/"+nombreArchivo+".xls");
-
-
-
-
-
-            WritableWorkbook workbook = Workbook.createWorkbook(tablaExcel);
-
-
+        return com.juans.inspeccion.Mundo.Storage.ExportFiles.write(tablaExcel, output -> {
+            WritableWorkbook workbook = Workbook.createWorkbook(output);
 
             WritableSheet sheet = workbook.createSheet("First Sheet", 0);
 
@@ -1059,14 +1045,10 @@ public class DAO  {
 
 
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return tablaExcel;
+        });
     }
 
-
-    public void generarExcelConsulta(String consulta, File archivoExcel, int limiteResultados)
+    public void generarExcelConsulta(String consulta, File archivoExcel, int limiteResultados) throws IOException
     {
         ArrayList<FilaEnConsulta> tabla=hacerTablaConConsulta(consulta,limiteResultados);
 
@@ -1078,7 +1060,7 @@ public class DAO  {
 
     }
 
-    private void excelTest(   ArrayList<FilaEnConsulta> tabla,File file) {
+    private void excelTest(   ArrayList<FilaEnConsulta> tabla,File file) throws IOException {
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("Consulta");
 
@@ -1135,21 +1117,7 @@ public class DAO  {
 
 
 
-        try {
-            FileOutputStream out = new FileOutputStream(file);
-            workbook.write(out);
-            out.close();
-            System.out.println("Excel written successfully..");
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-
-
-
-        }
-
+        com.juans.inspeccion.Mundo.Storage.ExportFiles.write(file, output -> workbook.write(output));
 
     }
 

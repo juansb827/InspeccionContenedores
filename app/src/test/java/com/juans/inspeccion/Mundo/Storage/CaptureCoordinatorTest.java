@@ -67,6 +67,36 @@ public class CaptureCoordinatorTest {
         coordinator.begin(inspection, inspection.getFotosGenerales(), "general.jpg", "general.jpg");
         try { coordinator.begin(new Inspeccion(), new Album(), "other.jpg", "other.jpg"); fail(); } catch (IOException expected) { }
     }
+    @Test public void missingCameraHandlerDiscardsOnlyPrivateRequest() throws Exception {
+        Inspeccion inspection = new Inspeccion(); CaptureCoordinator coordinator = new CaptureCoordinator(photos, journal);
+        coordinator.begin(inspection, inspection.getFotosGenerales(), "general.jpg", "general.jpg");
+        File capture = new File(coordinator.session().path);
+        try { coordinator.launch(uri -> { throw new android.content.ActivityNotFoundException(); }); fail(); }
+        catch (android.content.ActivityNotFoundException expected) { }
+        assertFalse(coordinator.isBusy()); assertFalse(capture.exists()); assertEquals(0, photos.publishes);
+    }
+    @Test public void repeatedInspectionsDoNotReuseCapturesAndCompletedSnapshotRecovers() throws Exception {
+        CaptureCoordinator coordinator = new CaptureCoordinator(photos, journal);
+        Inspeccion first = new Inspeccion();
+        Uri one = coordinator.begin(first, first.getFotosGenerales(), "same-container.jpg", "same-container.jpg");
+        coordinator.cameraResult(true); coordinator.complete(first, first.getFotosGenerales());
+        CaptureCoordinator restored = new CaptureCoordinator(photos, journal);
+        assertEquals(1, restored.session().inspection.getFotosGenerales().getFotos().size());
+        Inspeccion second = new Inspeccion();
+        Uri two = coordinator.begin(second, second.getFotosGenerales(), "same-container.jpg", "same-container.jpg");
+        assertNotEquals(one, two); assertNotEquals(first.getPhotoId(), second.getPhotoId());
+    }
+    @Test public void cancelingALaterCaptureDoesNotForgetEarlierCompletedPhotos() throws Exception {
+        Inspeccion inspection = new Inspeccion(); CaptureCoordinator coordinator = new CaptureCoordinator(photos, journal);
+        coordinator.begin(inspection, inspection.getFotosGenerales(), "first.jpg", "first.jpg");
+        coordinator.cameraResult(true); coordinator.complete(inspection, inspection.getFotosGenerales());
+        String first = inspection.getFotosGenerales().getFotos().get(0);
+        coordinator.begin(inspection, inspection.getFotosGenerales(), "second.jpg", "second.jpg");
+        coordinator.cameraResult(false);
+        coordinator = new CaptureCoordinator(photos, journal);
+        assertFalse(coordinator.isBusy());
+        assertEquals(first, coordinator.session().inspection.getFotosGenerales().getFotos().get(0));
+    }
     private static class CapturePhotos extends LegacyPhotoImporterTest.FakePhotos {
         boolean fail; int publishes;
         public File createCapture(String id) throws IOException {

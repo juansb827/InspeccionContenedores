@@ -3,7 +3,7 @@ package com.juans.inspeccion.Interfaz.Inspeccion_tabs;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Handler;
-import androidx.annotation.Nullable;;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import android.app.Service;
 import android.content.Context;
@@ -64,21 +64,8 @@ import java.util.HashMap;
 /**
  * Created by Juan on 26/03/2015.
  */
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import android.Manifest;
-import android.net.Uri;
 
 public class p1 extends Fragment implements View.OnFocusChangeListener, InspeccionFragment, Formularios.DataPass {
-    // Store parameters for camera if permission is needed
-    private String pendingFileName = null;
-    private String pendingFolder = null;
-    private String pendingSubFolder = null;
-        // ActivityResultLauncher for camera and permissions
-        private ActivityResultLauncher<String> requestCameraPermissionLauncher;
-        private ActivityResultLauncher<Intent> takePictureLauncher;
-        private Uri cameraPhotoUri;
-        private String cameraPhotoPath;
     InspeccionActivity inspeccion;
     TextView lbNumContenedor;
     TableLayout tablaInfoContenedor;
@@ -105,21 +92,6 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
 
     private HashMap<String, String> infoInspeccion;
-
-    // Helper to launch camera intent after permission is granted
-    private void launchCameraIntent() {
-        if (pendingFileName == null || pendingFolder == null || pendingSubFolder == null) {
-            Toast.makeText(getActivity(), "No hay información de archivo para la foto", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        MyCameraHelper.CameraIntentResult result = MyCameraHelper.buildCameraIntent(getActivity(), pendingFileName, pendingFolder, pendingSubFolder);
-        if (result == null) {
-            Toast.makeText(getActivity(), "Error creando el intent de cámara", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        cameraPhotoPath = result.filePath;
-        takePictureLauncher.launch(result.intent);
-    }
 
     private final static int DIALOG_CREAR_CONTENEDOR=5473;
     private static String ultimoCodigoContenedor;
@@ -181,41 +153,6 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         infoInspeccion = inspeccion.getInfoInspeccion();
         handler = new Handler();
 
-            // Register permission launcher
-            requestCameraPermissionLauncher = registerForActivityResult(
-                    new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
-                    isGranted -> {
-                        if (isGranted) {
-                            launchCameraIntent();
-                        } else {
-                            Toast.makeText(getActivity(), "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-            );
-
-            // Register camera launcher
-            takePictureLauncher = registerForActivityResult(
-                    new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == Activity.RESULT_OK) {
-                            // Photo taken successfully
-                            try {
-                                if (cameraPhotoPath != null) {
-                                    inspeccion.darAlbumGeneral().agregarFoto(cameraPhotoPath);
-                                    Toast.makeText(getActivity(), "Foto guardada", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(getActivity(), "Error al guardar la foto: ", Toast.LENGTH_LONG).show();
-                                }
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                Toast.makeText(getActivity(), "Error al guardar la foto: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        } else {
-                            Toast.makeText(getActivity(), "No se tomó la foto", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-            );
 
     }
 
@@ -275,49 +212,12 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         //No todas los formularios tienen opcion de foto
         if (tomarFoto != null ) {
             if(InspeccionActivity.tipoAccion!=null) tomarFoto.setEnabled(false);
-                tomarFoto.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String numDoc = "temp";//infoInspeccion.get(getResources().getString(R.string.NNUMDOC));
-                        String codcntr = infoInspeccion.get(getResources().getString(R.string.CCODCNTR));
-                        if (!TextUtils.isEmpty(numDoc)) {
-                            String subFolder = inspeccion.darSubCarpetaFotos(numDoc, codcntr);
-                            String nombreArchivo = subFolder + "_" + inspeccion.darAlbumGeneral().getFotos_tomadas();
-                            pendingFileName = nombreArchivo;
-                            pendingFolder = InspeccionActivity.CARPETA_FOTOS;
-                            pendingSubFolder = subFolder;
-                            // Request camera permission
-                            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
-                        }
-                    }
-                });
+            tomarFoto.setOnClickListener(v -> {
+                inspeccion.takePhoto(inspeccion.darAlbumGeneral(), -1);
+            });
         }
 
 
-
-        final AsyncTask hueTask = new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] params) {
-                ArrayList<String> fotos = inspeccion.darAlbumGeneral().getFotos();
-
-                try {
-                    FTPUpload uploader = new FTPUpload("70.38.10.203", 21, "focus01", "Contabilidad2015");
-                    uploader.conect();
-                    String numDoc = infoInspeccion.get(getResources().getString(R.string.NNUMDOC));
-                    String codcntr = infoInspeccion.get(getResources().getString(R.string.CCODCNTR));
-                    String subFolder = inspeccion.darSubCarpetaFotos(numDoc, codcntr);
-                    for (String foto : fotos) {
-                        // uploader.uploadSingleFile(foto, subFolder);
-                    }
-                    uploader.disconect();
-
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        };
 
         Button verFotos = (Button) getView().findViewById(R.id.btnVerFotos);
         if (verFotos != null) {
@@ -325,8 +225,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
             verFotos.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    PhotoGridDialog photoGridDialog = PhotoGridDialog.newInstance(inspeccion.darAlbumGeneral());
-                    photoGridDialog.show(inspeccion.getSupportFragmentManager(), "sometag");
+                    inspeccion.showPhotoAlbum(inspeccion.darAlbumGeneral());
 
                 }
             });
@@ -910,7 +809,12 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         //usoLogico
 
         String tipoTurno=(inspeccion.getInspeccion().getTipoInspeccion());
-        int turno=Pendientes.darListaTurnos(MainActivity.context).size()+1;
+        int turno;
+        try { turno = Pendientes.darListaTurnos(requireContext()).size() + 1; }
+        catch (com.juans.inspeccion.Mundo.Storage.StoredInspections.StorageException e) {
+            Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+            inspeccion.finish(); return;
+        }
         //Campos que se cargan debido al TBTURNOS
         infoInspeccion.put(getString(R.string.NTURNO) ,turno+"");
         infoInspeccion.put(getString(R.string.CTIPOTURNO),tipoTurno);

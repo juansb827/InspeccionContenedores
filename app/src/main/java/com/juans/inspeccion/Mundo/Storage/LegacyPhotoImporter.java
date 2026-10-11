@@ -15,6 +15,7 @@ public final class LegacyPhotoImporter {
     private final Context context;
     private final PhotoStore photos;
     private final File mappingFile;
+    private final HashMap<String, String> verified = new HashMap<>();
 
     public LegacyPhotoImporter(Context context, PhotoStore photos) {
         this.context = context.getApplicationContext();
@@ -60,6 +61,7 @@ public final class LegacyPhotoImporter {
 
     public synchronized ArrayList<String> importAll(Source source, Collection<Inspeccion> inspections) throws IOException {
         HashMap<String, String> mapping = readMapping();
+        verified.clear();
         ArrayList<String> failures = new ArrayList<>();
         for (Inspeccion inspection : inspections) for (Album album : inspection.allAlbums()) {
             for (String oldRef : new ArrayList<>(album.getFotos())) {
@@ -84,8 +86,10 @@ public final class LegacyPhotoImporter {
                             if (in.read() == -1) throw new IOException("La copia no está disponible");
                         }
                     }
+                    verified.put(oldRef, newRef);
+                    String remoteName = album.recordedRemoteName(oldRef);
                     album.replaceReference(oldRef, newRef);
-                    album.setRemoteName(newRef, name);
+                    album.setRemoteName(newRef, remoteName == null ? name : remoteName);
                 } catch (IOException | RuntimeException e) { failures.add(oldRef + ": " + e.getMessage()); }
             }
         }
@@ -93,15 +97,35 @@ public final class LegacyPhotoImporter {
     }
 
     /** Persist each store separately; the mapping makes recovery safe between the two writes. */
-    public ArrayList<String> importSaved(Source source) throws IOException {
+    public synchronized ArrayList<String> importSaved(Source source) throws IOException {
+        if (source == null) return new ArrayList<>(); // A canceled selection must not even upgrade/write the stores.
         ArrayList<Inspeccion> drafts = StoredInspections.read(context, StoredInspections.DRAFTS);
         ArrayList<Inspeccion> uploads = StoredInspections.read(context, StoredInspections.UPLOADS);
         ArrayList<Inspeccion> all = new ArrayList<>(drafts);
         all.addAll(uploads);
         ArrayList<String> failures = importAll(source, all);
-        StoredInspections.write(context, StoredInspections.DRAFTS, drafts);
-        StoredInspections.write(context, StoredInspections.UPLOADS, uploads);
+        commitVerified(StoredInspections.DRAFTS);
+        commitVerified(StoredInspections.UPLOADS);
         return failures;
+    }
+
+    private void commitVerified(String name) {
+        synchronized (StoredInspections.class) {
+            // Copying may take minutes. Merge references into the latest data instead of overwriting its snapshot.
+            ArrayList<Inspeccion> current = StoredInspections.read(context, name);
+            boolean changed = false;
+            for (Inspeccion inspection : current) for (Album album : inspection.allAlbums()) {
+                for (String old : new ArrayList<>(album.getFotos())) {
+                    String replacement = verified.get(old);
+                    if (replacement == null) continue;
+                    String remote = album.recordedRemoteName(old);
+                    album.replaceReference(old, replacement);
+                    album.setRemoteName(replacement, remote == null ? old.substring(old.lastIndexOf('/') + 1) : remote);
+                    changed = true;
+                }
+            }
+            if (changed) StoredInspections.write(context, name, current);
+        }
     }
 
     @SuppressWarnings("unchecked") private HashMap<String, String> readMapping() throws IOException {

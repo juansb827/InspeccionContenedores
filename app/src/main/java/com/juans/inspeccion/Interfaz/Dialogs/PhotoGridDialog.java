@@ -3,168 +3,117 @@ package com.juans.inspeccion.Interfaz.Dialogs;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import androidx.fragment.app.DialogFragment;
-import android.view.LayoutInflater;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.Toast;
-
+import android.widget.*;
+import androidx.fragment.app.DialogFragment;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import com.juans.inspeccion.Interfaz.CustomAdapters.GridViewAdapter;
 import com.juans.inspeccion.Interfaz.CustomAdapters.ImageItem;
+import com.juans.inspeccion.Interfaz.InspeccionActivity;
 import com.juans.inspeccion.Mundo.Album;
-import com.juans.inspeccion.Mundo.MyCameraHelper;
+import com.juans.inspeccion.Mundo.Storage.MediaPhotoStore;
+import com.juans.inspeccion.Mundo.Storage.PhotoStore;
 import com.juans.inspeccion.R;
-
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
-/**
- * Created by Juan on 04/05/2015.
- */
 public class PhotoGridDialog extends DialogFragment {
-    private GridView gridView;
-    private GridViewAdapter gridAdapter;
-    private static Album album;
-    private int fotoSeleccionada=-1;
-    Button btnExpandir;
-    Button btnBorrar;
+    private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
+    private final Handler main = new Handler(Looper.getMainLooper());
+    private Album album;
+    private PhotoStore photos;
+    private GridView grid;
+    private ImageView full;
+    private View view;
+    private int selected = -1;
+    private int deleteIndex = -1;
+    private boolean deleting;
+    private final ActivityResultLauncher<String> storagePermission = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted && deleteIndex >= 0) deletePhoto(deleteIndex);
+                else if (isAdded()) Toast.makeText(requireContext(), "Permiso denegado; la foto se conserva", Toast.LENGTH_LONG).show();
+            });
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("img", fotoSeleccionada);
+    public static PhotoGridDialog newInstance(String inspectionId, String albumId) {
+        PhotoGridDialog dialog = new PhotoGridDialog();
+        Bundle args = new Bundle(); args.putString("inspection", inspectionId); args.putString("album", albumId);
+        dialog.setArguments(args); return dialog;
     }
-
-
-
-    View view;
-    public static PhotoGridDialog newInstance(Album _fotos)
-    {
-        album =_fotos;
-        return new PhotoGridDialog();
+    @Override public void onSaveInstanceState(Bundle out) {
+        super.onSaveInstanceState(out); out.putInt("selected", selected); out.putInt("deleteIndex", deleteIndex);
     }
-
-
-
-
-    public Dialog onCreateDialog(Bundle savedInstanceBundle)
-    {
-        AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-         view=inflater.inflate(R.layout.gallery, null );
-        builder.setView(view);
-        if(savedInstanceBundle!=null)
-        {
-            fotoSeleccionada=savedInstanceBundle.getInt("img");
-        }
-
-        configurar();
-
-        Dialog dialog=builder.create();
-        return  dialog;
-    }
-    private void mostrarBotones(){
-
-        btnBorrar.setVisibility(View.VISIBLE);
-        btnExpandir.setVisibility(View.VISIBLE);
-    };
-    private void esconderBotones(){
-        btnBorrar.setVisibility(View.GONE);
-        btnExpandir.setVisibility(View.GONE);
-
-    };
-
-    private void configurar()
-    {
-        btnExpandir= (Button) view.findViewById(R.id.btnExpandir);
-        btnBorrar= (Button) view.findViewById(R.id.btnBorrar);
-        if(fotoSeleccionada==-1) esconderBotones();
-        final ImageView imgV= (ImageView) view.findViewById(R.id.fullScreenPhoto);
-        imgV.setVisibility(View.GONE);
-
-        gridView = (GridView)view.findViewById(R.id.gridView);
-
-        try {
-            gridAdapter = new GridViewAdapter(getActivity(), R.layout.grid_item_layout, getData());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        gridView.setAdapter(gridAdapter);
-
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                fotoSeleccionada= position;
-                gridAdapter.setSelectedIndex(position);
-                mostrarBotones();
-            }
+    @Override public Dialog onCreateDialog(Bundle state) {
+        InspeccionActivity activity = (InspeccionActivity) requireActivity();
+        if (state != null) { selected = state.getInt("selected", -1); deleteIndex = state.getInt("deleteIndex", -1); }
+        String id = requireArguments().getString("inspection");
+        album = id.equals(activity.getInspeccion().getPhotoId()) ? activity.findPhotoAlbum(requireArguments().getString("album")) : null;
+        if (album == null) return new AlertDialog.Builder(activity).setMessage("El álbum ya no está disponible").setPositiveButton("Cerrar", null).create();
+        photos = new MediaPhotoStore(activity);
+        view = activity.getLayoutInflater().inflate(R.layout.gallery, null);
+        grid = view.findViewById(R.id.gridView); full = view.findViewById(R.id.fullScreenPhoto);
+        full.setVisibility(View.GONE);
+        Button expand = view.findViewById(R.id.btnExpandir), remove = view.findViewById(R.id.btnBorrar);
+        expand.setEnabled(selected >= 0); remove.setEnabled(selected >= 0);
+        grid.setOnItemClickListener((parent, row, position, itemId) -> {
+            selected = position;
+            ((GridViewAdapter) grid.getAdapter()).setSelectedIndex(position);
+            expand.setEnabled(true); remove.setEnabled(true);
         });
-
-
-        btnExpandir.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                gridView.setVisibility(View.GONE);
-                imgV.setVisibility(View.VISIBLE);
-               // Drawable d = Drawable.createFromPath(album.getFotos().get(fotoSeleccionada));
-                //imgV.setImageDrawable(d);
-
+        expand.setOnClickListener(v -> {
+            if (selected < 0 || selected >= album.getFotos().size()) return;
+            String reference = album.getFotos().get(selected);
+            WORKER.execute(() -> {
                 try {
-                    String pathFoto=album.getFotos().get(fotoSeleccionada);
-                    Bitmap bitmap = BitmapFactory.decodeFile(pathFoto);
-                    imgV.setImageBitmap(bitmap);
-                } catch (Exception e) {
-
-                    e.printStackTrace();
-                }
-
-
-
-            }
+                    Bitmap bitmap = photos.thumbnail(reference, 1600, 1600);
+                    main.post(() -> { if (isAdded()) { full.setImageBitmap(bitmap); full.setVisibility(View.VISIBLE); grid.setVisibility(View.GONE); } else bitmap.recycle(); });
+                } catch (Exception e) { error(e); }
+            });
         });
-
-        btnBorrar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    album.eliminarFoto(fotoSeleccionada);
-                    Toast.makeText(getActivity(),"Foto borrada",Toast.LENGTH_SHORT).show();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_SHORT).show();
-                }
-                dismiss();
-            }
+        remove.setOnClickListener(v -> {
+            if (selected < 0 || selected >= album.getFotos().size()) return;
+            new AlertDialog.Builder(activity).setTitle("Borrar foto")
+                    .setMessage("Se borrará también de la galería del dispositivo. ¿Continuar?")
+                    .setNegativeButton("Cancelar", null).setPositiveButton("Borrar", (d, which) -> {
+                        deleteIndex = selected;
+                        if (MediaPhotoStore.needsStoragePermission(activity)) storagePermission.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        else deletePhoto(deleteIndex);
+                    }).show();
         });
-
-
-
-
+        load();
+        return new AlertDialog.Builder(activity).setView(view).setPositiveButton("Cerrar", null).create();
     }
-
-
-
-
-
-    private ArrayList<ImageItem> getData() throws Exception {
-        final ArrayList<ImageItem> imageItems = new ArrayList<>();
-
-        for (int i = 0; i < album.getFotos().size(); i++) {
-
-
-
-            Bitmap bitmap = MyCameraHelper.darMiniatura(album.getFotos().get(i),150,150,false);
-            imageItems.add(new ImageItem(bitmap, "Image#" + i, album.getFotos().get(i)));
-        }
-        return imageItems;
+    private void load() {
+        ArrayList<String> refs = new ArrayList<>(album.getFotos());
+        WORKER.execute(() -> {
+            ArrayList<ImageItem> data = new ArrayList<>();
+            for (int i = 0; i < refs.size(); i++) {
+                try { data.add(new ImageItem(photos.thumbnail(refs.get(i), 150, 150), "Foto " + (i+1), refs.get(i))); }
+                catch (Exception e) {
+                    // Keep indices aligned so an unreadable thumbnail cannot delete a different photo.
+                    data.add(new ImageItem(null, "Foto no disponible", refs.get(i)));
+                }
+            }
+            main.post(() -> { if (isAdded()) grid.setAdapter(new GridViewAdapter(requireActivity(), R.layout.grid_item_layout, data)); });
+        });
     }
-
-
+    private void deletePhoto(int index) {
+        if (deleting || !isAdded()) return;
+        deleting = true;
+        view.findViewById(R.id.btnBorrar).setEnabled(false);
+        android.content.Context context = requireContext().getApplicationContext();
+        WORKER.execute(() -> {
+            try {
+                album.deletePhoto(context, index);
+                main.post(() -> { if (isAdded()) { ((InspeccionActivity) requireActivity()).persistPhotoChanges(); Toast.makeText(requireContext(), "Foto borrada", Toast.LENGTH_SHORT).show(); dismiss(); } });
+            } catch (Exception e) { main.post(() -> { deleting = false; if (isAdded()) view.findViewById(R.id.btnBorrar).setEnabled(true); }); error(e); }
+        });
+    }
+    private void error(Exception e) {
+        main.post(() -> { if (isAdded()) Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_LONG).show(); });
+    }
 }

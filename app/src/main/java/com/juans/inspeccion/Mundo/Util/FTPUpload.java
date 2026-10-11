@@ -2,88 +2,48 @@ package com.juans.inspeccion.Mundo.Util;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import java.io.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-/**
- * Created by Juan on 04/05/2015.
- */
-public class FTPUpload {
-    String server;
-    int port;
-    String user;
-    String pass;
-    FTPClient ftpClient;
-        public FTPUpload(String server,int port,String user,String pass)
-        {
-            this.server=server;
-            this.port=port;
-            this.user=user;
-            this.pass=pass;
-
-
-        }
-
-        public void conect () throws IOException {
-
-            FTPClient ftpClient = new FTPClient();
-
-
-
+/** Stream-based uploads do not assume a filesystem path for MediaStore photos. */
+public class FTPUpload implements AutoCloseable {
+    private final String server, user, pass;
+    private final int port;
+    private final FTPClient ftpClient;
+    public FTPUpload(String server, int port, String user, String pass) {
+        this(server, port, user, pass, new FTPClient());
+    }
+    public FTPUpload(String server, int port, String user, String pass, FTPClient client) {
+        this.server = server; this.port = port; this.user = user; this.pass = pass; ftpClient = client;
+    }
+    public void conect() throws IOException {
+        try {
+            ftpClient.setConnectTimeout(10000);
             ftpClient.connect(server, port);
-            ftpClient.login(user, pass);
+            if (!ftpClient.login(user, pass)) throw new IOException("El servidor FTP rechazó la conexión");
             ftpClient.enterLocalPassiveMode();
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-
+            if (!ftpClient.setFileType(FTP.BINARY_FILE_TYPE)) throw new IOException("No se pudo configurar la transferencia FTP");
+        } catch (IOException | RuntimeException e) {
+            try { close(); } catch (IOException cleanup) { e.addSuppressed(cleanup); }
+            throw e;
         }
-
-        public void disconect() throws IOException {
-            ftpClient.logout();
-            ftpClient.disconnect();
-
+    }
+    public boolean uploadSingleFile(InputStream input, String folder, String filename) throws IOException {
+        try (InputStream source = input) {
+            if (!ftpClient.isConnected()) throw new IOException("FTP no conectado");
+            if (!component(folder) || !component(filename)) throw new IOException("Nombre remoto inválido");
+            ftpClient.makeDirectory(folder); // An existing directory may return false.
+            return ftpClient.storeFile("/" + folder + "/" + filename, source);
         }
-
-        public boolean uploadSingleFile(File localFile,String  folderName)  {
-            boolean uploaded=false;
-            try {
-                boolean created = ftpClient.makeDirectory(folderName);
-                InputStream inputStream = new FileInputStream(localFile);
-
-                uploaded=ftpClient.storeFile("/"+folderName+"/"+localFile.getName(), inputStream);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-                  return uploaded;
-
-
+    }
+    private static boolean component(String value) {
+        return value != null && !value.isEmpty() && !value.equals(".") && !value.equals("..")
+                && !value.contains("/") && !value.contains("\\") && !value.contains("\r") && !value.contains("\n");
+    }
+    public void disconect() throws IOException { close(); }
+    @Override public void close() throws IOException {
+        if (ftpClient.isConnected()) {
+            try { ftpClient.logout(); }
+            finally { ftpClient.disconnect(); }
         }
-
-        public  void  uploadFolder(File folder,String remoteFolderName) {
-
-            FTPClient ftpClient = new FTPClient();
-
-            try {
-
-                System.out.println("Connected");
-
-                String remoteDirPath = "/"+remoteFolderName;
-                String localDirPath = folder.getAbsolutePath();
-
-                FTPUtil.uploadDirectory(ftpClient, remoteDirPath, localDirPath, "");
-
-                // log out and disconnect from the server
-                ftpClient.logout();
-                ftpClient.disconnect();
-
-                System.out.println("Disconnected");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-
+    }
 }

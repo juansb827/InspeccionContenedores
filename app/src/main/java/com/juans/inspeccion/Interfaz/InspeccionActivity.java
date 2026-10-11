@@ -55,7 +55,6 @@ import com.juans.inspeccion.R;
 import com.juans.inspeccion.Varios;
 
 
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,6 +63,134 @@ import java.util.HashMap;
 
 public class InspeccionActivity extends AppCompatActivity implements Formularios.DataPass, LoaderManager.LoaderCallbacks<Object> {
 
+
+    private com.juans.inspeccion.Mundo.Storage.CaptureCoordinator captureCoordinator;
+    private com.juans.inspeccion.Mundo.Storage.PhotoStore photoStore;
+    private Album editingAlbum;
+    private boolean processingPhoto;
+    private boolean photoRecoveryShown;
+    private String photoStorageError;
+    private static final java.util.concurrent.ExecutorService PHOTO_WORKER = java.util.concurrent.Executors.newSingleThreadExecutor();
+    private final androidx.activity.result.ActivityResultLauncher<android.net.Uri> cameraLauncher = registerForActivityResult(
+            new com.juans.inspeccion.Mundo.Storage.PrivateTakePicture(), this::cameraReturned);
+    private final androidx.activity.result.ActivityResultLauncher<String> photoPermissionLauncher = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted && captureCoordinator != null && captureCoordinator.isBusy()) {
+                    if (captureCoordinator.session().cameraReturned) processPhoto(); else launchPendingCamera();
+                } else if (captureCoordinator != null && captureCoordinator.isBusy()) {
+                    if (captureCoordinator.session().cameraReturned) showPhotoRecovery("Permiso de almacenamiento denegado; la foto se conserva");
+                    else cancelCapture();
+                }
+            });
+
+    public Album getEditingAlbum() { return editingAlbum; }
+    public void setEditingAlbum(Album album) { editingAlbum = album; }
+    public Album findPhotoAlbum(String id) {
+        Album album = inspeccionObject.findAlbum(id);
+        return album != null ? album : editingAlbum != null && editingAlbum.getId().equals(id) ? editingAlbum : null;
+    }
+    public void showPhotoAlbum(Album album) {
+        if (album == null) return;
+        if (inspeccionObject.findAlbum(album.getId()) == null) setEditingAlbum(album);
+        com.juans.inspeccion.Interfaz.Dialogs.PhotoGridDialog.newInstance(inspeccionObject.getPhotoId(), album.getId())
+                .show(getSupportFragmentManager(), "photos");
+    }
+    public void persistPhotoChanges() {
+        try {
+            if (isCargarPendiente) Pendientes.upsert(inspeccionObject, this);
+            if (captureCoordinator != null) captureCoordinator.updateCompletedSnapshot(inspeccionObject, editingAlbum);
+        } catch (Exception e) { Toast.makeText(this, "Los cambios requieren recuperación: " + e.getMessage(), Toast.LENGTH_LONG).show(); }
+    }
+    public boolean photoBusy() { return processingPhoto || (captureCoordinator != null && captureCoordinator.isBusy()); }
+
+    public void takePhoto(Album album, int damageIndex) {
+        if (photoStorageError != null) { Toast.makeText(this, photoStorageError, Toast.LENGTH_LONG).show(); return; }
+        if (captureCoordinator == null || photoBusy() || soloLectura || tipoAccion != null) return;
+        try {
+            // Persist the form values before leaving this activity for the camera.
+            Fragment first = (Fragment) viewPager.getAdapter().instantiateItem(viewPager, 0);
+            if (first instanceof p1) ((p1) first).actualizarMapa();
+            String remoteName = com.juans.inspeccion.Mundo.Storage.PhotoNames.capture(this, inspeccionObject, album, damageIndex);
+            captureCoordinator.begin(inspeccionObject, album, remoteName, remoteName);
+            lockPhotoUi(true);
+            if (com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.needsStoragePermission(this))
+                photoPermissionLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            else launchPendingCamera();
+        } catch (Exception e) { showPhotoRecovery(e.getMessage()); }
+    }
+    private void launchPendingCamera() {
+        if (captureCoordinator == null || !captureCoordinator.isBusy()) return;
+        try {
+            captureCoordinator.launch(cameraLauncher::launch);
+        } catch (android.content.ActivityNotFoundException e) {
+            cancelCapture();
+            Toast.makeText(this, "No hay una aplicación de cámara disponible", Toast.LENGTH_LONG).show();
+        } catch (RuntimeException | IOException e) { showPhotoRecovery("No se pudo abrir la cámara: " + e.getMessage()); }
+    }
+    private void cameraReturned(boolean success) {
+        if (captureCoordinator == null || !captureCoordinator.isBusy()) return;
+        try {
+            captureCoordinator.cameraResult(success);
+            if (success) processPhoto(); else lockPhotoUi(false);
+        } catch (java.io.IOException e) { showPhotoRecovery(e.getMessage()); }
+    }
+    private void processPhoto() {
+        if (processingPhoto || captureCoordinator == null || !captureCoordinator.isBusy()) return;
+        com.juans.inspeccion.Mundo.Storage.CaptureCoordinator.Session session = captureCoordinator.session();
+        if (!session.cameraReturned) return;
+        Album target = findPhotoAlbum(session.albumId);
+        if (target == null) { showPhotoRecovery("No se encontró el álbum de la captura; la foto se conserva"); return; }
+        processingPhoto = true;
+        lockPhotoUi(true);
+        final Inspeccion inspection = inspeccionObject;
+        final com.juans.inspeccion.Mundo.Storage.CaptureCoordinator coordinator = captureCoordinator;
+        PHOTO_WORKER.execute(() -> {
+            String error = null;
+            try { coordinator.complete(inspection, target); }
+            catch (Exception e) { error = e.getMessage(); }
+            final String result = error;
+            runOnUiThread(() -> {
+                processingPhoto = false;
+                if (isDestroyed() || isFinishing()) return;
+                if (result == null) {
+                    lockPhotoUi(false);
+                    Toast.makeText(this, "Foto guardada en la galería", Toast.LENGTH_SHORT).show();
+                } else showPhotoRecovery(result);
+            });
+        });
+    }
+    private void lockPhotoUi(boolean lock) {
+        if (lock) getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
+    private void cancelCapture() {
+        try { if (captureCoordinator != null) captureCoordinator.discard(); }
+        catch (java.io.IOException e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); }
+        lockPhotoUi(false);
+    }
+    private void showPhotoRecovery(String message) {
+        lockPhotoUi(false);
+        if (isDestroyed() || isFinishing() || photoRecoveryShown) return;
+        if (captureCoordinator == null || !captureCoordinator.isBusy()) {
+            Toast.makeText(this, message == null ? "No se pudo preparar la foto" : message, Toast.LENGTH_LONG).show(); return;
+        }
+        photoRecoveryShown = true;
+        new android.app.AlertDialog.Builder(this).setTitle("Recuperar foto")
+                .setMessage((message == null ? "Hay una captura interrumpida" : message) + ". Puede reintentar el guardado o descartar la captura privada.")
+                .setCancelable(false)
+                .setPositiveButton("Reintentar guardado", (dialog, which) -> {
+                    photoRecoveryShown = false;
+                    try {
+                        // Recovery processes existing bytes; it never automatically reopens the camera.
+                        captureCoordinator.cameraResult(true);
+                        if (com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.needsStoragePermission(this))
+                            photoPermissionLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        else processPhoto();
+                    } catch (java.io.IOException e) { showPhotoRecovery(e.getMessage()); }
+                })
+                .setNegativeButton("Descartar captura", (dialog, which) -> { photoRecoveryShown = false; cancelCapture(); })
+                .show();
+    }
 
     public final static String CARPETA_FOTOS = "Inspecciones";
 
@@ -138,6 +265,9 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         outState.putSerializable(CARGAR_TURNO_PENDIENTE, isCargarPendiente);
         outState.putInt(INDICE_TURNO, indiceTurno);
         outState.putSerializable(INSPECCION, inspeccionObject);
+        outState.putSerializable("editingPhotoAlbum", editingAlbum);
+        try { if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); }
+        catch (IOException e) { android.util.Log.e("Photos", "El registro de recuperación se conserva", e); }
 
     }
 
@@ -149,6 +279,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
 
     @Override
     public void onBackPressed() {
+        if (photoBusy()) { showPhotoRecovery("Termine la captura antes de salir"); return; }
         preguntarSiCerrarInspeccion();
     }
     MyPagerAdapter myAdapter;
@@ -156,6 +287,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         Log.e("Activty","OnCreate");
         new ActivityHelper(this);
         Intent intent = getIntent();
+        boolean recoveredPhotoCapture = false;
 
 
         if (savedInstanceState != null) {
@@ -191,6 +323,30 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
 
 
         }
+        photoStore = new com.juans.inspeccion.Mundo.Storage.MediaPhotoStore(this);
+        if (savedInstanceState != null) editingAlbum = (Album) savedInstanceState.getSerializable("editingPhotoAlbum");
+        try {
+            captureCoordinator = new com.juans.inspeccion.Mundo.Storage.CaptureCoordinator(photoStore, getFileStreamPath("pending-photo-capture"));
+            com.juans.inspeccion.Mundo.Storage.CaptureCoordinator.Session session = captureCoordinator.session();
+            if (session != null && (captureCoordinator.isBusy() || savedInstanceState == null)) {
+                recoveredPhotoCapture = !session.inspectionId.equals(inspeccionObject.getPhotoId());
+                inspeccionObject = session.inspection;
+                indiceTurno = Pendientes.findIndex(session.inspectionId, this);
+                isCargarPendiente = indiceTurno >= 0;
+                if (recoveredPhotoCapture) { soloLectura = false; tipoAccion = null; }
+
+                if (inspeccionObject.findAlbum(session.albumId) == null) editingAlbum = session.album;
+                usaTurno = inspeccionObject.isUsaTurno();
+            } else if (session != null && session.inspectionId.equals(inspeccionObject.getPhotoId())) {
+                Album target = findPhotoAlbum(session.albumId);
+                if (target == null) editingAlbum = session.album;
+                else if (session.publishedUri != null) {
+                    target.agregarFoto(session.publishedUri);
+                    target.setRemoteName(session.publishedUri, session.remoteName);
+                }
+            }
+        } catch (IOException | com.juans.inspeccion.Mundo.Storage.StoredInspections.StorageException e) { photoStorageError = e.getMessage(); }
+        inspeccionObject.initializePhotoIds();
         //This super.Oncreate  restores the fragments so we gotta load things from saved instance to have inspeccionObject!=null
         super.onCreate(savedInstanceState);
 
@@ -224,9 +380,10 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
             }
         });
 
-        boolean visualizar = intent.getBooleanExtra(VISUALIZAR, false);
+        if (recoveredPhotoCapture) Toast.makeText(this, "Se recuperó la inspección de la captura interrumpida", Toast.LENGTH_LONG).show();
+        boolean visualizar = !recoveredPhotoCapture && intent.getBooleanExtra(VISUALIZAR, false);
 
-        if (visualizar || tipoAccion!=null) {
+        if (!recoveredPhotoCapture && (visualizar || tipoAccion!=null)) {
 
             getSupportLoaderManager().initLoader(LOADER_BUSCAR_DOCUMENTO, intent.getExtras(), this);
             if (visualizar)
@@ -271,24 +428,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
 
 
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MyCameraHelper.REQUEST_TAKE_PHOTO) {
-            if (resultCode == Activity.RESULT_OK) { // Handle both RESULT_OK (-1) and 0 as success
-                String rutaFoto = MyCameraHelper.getFilePath();
-                try {
-                    inspeccionObject.getFotosGenerales().agregarFoto(rutaFoto);
-                    Intent intent =
-                            new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                    intent.setData(Uri.fromFile(new File(rutaFoto)));
-                    sendBroadcast(intent);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+
 
 
     Menu menu;
@@ -300,8 +440,6 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         MenuItem terminar_luego = menu.findItem(R.id.action_terminar_luego);
         MenuItem guardar = menu.findItem(R.id.action_guardar_todo);
         MenuItem imprimir=menu.findItem(R.id.action_imprimir);
-        MenuItem test1=menu.findItem(R.id.action_test_1);
-        test1.setVisible(false);
 
         if (soloLectura) {
 
@@ -334,6 +472,8 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (photoBusy()) { showPhotoRecovery("Hay una foto pendiente"); return true; }
+
 
 
         // Handle action bar item clicks here. The action bar will
@@ -374,11 +514,12 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
                     frag2.actualizarMapa();
                 }
 
-                if (indiceTurno == -1) {
-
-                    Pendientes.agregarInspeccion(inspeccionObject, InspeccionActivity.this);
-                } else {
-                    Pendientes.remplazarTurno(indiceTurno, inspeccionObject, InspeccionActivity.this);
+                try {
+                    Pendientes.upsert(inspeccionObject, this);
+                    if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState();
+                } catch (Exception e) {
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    return true;
                 }
 
                 Toast.makeText(getApplicationContext(), "Se ha agregado el turno lista de pendientes", Toast.LENGTH_LONG).show();
@@ -405,17 +546,6 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
             startActivity(intent);
         }
 
-        if(id==R.id.action_test_1)
-        {
-            Log.e("Hue","CambioAhue");
-            try {
-                renombrarFotos("21412", "heuhue32");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -431,6 +561,10 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
 
 
     public void limpiarTodo() {
+        if (photoBusy()) return;
+        try { if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); }
+        catch (IOException e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); return; }
+        editingAlbum = null;
         MenuItem menuItem=menu.findItem(R.id.action_imprimir_y_borrar);
         menuItem.setVisible(false);
         inicializar();
@@ -557,7 +691,11 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
 
                 break;
             case SALIR_DIALOG:
-                if (hacer) finish();
+                if (hacer) {
+                    try { if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); }
+                    catch (IOException e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); return; }
+                    finish();
+                }
                 break;
 
         }
@@ -776,6 +914,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
 
         AsyncTask<Void, Void, String> guardarTodo = new AsyncTask<Void, Void, String>() {
             String nuevoNum=null;
+            String photoRenameError;
             @Override
             protected void onPreExecute() {
 
@@ -795,6 +934,9 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
                     } else {
                         dataSource.re_insert(InspeccionActivity.this.listaCampos, InspeccionActivity.this.inspeccionObject, InspeccionActivity.this.getResources());
                     }
+                    try { renombrarFotos(getInfoInspeccion().get(getString(R.string.NNUMDOC)),
+                            inspeccionObject.getDatosContenedor().get(getString(R.string.CCODCNTR))); }
+                    catch (IOException e) { photoRenameError = e.getMessage(); }
                     return null;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -809,7 +951,14 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
                 if (error != null) mensaje = error;
                 Toast.makeText(getBaseContext(), mensaje, Toast.LENGTH_LONG).show();
                 if (error == null) {
-                    if (indiceTurno != -1) Pendientes.borrarTurno(indiceTurno, getBaseContext());
+                    try {
+                        if (photoRenameError != null) throw new IOException(photoRenameError);
+                        if (isCargarPendiente) Pendientes.remove(inspeccionObject.getPhotoId(), getBaseContext());
+                        if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState();
+                    } catch (Exception e) {
+                        Toast.makeText(InspeccionActivity.this, "El documento se guardó; las fotos/borrador requieren recuperación: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        return;
+                    }
                     imprimirDespuesDeGuardar();
                     MenuItem menuItem=menu.findItem(R.id.action_imprimir_y_borrar);
                     menuItem.setVisible(true);
@@ -826,69 +975,30 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
        En guias sin turno ell NUMDOC se sabe hasta despues de grabar en la base de datos
        entonces es necesario renombrar las fotos
      **/
-    public void renombrarFotos(String numDoc,String codCntr) throws IOException {
-
-        String subCarpeta=darSubCarpetaFotos(numDoc, codCntr);
-
-
-
-        Album general=inspeccionObject.getFotosGenerales();
-        File oldFolder=null;
-        //Cambia las generales
-        for(int i=0;i<general.getFotos().size();i++)
-        {
-
-            File oldname=new File(general.getFotos().get(i));
-            if(i==0) oldFolder=oldname.getParentFile();
-            String nuevoNombre =subCarpeta+"_"+i;
-            File newname= MyCameraHelper.createImageFile(this, nuevoNombre, CARPETA_FOTOS, subCarpeta);
-            oldname.renameTo(newname);
-            Intent intent =
-                    new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            intent.setData(Uri.fromFile(oldname));
-            sendBroadcast(intent);
-            Intent intent2 =
-                    new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            intent2.setData(Uri.fromFile(newname));
-            sendBroadcast(intent2);
-            general.getFotos().set(i,newname.getPath());
-
+    public void renombrarFotos(String numDoc, String container) throws IOException {
+        String prefix = darSubCarpetaFotos(numDoc, container);
+        Album general = inspeccionObject.getFotosGenerales();
+        for (int i = 0; i < general.getFotos().size(); i++) updatePhotoName(general, i, prefix + "_" + i + ".jpg");
+        ArrayList<Danio> damages = inspeccionObject.getDaniosManager().getListaDanios();
+        for (int i = 0; i < damages.size(); i++) {
+            Album album = damages.get(i).getAlbum();
+            for (int j = 0; j < album.getFotos().size(); j++) updatePhotoName(album, j, prefix + "_DANIO#" + i + "_" + j + ".jpg");
         }
-        ArrayList<Danio> danios=inspeccionObject.getDaniosManager().getListaDanios();
-        //Cambia las de los daños
-        for(int i=0;i<danios.size();i++)
-        {
-            Album album=danios.get(i).getAlbum();
-            for(int j=0;j<album.getFotos().size();j++)
-            {
-                String rutaFoto=album.getFotos().get(j);
-                File oldName=new File(rutaFoto);
-                String nombreFoto=subCarpeta+"_DANIO#"+i+"_"+j;
-                File newName= MyCameraHelper.createImageFile(this, nombreFoto, CARPETA_FOTOS, subCarpeta);
-                oldName.renameTo(newName);
-
-                Intent intent =
-                        new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                intent.setData(Uri.fromFile(oldName));
-                sendBroadcast(intent);
-                Intent intent2 =
-                        new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                intent2.setData(Uri.fromFile(newName));
-                sendBroadcast(intent2);
-                album.getFotos().set(j,newName.getPath());
-
-            }
-        }
-
-        FileUtils.deleteDirectory(oldFolder);
-
+    }
+    private void updatePhotoName(Album album, int index, String remoteName) throws IOException {
+        String reference = album.getFotos().get(index);
+        if (!reference.startsWith("content://")) { album.setRemoteName(reference, remoteName); return; }
+        // Keep the URI stable and the local filename unique; remote naming remains the released convention.
+        String localName = remoteName.replaceFirst("(?i)\\.jpg$", "") + "-" + album.getId() + "-" + index + ".jpg";
+        photoStore.rename(reference, localName);
+        album.setRemoteName(reference, remoteName);
     }
     public void enviarFotos() {
-        String carpetaDeLaInspeccion = Environment.getExternalStorageDirectory() + "/" + CARPETA_FOTOS;
+        String carpetaDeLaInspeccion = "";
         String numdoc = getInfoInspeccion().get(getResources().getString(R.string.NNUMDOC));
         String ccodcntr = inspeccionObject.getDatosContenedor().get(getResources().getString(R.string.CCODCNTR));
         String subFolder = darSubCarpetaFotos(numdoc, ccodcntr);
-        carpetaDeLaInspeccion += "/" + subFolder;
+        carpetaDeLaInspeccion = subFolder;
         Inspeccion fotosInsp = new Inspeccion(carpetaDeLaInspeccion);
         ArrayList<Danio> danios = darDaniosManager().getListaDanios();
         for (int i = 0; i < danios.size(); i++) {
@@ -910,6 +1020,10 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     @Override
     protected void onResume() {
         super.onResume();
+        if (photoBusy() && !processingPhoto) {
+            if (captureCoordinator.session().cameraReturned) processPhoto();
+            else showPhotoRecovery("Hay una captura interrumpida");
+        }
         if(loading && pDialog==null) {
             pDialog= MyProgressDialog.lastInstance(this);
             pDialog.show();

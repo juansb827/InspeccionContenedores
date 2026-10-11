@@ -36,6 +36,58 @@ import java.util.Map;
 public class SettingsActivity extends AppCompatActivity implements View.OnFocusChangeListener, Formularios.DataPass {
 
 
+    private android.net.Uri pendingImportTree;
+    private boolean importingPhotos;
+    private final androidx.activity.result.ActivityResultLauncher<android.net.Uri> legacyFolder = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree(), uri -> {
+                if (uri == null) return; // Canceling does not change any saved reference.
+                try {
+                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    pendingImportTree = uri;
+                    importLegacyPhotos();
+                } catch (Exception e) { Toast.makeText(this, "No se pudo acceder a la carpeta: " + e.getMessage(), Toast.LENGTH_LONG).show(); }
+            });
+    private final androidx.activity.result.ActivityResultLauncher<String> importStoragePermission = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted) legacyFolder.launch(null);
+                else Toast.makeText(this, "Permiso denegado; los datos antiguos se conservan", Toast.LENGTH_LONG).show();
+            });
+
+    private void selectLegacyFolder() {
+        if (importingPhotos) return;
+        new AlertDialog.Builder(this).setTitle("Importar fotos antiguas")
+                .setMessage("Seleccione la carpeta Inspecciones de la versión publicada. Las fotos originales se conservarán.")
+                .setNegativeButton("Cancelar", null).setPositiveButton("Seleccionar carpeta", (d, which) -> {
+                    if (com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.needsStoragePermission(this))
+                        importStoragePermission.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    else legacyFolder.launch(null);
+                }).show();
+    }
+    private void importLegacyPhotos() {
+        if (importingPhotos || pendingImportTree == null) return;
+        importingPhotos = true;
+        final android.net.Uri tree = pendingImportTree;
+        final android.content.Context context = getApplicationContext();
+        new AsyncTask<Void, Void, String>() {
+            protected String doInBackground(Void... params) {
+                try {
+                    com.juans.inspeccion.Mundo.Storage.LegacyPhotoImporter importer = new com.juans.inspeccion.Mundo.Storage.LegacyPhotoImporter(
+                            context, new com.juans.inspeccion.Mundo.Storage.MediaPhotoStore(context));
+                    ArrayList<String> failures = importer.importSaved(com.juans.inspeccion.Mundo.Storage.LegacyPhotoImporter.selectedFolder(context, tree));
+                    com.juans.inspeccion.Mundo.Pendientes.invalidate();
+                    com.juans.inspeccion.Mundo.FotosPendientes.invalidate();
+                    return failures.isEmpty() ? "Fotos importadas; los originales se conservaron" :
+                            "Importación parcial. " + failures.size() + " fotos requieren recuperación. Puede reintentar.\n" + failures.get(0);
+                } catch (Exception e) { return "Los datos se conservaron. " + e.getMessage(); }
+            }
+            protected void onPostExecute(String result) {
+                importingPhotos = false;
+                if (!isFinishing() && !isDestroyed()) new AlertDialog.Builder(SettingsActivity.this)
+                        .setTitle("Importación de fotos").setMessage(result).setPositiveButton("Aceptar", null).show();
+            }
+        }.execute();
+    }
+
     private boolean connected=false;
     ArrayList<CustomView> listaCampos;
 
@@ -48,6 +100,13 @@ public class SettingsActivity extends AppCompatActivity implements View.OnFocusC
         setContentView(R.layout.activity_settings);
          setTitle("Configuracion");
 
+        try {
+            ArrayList<com.juans.inspeccion.Mundo.Inspeccion> saved = com.juans.inspeccion.Mundo.Storage.StoredInspections.read(this,
+                    com.juans.inspeccion.Mundo.Storage.StoredInspections.DRAFTS);
+            saved.addAll(com.juans.inspeccion.Mundo.Storage.StoredInspections.read(this, com.juans.inspeccion.Mundo.Storage.StoredInspections.UPLOADS));
+            if (com.juans.inspeccion.Mundo.Storage.LegacyPhotoImporter.hasLegacyReferences(saved))
+                Toast.makeText(this, "Hay fotos antiguas: use Importar fotos antiguas en el menú", Toast.LENGTH_LONG).show();
+        } catch (Exception e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); }
         cargarDatosConexion();
         CargarListaCampos cargarListaCampos=new CargarListaCampos();
         cargarListaCampos.execute();
@@ -327,6 +386,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnFocusC
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        if (id == R.id.action_import_legacy_photos) { selectLegacyFolder(); return true; }
         if (id == R.id.action_settings) {
             return true;
         }

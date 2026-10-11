@@ -23,6 +23,7 @@ public final class AtomicObjects {
             ObjectOutputStream objects = new ObjectOutputStream(out);
             objects.writeObject(value);
             objects.flush();
+            out.getFD().sync();
             atomic.finishWrite(out);
         } catch (IOException | RuntimeException e) {
             if (out != null) atomic.failWrite(out);

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/gallery_viewer">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+        <ImageButton android:id="@+id/cameraBack" android:layout_width="48dp" android:layout_height="48dp"
+            android:src="@drawable/ic_gallery_back" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/gallery_back" />
+        <TextView android:id="@+id/cameraContext" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:textColor="@android:color/white" android:textSize="18sp" android:padding="8dp" />
+    </LinearLayout>
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <androidx.camera.view.PreviewView android:id="@+id/cameraPreview" android:layout_width="match_parent" android:layout_height="match_parent" />
+        <TextView android:id="@+id/cameraMessage" android:layout_width="match_parent" android:layout_height="match_parent"
+            android:gravity="center" android:padding="24dp" android:textColor="@android:color/white" android:textSize="18sp" />
+    </FrameLayout>
+    <Button android:id="@+id/cameraPermission" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+        android:text="@string/camera_permission_retry" android:visibility="gone" />
+    <Button android:id="@+id/cameraShutter" android:layout_width="match_parent" android:layout_height="72dp" android:layout_margin="16dp"
+        android:text="@string/camera_take_photo" android:contentDescription="@string/camera_take_photo" />
+    <Button android:id="@+id/cameraDiscard" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+        android:text="@string/camera_discard" android:visibility="gone" />
+</LinearLayout>

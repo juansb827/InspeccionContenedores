@@ -138,6 +138,8 @@ public class PhotoGalleryFragment extends DialogFragment {
         updateToolbar();
     }
 
+    public boolean deletionBusy() { return deletion != null && deletion.busy(); }
+
     private void refresh() {
         Album album = host.resolveGalleryAlbum(inspectionId, albumId);
         items = album == null ? new ArrayList<>() : GalleryMediaItem.photos(album);

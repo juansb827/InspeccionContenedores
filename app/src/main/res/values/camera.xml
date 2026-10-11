@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="camera_title">Cámara</string>
+    <string name="camera_take_photo">Tomar foto</string>
+    <string name="camera_loading">Abriendo cámara…</string>
+    <string name="camera_saving">Guardando captura…</string>
+    <string name="camera_permission_denied">Se necesita permiso de cámara para capturar. La inspección se conserva.</string>
+    <string name="camera_permission_retry">Permitir cámara</string>
+    <string name="camera_settings">Abrir ajustes</string>
+    <string name="camera_retry_save">Reintentar guardado</string>
+    <string name="camera_discard">Descartar captura</string>
+    <string name="camera_unavailable">No se pudo abrir la cámara. Puedes volver a intentarlo.</string>
+    <string name="camera_wait">Espera a que termine el guardado</string>
+    <style name="CameraCaptureTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@color/gallery_viewer</item>
+        <item name="android:statusBarColor">@color/gallery_viewer</item>
+        <item name="android:navigationBarColor">@color/gallery_viewer</item>
+        <item name="colorAccent">@color/AzulF</item>
+    </style>
+</resources>

@@ -16,7 +16,7 @@
             android:layout_column="1"
             android:layout_width="wrap_content"
             android:layout_span="3"
-            android:text="Tomar Foto"/>
+            android:text="@string/camera_title"/>
         <Button
             android:id="@+id/btnVerFotosDanio"
             android:layout_span="3"

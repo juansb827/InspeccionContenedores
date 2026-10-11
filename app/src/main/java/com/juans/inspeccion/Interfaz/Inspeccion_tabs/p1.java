@@ -210,9 +210,9 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
         Button tomarFoto = (Button) getView().findViewById(R.id.btnAgregarFoto);
         //No todas los formularios tienen opcion de foto
         if (tomarFoto != null ) {
-            if(InspeccionActivity.tipoAccion!=null) tomarFoto.setEnabled(false);
+            tomarFoto.setEnabled(inspeccion.darAlbumGeneral() != null && inspeccion.canCaptureMedia(inspeccion.cameraInspection().getPhotoId(), inspeccion.darAlbumGeneral().getId()));
             tomarFoto.setOnClickListener(v -> {
-                inspeccion.takePhoto(inspeccion.darAlbumGeneral(), -1);
+                inspeccion.openCamera(inspeccion.darAlbumGeneral(), -1);
             });
         }
 

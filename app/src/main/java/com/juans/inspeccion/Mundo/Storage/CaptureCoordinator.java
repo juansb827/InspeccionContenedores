@@ -70,10 +70,7 @@ public final class CaptureCoordinator {
         if (!session.inspectionId.equals(inspection.getPhotoId()) || !session.albumId.equals(album.getId()))
             throw new IOException("La foto pertenece a otra inspección o álbum");
         if (session.finished) return session.publishedUri;
-        if (session.publishedUri == null) {
-            session.publishedUri = photos.publish(new File(session.path), session.inspectionId, session.displayName, session.captureId);
-            AtomicObjects.write(journal, session);
-        }
+        publishCapture();
         album.agregarFoto(session.publishedUri);
         album.setRemoteName(session.publishedUri, session.remoteName);
         session.inspection = inspection;
@@ -83,6 +80,16 @@ public final class CaptureCoordinator {
         catch (IOException e) { session.finished = false; throw e; }
         // The complete journal contains the album association before private originals are removed.
         new File(session.path).delete();
+        return session.publishedUri;
+    }
+
+    /** Process bytes on a worker without retaining or mutating a view's Album. */
+    public synchronized String publishCapture() throws IOException {
+        if (session == null || !session.cameraReturned) throw new IOException("La cámara todavía no ha terminado");
+        if (session.publishedUri == null) {
+            session.publishedUri = photos.publish(new File(session.path), session.inspectionId, session.displayName, session.captureId);
+            AtomicObjects.write(journal, session);
+        }
         return session.publishedUri;
     }
 

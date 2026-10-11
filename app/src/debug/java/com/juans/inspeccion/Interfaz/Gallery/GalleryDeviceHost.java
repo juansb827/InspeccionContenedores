@@ -13,11 +13,15 @@ import java.io.*;
 import java.util.UUID;
 
 /** Debug-only local fixture. No credentials, network, camera or printer are used. */
-public class GalleryDeviceHost extends FragmentActivity implements GalleryHost {
+public class GalleryDeviceHost extends FragmentActivity implements com.juans.inspeccion.Interfaz.Camera.CameraHost {
     public Inspeccion inspection;
     public Album editing;
     public boolean readOnly;
     public int persisted;
+    public com.juans.inspeccion.Interfaz.Camera.CameraCaptureModel capture;
+    public Inspeccion cameraInspection() { return inspection; }
+    public boolean canCaptureMedia(String i, String a) { return GalleryAlbums.canDelete(inspection, editing, i, a, readOnly, null, capture.busy()); }
+    public void cameraMediaAssociated() { persisted++; Pendientes.upsert(inspection, this); }
 
     @Override protected void onCreate(Bundle saved) {
         // Resolve restored fragments against the current album before super restores them.
@@ -28,6 +32,12 @@ public class GalleryDeviceHost extends FragmentActivity implements GalleryHost {
         }
         readOnly = getIntent().getBooleanExtra("readOnly", false);
         super.onCreate(saved);
+        capture = new androidx.lifecycle.ViewModelProvider(this).get(com.juans.inspeccion.Interfaz.Camera.CameraCaptureModel.class);
+        try { capture.attach(new com.juans.inspeccion.Mundo.Storage.CaptureCoordinator(new MediaPhotoStore(this), getFileStreamPath("fixture-photo-capture"))); }
+        catch (IOException e) { throw new IllegalStateException(e); }
+        capture.states().observe(this, state -> {
+            if (state.phase == com.juans.inspeccion.Interfaz.Camera.CameraCaptureModel.Phase.READY) capture.commit(this);
+        });
         TextView underlying = new TextView(this); underlying.setText("Inspección de prueba local"); setContentView(underlying);
         if (saved != null) {
             return;
@@ -36,6 +46,11 @@ public class GalleryDeviceHost extends FragmentActivity implements GalleryHost {
             inspection.setTipoInspeccion(getIntent().getStringExtra("direction"));
             editing = new Album(); inspection.getDaniosManager().getListaDanios().add(new Danio());
             Album target = selectedAlbum();
+            if (getIntent().getBooleanExtra("cameraOnly", false)) {
+                com.juans.inspeccion.Interfaz.Camera.CameraCaptureFragment.newInstance(inspection.getPhotoId(), target.getId(), -1)
+                        .show(getSupportFragmentManager(), "camera");
+                return;
+            }
             new Thread(() -> {
             try {
                 MediaPhotoStore store = new MediaPhotoStore(this);

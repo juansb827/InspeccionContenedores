@@ -168,7 +168,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
         cargarCampos();
         CargarListaCampos cargarListaCampos = new CargarListaCampos();
         cargarListaCampos.execute();
-        if(InspeccionActivity.soloLectura ||
+        if(InspeccionActivity.soloLectura || InspeccionActivity.tipoAccion != null ||
                 inspeccion.darTipoInspeccion().equals(InspeccionActivity.SALIDA))
         {
 
@@ -215,7 +215,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
             if (albumCargado == null) albumCargado = new Album();
             btnVerAlbum.setEnabled(true);
             inspeccion.setEditingAlbum(albumCargado);
-            inspeccion.takePhoto(albumCargado, damageIndex);
+            inspeccion.openCamera(albumCargado, damageIndex);
         });
 
         btnVerAlbum.setOnClickListener(new View.OnClickListener() {

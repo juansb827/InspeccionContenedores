@@ -13,6 +13,12 @@
         <TextView android:id="@+id/cameraMessage" android:layout_width="match_parent" android:layout_height="match_parent"
             android:gravity="center" android:padding="24dp" android:textColor="@android:color/white" android:textSize="18sp" />
     </FrameLayout>
+    <RadioGroup android:id="@+id/cameraMode" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center" android:checkedButton="@id/cameraPhoto">
+        <RadioButton android:id="@+id/cameraPhoto" android:layout_width="wrap_content" android:layout_height="48dp" android:text="@string/camera_photo_mode" android:textColor="@android:color/white" />
+        <RadioButton android:id="@+id/cameraVideo" android:layout_width="wrap_content" android:layout_height="48dp" android:text="@string/camera_video_mode" android:textColor="@android:color/white" />
+    </RadioGroup>
+    <TextView android:id="@+id/cameraTimer" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textColor="@android:color/white" android:visibility="gone" />
     <Button android:id="@+id/cameraPermission" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
         android:text="@string/camera_permission_retry" android:visibility="gone" />
     <Button android:id="@+id/cameraShutter" android:layout_width="match_parent" android:layout_height="72dp" android:layout_margin="16dp"

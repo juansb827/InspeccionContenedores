@@ -12,7 +12,7 @@ import com.juans.inspeccion.Mundo.Storage.MediaPhotoStore;
 import java.io.*;
 import java.util.UUID;
 
-/** Debug-only local fixture. No credentials, network, camera or printer are used. */
+/** Debug-only local fixture. No credentials, network or printer are used. */
 public class GalleryDeviceHost extends FragmentActivity implements com.juans.inspeccion.Interfaz.Camera.CameraHost {
     public Inspeccion inspection;
     public Album editing;
@@ -33,7 +33,7 @@ public class GalleryDeviceHost extends FragmentActivity implements com.juans.ins
         readOnly = getIntent().getBooleanExtra("readOnly", false);
         super.onCreate(saved);
         capture = new androidx.lifecycle.ViewModelProvider(this).get(com.juans.inspeccion.Interfaz.Camera.CameraCaptureModel.class);
-        try { capture.attach(new com.juans.inspeccion.Mundo.Storage.CaptureCoordinator(new MediaPhotoStore(this), getFileStreamPath("fixture-photo-capture"))); }
+        try { capture.attachVideo(new com.juans.inspeccion.Mundo.Storage.VideoCaptureCoordinator(new com.juans.inspeccion.Mundo.Storage.MediaVideoStore(this), getFileStreamPath("fixture-video-capture"))); capture.attach(new com.juans.inspeccion.Mundo.Storage.CaptureCoordinator(new MediaPhotoStore(this), getFileStreamPath("fixture-photo-capture"))); }
         catch (IOException e) { throw new IllegalStateException(e); }
         capture.states().observe(this, state -> {
             if (state.phase == com.juans.inspeccion.Interfaz.Camera.CameraCaptureModel.Phase.READY) capture.commit(this);
@@ -87,6 +87,15 @@ public class GalleryDeviceHost extends FragmentActivity implements com.juans.ins
     public String galleryAlbumLabel(String albumId) { return inspection == null ? "" : GalleryAlbums.label(inspection, albumId); }
     public boolean canDeleteGalleryPhoto(String inspectionId, String albumId) {
         return GalleryAlbums.canDelete(inspection, editing, inspectionId, albumId, readOnly, null, false);
+    }
+    public java.util.List<GalleryMediaItem> galleryMediaItems(String i, String a) throws IOException {
+        Album album = resolveGalleryAlbum(i, a);
+        return album == null ? new java.util.ArrayList<>() : capture.index().items(i, album);
+    }
+    public void galleryMediaDeleted(String i, String a, GalleryMediaItem item) throws IOException {
+        capture.index().remove(i, a, item.reference);
+        if (item.kind == GalleryMediaItem.Kind.PHOTO) resolveGalleryAlbum(i, a).removePhotoReference(item.reference);
+        cameraMediaAssociated();
     }
     public void galleryPhotoDeleted(String inspectionId, String albumId, String reference) {
         Album current = resolveGalleryAlbum(inspectionId, albumId);

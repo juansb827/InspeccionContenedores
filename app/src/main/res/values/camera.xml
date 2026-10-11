@@ -18,4 +18,16 @@
         <item name="android:navigationBarColor">@color/gallery_viewer</item>
         <item name="colorAccent">@color/AzulF</item>
     </style>
+    <string name="camera_photo_mode">Foto</string>
+    <string name="camera_video_mode">Video</string>
+    <string name="camera_record">Grabar video</string>
+    <string name="camera_stop">Detener y guardar</string>
+    <string name="camera_video_limits">%1$s · Máximo 5 min / 200 MB\nVideos guardados solo en este dispositivo</string>
+    <string name="camera_microphone_denied">Se necesita permiso de micrófono para grabar video con audio. Puedes seguir tomando fotos.</string>
+    <string name="camera_video_unavailable">Este dispositivo no admite video en 720p ni 480p. Puedes seguir tomando fotos.</string>
+    <string name="camera_recording_back">Grabación en curso</string>
+    <string name="camera_continue">Continuar</string>
+    <string name="camera_save">Guardar</string>
+    <string name="camera_discard_video">Descartar</string>
+    <string name="camera_microphone_retry">Permitir micrófono</string>
 </resources>

@@ -11,8 +11,13 @@ public final class GalleryMediaItem {
     public final String reference;
     public final String mimeType;
     public final Kind kind;
+    public final long durationMillis;
 
     public GalleryMediaItem(String reference, String mimeType, Kind kind) {
+        this(reference, mimeType, kind, 0);
+    }
+    public GalleryMediaItem(String reference, String mimeType, Kind kind, long durationMillis) {
+        this.durationMillis = durationMillis;
         this.id = reference;
         this.reference = reference;
         this.mimeType = mimeType;

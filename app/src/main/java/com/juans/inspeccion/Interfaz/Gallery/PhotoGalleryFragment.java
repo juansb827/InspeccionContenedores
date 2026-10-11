@@ -35,6 +35,7 @@ public class PhotoGalleryFragment extends DialogFragment {
     private boolean viewing;
     private int selectedPosition;
     private Parcelable gridState;
+    private Bundle playbackState;
     private List<GalleryMediaItem> items = new ArrayList<>();
     private GalleryHost host;
     private GalleryDeletionModel deletion;
@@ -51,6 +52,7 @@ public class PhotoGalleryFragment extends DialogFragment {
             selectedPosition = position;
             if (position < items.size()) selectedReference = items.get(position).reference;
             resetPageZoom();
+            if(pages!=null) pages.activate(viewing ? selectedReference : null);
             updateToolbar();
         }
     };
@@ -70,7 +72,7 @@ public class PhotoGalleryFragment extends DialogFragment {
         deletion = new ViewModelProvider(this).get(GalleryDeletionModel.class);
         if (state != null) {
             viewing = state.getBoolean("viewing"); selectedPosition = state.getInt("position");
-            selectedReference = state.getString("reference"); gridState = state.getParcelable("grid");
+            selectedReference = state.getString("reference"); gridState = state.getParcelable("grid"); playbackState=state.getBundle("playback");
         }
     }
 
@@ -107,7 +109,7 @@ public class PhotoGalleryFragment extends DialogFragment {
         layout = new GridLayoutManager(requireContext(), 3);
         grid.setLayoutManager(layout);
         thumbnails = new GalleryAdapter(false, Glide.with(this), this::open);
-        pages = new GalleryAdapter(true, Glide.with(this), ignored -> {});
+        pages = new GalleryAdapter(true, Glide.with(this), ignored -> {}); pages.restorePlayback(playbackState);
         grid.setAdapter(thumbnails); pager.setAdapter(pages);
         pager.registerOnPageChangeCallback(pageChanges);
         grid.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
@@ -116,7 +118,7 @@ public class PhotoGalleryFragment extends DialogFragment {
             if (columns != layout.getSpanCount()) layout.setSpanCount(columns);
         });
         view.findViewById(R.id.galleryBack).setOnClickListener(v -> back());
-        remove.setOnClickListener(v -> confirmDeletion());
+        remove.setOnClickListener(v -> { if(deletion.needsMetadataRetry()) { GalleryDeletionModel.Result completed=deletion.consume(host); if(completed!=null && completed.error!=null) toast(completed.error); else refresh(); updateToolbar(); } else confirmDeletion(); });
         refresh();
         deletion.results().observe(getViewLifecycleOwner(), result -> {
             if (result != null && !result.busy) {
@@ -135,6 +137,7 @@ public class PhotoGalleryFragment extends DialogFragment {
         super.onStart();
         Window window = requireDialog().getWindow();
         if (window != null) window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        pages.activate(viewing ? selectedReference : null);
         updateToolbar();
     }
 
@@ -142,7 +145,8 @@ public class PhotoGalleryFragment extends DialogFragment {
 
     private void refresh() {
         Album album = host.resolveGalleryAlbum(inspectionId, albumId);
-        items = album == null ? new ArrayList<>() : GalleryMediaItem.photos(album);
+        try { items=host.galleryMediaItems(inspectionId,albumId); }
+        catch(java.io.IOException e) { items=album==null?new ArrayList<>():GalleryMediaItem.photos(album); toast("Los archivos requieren recuperación: "+e.getMessage()); }
         selectedPosition = GalleryMediaItem.position(items, selectedReference, selectedPosition);
         selectedReference = selectedPosition < 0 ? null : items.get(selectedPosition).reference;
         if (items.isEmpty()) viewing = false;
@@ -173,6 +177,7 @@ public class PhotoGalleryFragment extends DialogFragment {
         pager.setVisibility(viewing ? View.VISIBLE : View.GONE);
         empty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
         toolbar.setBackgroundColor(ContextCompat.getColor(requireContext(), viewing ? R.color.gallery_viewer : R.color.AzulF));
+        pages.activate(viewing ? selectedReference : null);
         updateToolbar();
     }
 
@@ -184,7 +189,8 @@ public class PhotoGalleryFragment extends DialogFragment {
                 getResources().getQuantityString(R.plurals.gallery_photo_count, items.size(), items.size())));
         boolean allowed = host.canDeleteGalleryPhoto(inspectionId, albumId);
         remove.setVisibility(viewing && allowed ? View.VISIBLE : View.GONE);
-        remove.setEnabled(!deletion.busy()); remove.setAlpha(deletion.busy() ? 0.4f : 1f);
+        remove.setEnabled(!deletion.busy() || deletion.needsMetadataRetry()); remove.setAlpha(deletion.busy() && !deletion.needsMetadataRetry() ? 0.4f : 1f);
+        remove.setContentDescription(getString(deletion.needsMetadataRetry() ? R.string.camera_retry_save : selectedPosition>=0 && selectedPosition<items.size() && items.get(selectedPosition).kind==GalleryMediaItem.Kind.VIDEO ? R.string.gallery_delete_video : R.string.gallery_delete));
         pager.setUserInputEnabled(!deletion.busy());
         deleting.setVisibility(deletion.busy() ? View.VISIBLE : View.GONE);
         Window window = getDialog() == null ? null : getDialog().getWindow();
@@ -200,7 +206,7 @@ public class PhotoGalleryFragment extends DialogFragment {
                 || !host.canDeleteGalleryPhoto(inspectionId, albumId) || confirmation != null) return;
         String reference = selectedReference;
         confirmation = new AlertDialog.Builder(requireContext())
-                .setTitle(R.string.gallery_delete).setMessage(R.string.gallery_delete_message)
+                .setTitle(items.get(selectedPosition).kind==GalleryMediaItem.Kind.VIDEO ? R.string.gallery_delete_video : R.string.gallery_delete).setMessage(items.get(selectedPosition).kind==GalleryMediaItem.Kind.VIDEO ? R.string.gallery_delete_video_message : R.string.gallery_delete_message)
                 .setNegativeButton(R.string.gallery_cancel, null)
                 .setPositiveButton(R.string.gallery_delete_confirm, (dialog, which) -> {
                     if (!deletion.delete(host, inspectionId, albumId, reference)) toast(getString(R.string.gallery_delete_denied));
@@ -225,12 +231,15 @@ public class PhotoGalleryFragment extends DialogFragment {
 
     @Override public void onSaveInstanceState(@NonNull Bundle out) {
         super.onSaveInstanceState(out);
+        out.putBundle("playback",pages!=null ? pages.playbackState() : playbackState);
         out.putBoolean("viewing", viewing); out.putInt("position", selectedPosition);
         out.putString("reference", selectedReference);
         out.putParcelable("grid", !viewing && layout != null ? layout.onSaveInstanceState() : gridState);
     }
 
+    @Override public void onStop() { if(pages!=null) pages.releaseAll(); super.onStop(); }
     @Override public void onDestroyView() {
+        playbackState=pages.playbackState(); pages.releaseAll();
         if (confirmation != null) confirmation.dismiss();
         pager.unregisterOnPageChangeCallback(pageChanges);
         pager.setAdapter(null); grid.setAdapter(null);

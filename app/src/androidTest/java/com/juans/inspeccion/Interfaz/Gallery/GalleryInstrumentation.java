@@ -23,7 +23,7 @@ public class GalleryInstrumentation extends com.juans.inspeccion.Interfaz.Camera
     private boolean cameraSuite;
     private volatile GalleryDeviceHost current;
     private int checks;
-    @Override public void onCreate(Bundle args) { cameraSuite = args != null && "camera".equals(args.getString("suite")); super.onCreate(args); }
+    @Override public void onCreate(Bundle args) { cameraSuite = args != null && ("camera".equals(args.getString("suite")) || "video".equals(args.getString("suite"))); super.onCreate(args); }
     @Override public void onStart() {
         if (cameraSuite) { super.onStart(); return; }
         Bundle report = new Bundle();

@@ -79,11 +79,21 @@ public class GalleryDeletionModelTest {
         finish(); model.consume(host); assertTrue(host.album.getFotos().isEmpty());
     }
 
+    @Test public void metadataFailureIsRetriedAfterRecreationWithoutDeletingBytesAgain() throws Exception {
+        host.failSave=true; model.delete(host,"inspection",host.album.getId(),"content://media/1"); finish();
+        assertNotNull(model.consume(host).error); assertTrue(model.needsMetadataRetry()); assertEquals(1,deleted.size());
+        GalleryDeletionModel recreated=new GalleryDeletionModel(RuntimeEnvironment.getApplication(),null,work::add);
+        host.failSave=false; assertNull(recreated.consume(host).error); assertEquals(1,deleted.size());
+        assertFalse(recreated.busy()); assertEquals(1,host.album.getFotos().size());
+    }
     private static final class Host implements GalleryHost {
-        Album album = new Album(); boolean allowed = true; int persisted;
+        Album album = new Album(); boolean allowed = true, failSave; int persisted;
         public Album resolveGalleryAlbum(String inspection, String id) { return "inspection".equals(inspection) && album.getId().equals(id) ? album : null; }
         public String galleryAlbumLabel(String id) { return "Información"; }
         public boolean canDeleteGalleryPhoto(String inspection, String id) { return allowed && resolveGalleryAlbum(inspection, id) != null; }
+        public void galleryMediaDeleted(String i,String a,GalleryMediaItem item) throws IOException {
+            if(failSave)throw new IOException("metadata full"); galleryPhotoDeleted(i,a,item.reference);
+        }
         public void galleryPhotoDeleted(String inspection, String id, String reference) {
             Album current = resolveGalleryAlbum(inspection, id);
             if (current != null && current.removePhotoReference(reference)) persisted++;

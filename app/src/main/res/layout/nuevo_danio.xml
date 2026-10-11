@@ -22,7 +22,7 @@
             android:layout_span="3"
             android:layout_width="wrap_content"
             android:layout_column="6"
-            android:text="Ver fotos"/>
+            android:text="@string/gallery_browse"/>
         </TableRow>
     <TableRow android:visibility="gone">
         <com.juans.inspeccion.CustomView.MyEditText

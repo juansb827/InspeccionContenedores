@@ -37,6 +37,13 @@ public class CameraCaptureFragmentTest {
         assertEquals(host.getString(R.string.camera_permission_denied), ((TextView) camera.requireView().findViewById(R.id.cameraMessage)).getText().toString());
         assertNull(host.model.coordinator().session()); assertTrue(host.editing.getFotos().isEmpty());
     }
+    @Test public void cameraStartsInPhotoAndVideoPermissionDenialLeavesPhotoAvailable() {
+        android.widget.RadioButton photo=camera.requireView().findViewById(R.id.cameraPhoto);
+        assertTrue(photo.isChecked()); camera.requireView().findViewById(R.id.cameraVideo).performClick();
+        assertFalse(camera.requireView().findViewById(R.id.cameraShutter).isEnabled());
+        camera.requireView().findViewById(R.id.cameraPhoto).performClick(); assertTrue(photo.isChecked());
+        assertNull(host.model.coordinator().session()); assertTrue(host.editing.getFotos().isEmpty());
+    }
     @Test public void backReturnsToSameFormWithoutInspectionLeaveConfirmation() {
         camera.requireDialog().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
         camera.requireDialog().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));

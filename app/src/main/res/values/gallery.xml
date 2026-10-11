@@ -4,27 +4,27 @@
     <color name="gallery_viewer">#101418</color>
     <color name="gallery_text">#344054</color>
     <color name="gallery_placeholder">#E4E7EC</color>
-    <string name="gallery_title">Fotos</string>
+    <string name="gallery_title">Fotos y videos</string>
     <string name="gallery_back">Volver</string>
     <string name="gallery_delete">Borrar foto</string>
     <string name="gallery_delete_message">Se borrará esta foto de la inspección y también de la galería del dispositivo. ¿Continuar?</string>
     <string name="gallery_cancel">Cancelar</string>
     <string name="gallery_delete_confirm">Borrar</string>
-    <string name="gallery_empty">No hay fotos en este álbum.\nPuedes tomar fotos desde la inspección.</string>
+    <string name="gallery_empty">No hay fotos ni videos en este álbum.\nPuedes usar la cámara desde la inspección.</string>
     <string name="gallery_missing">El álbum ya no está disponible</string>
     <string name="gallery_unavailable">Foto no disponible</string>
-    <string name="gallery_loading">Cargando foto…</string>
+    <string name="gallery_loading">Cargando archivo…</string>
     <string name="gallery_photo">Foto %1$d</string>
     <string name="gallery_counter">%1$d de %2$d</string>
     <string name="gallery_album_count">%1$s · %2$s</string>
     <plurals name="gallery_photo_count">
-        <item quantity="one">%d foto</item>
-        <item quantity="other">%d fotos</item>
+        <item quantity="one">%d archivo</item>
+        <item quantity="other">%d archivos</item>
     </plurals>
-    <string name="gallery_deleting">Borrando foto…</string>
-    <string name="gallery_deleted">Foto borrada</string>
+    <string name="gallery_deleting">Borrando archivo…</string>
+    <string name="gallery_deleted">Archivo borrado</string>
     <string name="gallery_wait">Espera a que termine el borrado</string>
-    <string name="gallery_delete_denied">No se puede borrar esta foto en este momento</string>
+    <string name="gallery_delete_denied">No se puede borrar este archivo en este momento</string>
     <style name="PhotoGalleryTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowBackground">@color/gallery_surface</item>
@@ -34,4 +34,9 @@
         <item name="android:windowLightNavigationBar">true</item>
         <item name="colorAccent">@color/AzulF</item>
     </style>
+    <string name="gallery_video">Video %1$d</string>
+    <string name="gallery_video_unavailable">Video no disponible</string>
+    <string name="gallery_delete_video">Borrar video</string>
+    <string name="gallery_delete_video_message">Se eliminará este video de la inspección y de la galería del dispositivo. Esta acción no se puede deshacer.</string>
+    <string name="gallery_browse">Ver fotos y videos</string>
 </resources>

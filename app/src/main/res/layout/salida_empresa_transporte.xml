@@ -225,7 +225,7 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/btnVerFotos"
                         android:layout_gravity="center_horizontal"
-                        android:text="Ver fotos tomadas"
+                        android:text="@string/gallery_browse"
                         android:layout_span="5"
 
                         android:gravity="center_horizontal"

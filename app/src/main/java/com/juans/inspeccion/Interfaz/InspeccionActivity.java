@@ -65,6 +65,8 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
 
 
     private com.juans.inspeccion.Mundo.Storage.CaptureCoordinator captureCoordinator;
+    private com.juans.inspeccion.Mundo.Storage.VideoCaptureCoordinator videoCoordinator;
+    private com.juans.inspeccion.Mundo.Storage.LocalMediaIndex mediaIndex;
     private com.juans.inspeccion.Mundo.Storage.PhotoStore photoStore;
     private Album editingAlbum;
     private final PrinterPermissionGate printerGate = new PrinterPermissionGate(this);
@@ -99,13 +101,24 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         Album current = resolveGalleryAlbum(inspectionId, albumId);
         if (current != null && current.removePhotoReference(reference)) persistPhotoChanges();
     }
+    @Override public java.util.List<com.juans.inspeccion.Interfaz.Gallery.GalleryMediaItem> galleryMediaItems(String i, String a) throws IOException {
+        Album album = resolveGalleryAlbum(i, a);
+        return album == null ? new java.util.ArrayList<>() : mediaIndex.items(i, album);
+    }
+    @Override public void galleryMediaDeleted(String i, String a, com.juans.inspeccion.Interfaz.Gallery.GalleryMediaItem item) throws IOException {
+        Album album = resolveGalleryAlbum(i, a);
+        if (album == null) throw new IOException("No se encontró el álbum; los cambios requieren recuperación");
+        mediaIndex.remove(i, a, item.reference);
+        if (item.kind == com.juans.inspeccion.Interfaz.Gallery.GalleryMediaItem.Kind.PHOTO) album.removePhotoReference(item.reference);
+        cameraMediaAssociated();
+    }
     public void persistPhotoChanges() {
         try {
             if (isCargarPendiente) Pendientes.upsert(inspeccionObject, this);
             if (captureCoordinator != null) captureCoordinator.updateCompletedSnapshot(inspeccionObject, editingAlbum);
         } catch (Exception e) { Toast.makeText(this, "Los cambios requieren recuperación: " + e.getMessage(), Toast.LENGTH_LONG).show(); }
     }
-    public boolean photoBusy() { return (cameraModel != null && cameraModel.busy()) || (captureCoordinator != null && captureCoordinator.isBusy()); }
+    public boolean photoBusy() { return (cameraModel != null && cameraModel.busy()) || (captureCoordinator != null && captureCoordinator.isBusy()) || (videoCoordinator != null && videoCoordinator.isBusy()); }
     @Override public Inspeccion cameraInspection() { return inspeccionObject; }
     @Override public boolean canCaptureMedia(String inspectionId, String albumId) {
         Fragment gallery = getSupportFragmentManager().findFragmentByTag("photos");
@@ -118,6 +131,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     @Override public void cameraMediaAssociated() throws IOException {
         if (isCargarPendiente) Pendientes.upsert(inspeccionObject, this);
         captureCoordinator.updateCompletedSnapshot(inspeccionObject, editingAlbum);
+        if (videoCoordinator != null) videoCoordinator.updateCompletedSnapshot(inspeccionObject, editingAlbum);
     }
 
     public void openCamera(Album album, int damageIndex) {
@@ -138,10 +152,11 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     private void showPhotoRecovery(String message) {
         if (cameraModel == null || isDestroyed() || isFinishing()) return;
         if (!cameraModel.busy()) cameraModel.recover();
-        if (getSupportFragmentManager().findFragmentByTag("camera") == null && captureCoordinator.session() != null
+        String inspectionId = videoCoordinator != null && videoCoordinator.isBusy() ? videoCoordinator.session().inspectionId : captureCoordinator.session() == null ? null : captureCoordinator.session().inspectionId;
+        String albumId = videoCoordinator != null && videoCoordinator.isBusy() ? videoCoordinator.session().albumId : captureCoordinator.session() == null ? null : captureCoordinator.session().albumId;
+        if (getSupportFragmentManager().findFragmentByTag("camera") == null && inspectionId != null
                 && !getSupportFragmentManager().isStateSaved()) {
-            com.juans.inspeccion.Mundo.Storage.CaptureCoordinator.Session session = captureCoordinator.session();
-            com.juans.inspeccion.Interfaz.Camera.CameraCaptureFragment.newInstance(session.inspectionId, session.albumId, -1)
+            com.juans.inspeccion.Interfaz.Camera.CameraCaptureFragment.newInstance(inspectionId, albumId, -1)
                     .show(getSupportFragmentManager(), "camera");
         }
     }
@@ -220,7 +235,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         outState.putInt(INDICE_TURNO, indiceTurno);
         outState.putSerializable(INSPECCION, inspeccionObject);
         outState.putSerializable("editingPhotoAlbum", editingAlbum);
-        try { if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); }
+        try { if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); if (videoCoordinator != null) videoCoordinator.acknowledgeSavedState(); }
         catch (IOException e) { android.util.Log.e("Photos", "El registro de recuperación se conserva", e); }
 
     }
@@ -299,15 +314,37 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
                 }
             }
         } catch (IOException | com.juans.inspeccion.Mundo.Storage.StoredInspections.StorageException e) { photoStorageError = e.getMessage(); }
+        mediaIndex = new com.juans.inspeccion.Mundo.Storage.LocalMediaIndex(this);
+        try {
+            videoCoordinator = new com.juans.inspeccion.Mundo.Storage.VideoCaptureCoordinator(new com.juans.inspeccion.Mundo.Storage.MediaVideoStore(this), getFileStreamPath("pending-video-capture"));
+            com.juans.inspeccion.Mundo.Storage.VideoCaptureCoordinator.Session video = videoCoordinator.session();
+            // An older completed video must not replace a newer photo/form recovery snapshot.
+            boolean newestVideo = captureCoordinator == null || captureCoordinator.session() == null
+                    || getFileStreamPath("pending-video-capture").lastModified() >= getFileStreamPath("pending-photo-capture").lastModified();
+            if (video != null && (videoCoordinator.isBusy() || (savedInstanceState == null && !video.discard && newestVideo
+                    && (captureCoordinator == null || !captureCoordinator.isBusy())))) {
+                recoveredPhotoCapture = !video.inspectionId.equals(inspeccionObject.getPhotoId());
+                inspeccionObject = video.inspection;
+                indiceTurno = Pendientes.findIndex(video.inspectionId, this); isCargarPendiente = indiceTurno >= 0;
+                if (recoveredPhotoCapture) { soloLectura = false; tipoAccion = null; }
+                if (inspeccionObject.findAlbum(video.albumId) == null) editingAlbum = video.album;
+                usaTurno = inspeccionObject.isUsaTurno();
+            }
+        } catch (Exception e) { photoStorageError = e.getMessage(); }
         inspeccionObject.initializePhotoIds();
         //This super.Oncreate  restores the fragments so we gotta load things from saved instance to have inspeccionObject!=null
         super.onCreate(savedInstanceState);
         cameraModel = new androidx.lifecycle.ViewModelProvider(this).get(com.juans.inspeccion.Interfaz.Camera.CameraCaptureModel.class);
         captureCoordinator = cameraModel.attach(captureCoordinator);
+        videoCoordinator = cameraModel.attachVideo(videoCoordinator);
+        mediaIndex = cameraModel.index();
         cameraModel.states().observe(this, state -> {
             if (state.phase == com.juans.inspeccion.Interfaz.Camera.CameraCaptureModel.Phase.READY) cameraModel.commit(this);
             if (state.phase == com.juans.inspeccion.Interfaz.Camera.CameraCaptureModel.Phase.DONE)
-                Toast.makeText(this, "Foto guardada en la galería", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, cameraModel.isVideo()
+                        ? cameraModel.wasDiscarded() ? "Grabación descartada" : cameraModel.wasInterrupted()
+                            ? "Grabación interrumpida: video guardado en la galería" : "Video guardado en la galería del dispositivo"
+                        : "Foto guardada en la galería", Toast.LENGTH_LONG).show();
         });
         getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
             @Override public void handleOnBackPressed() { requestLeave(); }
@@ -478,7 +515,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
 
                 try {
                     Pendientes.upsert(inspeccionObject, this);
-                    if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState();
+                    if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); if (videoCoordinator != null) videoCoordinator.acknowledgeSavedState();
                 } catch (Exception e) {
                     Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
                     return true;
@@ -524,7 +561,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
 
     public void limpiarTodo() {
         if (photoBusy()) return;
-        try { if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); }
+        try { if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); if (videoCoordinator != null) videoCoordinator.acknowledgeSavedState(); }
         catch (IOException e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); return; }
         editingAlbum = null;
         MenuItem menuItem=menu.findItem(R.id.action_imprimir_y_borrar);
@@ -634,7 +671,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
                 break;
             case SALIR_DIALOG:
                 if (hacer) {
-                    try { if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); }
+                    try { if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); if (videoCoordinator != null) videoCoordinator.acknowledgeSavedState(); }
                     catch (IOException e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); return; }
                     finish();
                 }
@@ -913,7 +950,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
                     try {
                         if (photoRenameError != null) throw new IOException(photoRenameError);
                         if (isCargarPendiente) Pendientes.remove(inspeccionObject.getPhotoId(), getBaseContext());
-                        if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState();
+                        if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); if (videoCoordinator != null) videoCoordinator.acknowledgeSavedState();
                     } catch (Exception e) {
                         Toast.makeText(InspeccionActivity.this, "El documento se guardó; las fotos/borrador requieren recuperación: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         return;
@@ -979,7 +1016,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     @Override
     protected void onResume() {
         super.onResume();
-        if (captureCoordinator != null && captureCoordinator.isBusy() && cameraModel != null
+        if (((captureCoordinator != null && captureCoordinator.isBusy()) || (videoCoordinator != null && videoCoordinator.isBusy())) && cameraModel != null
                 && !cameraModel.busy()) {
             cameraModel.recover(); showPhotoRecovery("Hay una captura interrumpida");
         }

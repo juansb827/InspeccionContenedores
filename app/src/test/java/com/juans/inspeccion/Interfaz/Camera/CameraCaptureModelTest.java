@@ -82,6 +82,30 @@ public class CameraCaptureModelTest {
         host.failSave = false; model.retry(); finishWorker(); model.commit(host);
         assertEquals(1, photos.publishes); assertEquals(1, host.editing.getFotos().size());
     }
+    private void attachVideos() throws Exception {
+        VideoStore videos = new VideoStore() {
+            public File createCapture(String id) throws IOException { File file=app.getFileStreamPath(id); file.createNewFile(); return file; }
+            public long validate(File file) { return 1500; }
+            public String publish(File file,String i,String name,String id) { return "content://videos/"+id; }
+            public void delete(String ref) { throw new AssertionError("discard must only remove private bytes"); }
+        };
+        model.attachVideo(new VideoCaptureCoordinator(videos,app.getFileStreamPath("model-video")));
+    }
+    @Test public void videoCompletionResolvesNewEditingOwnerAndIgnoresDuplicateCallbacks() throws Exception {
+        attachVideos(); model.beginVideo(host,host.inspection.getPhotoId(),host.editing.getId());
+        model.stopVideo(false,true); model.videoFinalized(0); model.videoFinalized(0); assertEquals(1,work.size()); finishWorker();
+        Host recreated=new Host(); recreated.inspection=copy(host.inspection); recreated.editing=copy(host.editing);
+        model.commit(recreated); model.commit(recreated);
+        assertEquals(1,recreated.saved); assertEquals(0,host.saved); assertTrue(recreated.editing.getFotos().isEmpty());
+        assertEquals(1,model.index().items(recreated.inspection.getPhotoId(),recreated.editing).size()); assertTrue(model.wasInterrupted());
+    }
+    @Test public void deniedVideoMutationCreatesNothingAndDiscardPublishesNothing() throws Exception {
+        attachVideos(); host.readOnly=true;
+        try { model.beginVideo(host,host.inspection.getPhotoId(),host.editing.getId()); fail(); } catch(IOException expected) {}
+        assertNull(model.videos().session()); host.readOnly=false;
+        File target=model.beginVideo(host,host.inspection.getPhotoId(),host.editing.getId()); model.stopVideo(true,false); model.videoFinalized(0);
+        assertFalse(target.exists()); assertTrue(work.isEmpty()); assertEquals(0,host.saved); assertTrue(model.wasDiscarded());
+    }
     @SuppressWarnings("unchecked") private static <T> T copy(T value) throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(); new ObjectOutputStream(bytes).writeObject(value);
         return (T) new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray())).readObject();

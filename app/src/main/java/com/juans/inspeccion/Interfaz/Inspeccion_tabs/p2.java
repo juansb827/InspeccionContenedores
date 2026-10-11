@@ -30,7 +30,6 @@ import com.juans.inspeccion.Interfaz.Dialogs.BusquedaDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.CompletarCampoDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.EditTextDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.ListViewDialog;
-import com.juans.inspeccion.Interfaz.Dialogs.PhotoGridDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.SimpleDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.YesNoDialog;
 import com.juans.inspeccion.Interfaz.InspeccionActivity;
@@ -174,7 +173,6 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
         {
 
             btnTomarFoto.setEnabled(false);
-            btnVerAlbum.setEnabled(false);
         }
         btnAgregarDanio.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -215,6 +213,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
         btnTomarFoto.setOnClickListener(v -> {
             int damageIndex = itemSeleccionado == -1 ? inspeccion.darListaDanios().size() : itemSeleccionado;
             if (albumCargado == null) albumCargado = new Album();
+            btnVerAlbum.setEnabled(true);
             inspeccion.setEditingAlbum(albumCargado);
             inspeccion.takePhoto(albumCargado, damageIndex);
         });
@@ -225,7 +224,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
 
                 Album album=albumCargado;
-                if(album!=null && album.getFotos().size()!=0) {
+                if(album!=null) {
                     inspeccion.showPhotoAlbum(albumCargado);
                 }
             }
@@ -425,6 +424,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
         }
         danioCargado = danio;
         albumCargado=danio.getAlbum();
+        btnVerAlbum.setEnabled(albumCargado != null);
         btnAgregarDanio.setEnabled(true);
         btnEliminarDanio.setEnabled(true);
         btnActualizarDanio.setEnabled(true);
@@ -473,6 +473,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
         }
         danioCargado = null;
         albumCargado=null;
+        btnVerAlbum.setEnabled(false);
         inspeccion.setEditingAlbum(null);
         itemSeleccionado=-1;
         btnActualizarDanio.setEnabled(false);
@@ -703,6 +704,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
         btnLimpiarFormulario = (Button) getView().findViewById(R.id.btnLimpiarFormulario);
         btnTomarFoto = (Button) getView().findViewById(R.id.btnTomarFotoDanio);
         btnVerAlbum = (Button) getView().findViewById(R.id.btnVerFotosDanio);
+        btnVerAlbum.setEnabled(albumCargado != null);
         txtSecuenciaCorto = (MyEditText) getView().findViewById(R.id.txtSecuenciaCorto);
         txtSecuenciaLargo = (MyEditText) getView().findViewById(R.id.txtSecuenciaLargo);
 

@@ -61,7 +61,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class InspeccionActivity extends AppCompatActivity implements Formularios.DataPass, LoaderManager.LoaderCallbacks<Object> {
+public class InspeccionActivity extends AppCompatActivity implements Formularios.DataPass, LoaderManager.LoaderCallbacks<Object>, com.juans.inspeccion.Interfaz.Gallery.GalleryHost {
 
 
     private com.juans.inspeccion.Mundo.Storage.CaptureCoordinator captureCoordinator;
@@ -95,8 +95,23 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     public void showPhotoAlbum(Album album) {
         if (album == null) return;
         if (inspeccionObject.findAlbum(album.getId()) == null) setEditingAlbum(album);
-        com.juans.inspeccion.Interfaz.Dialogs.PhotoGridDialog.newInstance(inspeccionObject.getPhotoId(), album.getId())
+        if (getSupportFragmentManager().isStateSaved() || getSupportFragmentManager().findFragmentByTag("photos") != null) return;
+        com.juans.inspeccion.Interfaz.Gallery.PhotoGalleryFragment.newInstance(inspeccionObject.getPhotoId(), album.getId())
                 .show(getSupportFragmentManager(), "photos");
+    }
+    @Override public Album resolveGalleryAlbum(String inspectionId, String albumId) {
+        return com.juans.inspeccion.Interfaz.Gallery.GalleryAlbums.resolve(inspeccionObject, editingAlbum, inspectionId, albumId);
+    }
+    @Override public String galleryAlbumLabel(String albumId) {
+        return com.juans.inspeccion.Interfaz.Gallery.GalleryAlbums.label(inspeccionObject, albumId);
+    }
+    @Override public boolean canDeleteGalleryPhoto(String inspectionId, String albumId) {
+        return com.juans.inspeccion.Interfaz.Gallery.GalleryAlbums.canDelete(inspeccionObject, editingAlbum,
+                inspectionId, albumId, soloLectura, tipoAccion, photoBusy() || printing);
+    }
+    @Override public void galleryPhotoDeleted(String inspectionId, String albumId, String reference) {
+        Album current = resolveGalleryAlbum(inspectionId, albumId);
+        if (current != null && current.removePhotoReference(reference)) persistPhotoChanges();
     }
     public void persistPhotoChanges() {
         try {

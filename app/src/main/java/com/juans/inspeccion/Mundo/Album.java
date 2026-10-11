@@ -49,6 +49,12 @@ public class Album implements Serializable {
         fotos.remove(index);
         remoteNames.remove(reference);
     }
+    /** Unlink only after storage deletion succeeds; references survive view recreation. */
+    public boolean removePhotoReference(String reference) {
+        boolean removed = fotos.remove(reference);
+        if (removed) remoteNames.remove(reference);
+        return removed;
+    }
     public void eliminarFoto(int index) throws IOException { deletePhoto(MainActivity.context, index); }
     /** Clearing a form/damage unlinks photos; it never deletes gallery copies. */
     public void borrarAlbum() throws IOException { fotos.clear(); remoteNames.clear(); }

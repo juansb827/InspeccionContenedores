@@ -21,6 +21,10 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        exclusiveContent {
+            forRepository { maven { url 'https://jitpack.io' } }
+            filter { includeGroup 'com.github.chrisbanes' }
+        }
     }
 }
 

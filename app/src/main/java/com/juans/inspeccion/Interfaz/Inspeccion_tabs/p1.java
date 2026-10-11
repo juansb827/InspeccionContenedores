@@ -36,7 +36,6 @@ import com.juans.inspeccion.Interfaz.Dialogs.BusquedaDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.CompletarCampoDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.ConsultaCortaDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.EditTextDialog;
-import com.juans.inspeccion.Interfaz.Dialogs.PhotoGridDialog;
 import com.juans.inspeccion.Interfaz.Dialogs.YesNoDialog;
 import com.juans.inspeccion.Interfaz.FichaContenedorActivity;
 import com.juans.inspeccion.Interfaz.InspeccionActivity;
@@ -221,7 +220,7 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
         Button verFotos = (Button) getView().findViewById(R.id.btnVerFotos);
         if (verFotos != null) {
-            if(InspeccionActivity.tipoAccion!=null) verFotos.setEnabled(false);
+            verFotos.setEnabled(inspeccion.darAlbumGeneral() != null);
             verFotos.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

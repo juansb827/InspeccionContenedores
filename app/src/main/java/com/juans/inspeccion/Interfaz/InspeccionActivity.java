@@ -67,14 +67,17 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     private com.juans.inspeccion.Mundo.Storage.CaptureCoordinator captureCoordinator;
     private com.juans.inspeccion.Mundo.Storage.PhotoStore photoStore;
     private Album editingAlbum;
+    private final PrinterPermissionGate printerGate = new PrinterPermissionGate(this);
+    private boolean printing;
     private boolean processingPhoto;
     private boolean photoRecoveryShown;
     private String photoStorageError;
     private static final java.util.concurrent.ExecutorService PHOTO_WORKER = java.util.concurrent.Executors.newSingleThreadExecutor();
     private final androidx.activity.result.ActivityResultLauncher<android.net.Uri> cameraLauncher = registerForActivityResult(
             new com.juans.inspeccion.Mundo.Storage.PrivateTakePicture(), this::cameraReturned);
-    private final androidx.activity.result.ActivityResultLauncher<String> photoPermissionLauncher = registerForActivityResult(
-            new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), granted -> {
+    private final androidx.activity.result.ActivityResultLauncher<String[]> photoPermissionLauncher = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions(), grants -> {
+                boolean granted = !com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.needsStoragePermission(this);
                 if (granted && captureCoordinator != null && captureCoordinator.isBusy()) {
                     if (captureCoordinator.session().cameraReturned) processPhoto(); else launchPendingCamera();
                 } else if (captureCoordinator != null && captureCoordinator.isBusy()) {
@@ -114,7 +117,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
             captureCoordinator.begin(inspeccionObject, album, remoteName, remoteName);
             lockPhotoUi(true);
             if (com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.needsStoragePermission(this))
-                photoPermissionLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                photoPermissionLauncher.launch(com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.storagePermissions());
             else launchPendingCamera();
         } catch (Exception e) { showPhotoRecovery(e.getMessage()); }
     }
@@ -184,7 +187,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
                         // Recovery processes existing bytes; it never automatically reopens the camera.
                         captureCoordinator.cameraResult(true);
                         if (com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.needsStoragePermission(this))
-                            photoPermissionLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                            photoPermissionLauncher.launch(com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.storagePermissions());
                         else processPhoto();
                     } catch (java.io.IOException e) { showPhotoRecovery(e.getMessage()); }
                 })
@@ -277,8 +280,8 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         cerrarProgressDialog();
     }
 
-    @Override
-    public void onBackPressed() {
+    private void requestLeave() {
+        if (printing) { Toast.makeText(this, "Espere a que termine la impresión", Toast.LENGTH_SHORT).show(); return; }
         if (photoBusy()) { showPhotoRecovery("Termine la captura antes de salir"); return; }
         preguntarSiCerrarInspeccion();
     }
@@ -288,7 +291,6 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         new ActivityHelper(this);
         Intent intent = getIntent();
         boolean recoveredPhotoCapture = false;
-
 
         if (savedInstanceState != null) {
 
@@ -349,7 +351,9 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         inspeccionObject.initializePhotoIds();
         //This super.Oncreate  restores the fragments so we gotta load things from saved instance to have inspeccionObject!=null
         super.onCreate(savedInstanceState);
-
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override public void handleOnBackPressed() { requestLeave(); }
+        });
 
     setContentView(R.layout.activity_inspeccion);
 
@@ -386,8 +390,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         if (!recoveredPhotoCapture && (visualizar || tipoAccion!=null)) {
 
             getSupportLoaderManager().initLoader(LOADER_BUSCAR_DOCUMENTO, intent.getExtras(), this);
-            if (visualizar)
-            soloLectura = true;
+            if (visualizar) { soloLectura = true; }
         }
         if (getSupportLoaderManager().getLoader(LOADER_BUSCAR_DOCUMENTO) != null)
 
@@ -460,10 +463,11 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     {
         FrameLayout fl= (FrameLayout) findViewById(R.id.frame_layout);
         fl.removeAllViews();
-        if(tipoTurno.equals(InspeccionActivity.ENTRADA))
-        fl.addView(View.inflate(this, R.layout.entrada_empresa_transporte, null));
-        else
-        fl.addView(View.inflate(this, R.layout.salida_empresa_transporte, null));
+        if (tipoTurno.equals(InspeccionActivity.ENTRADA)) {
+            fl.addView(View.inflate(this, R.layout.entrada_empresa_transporte, null));
+        } else {
+            fl.addView(View.inflate(this, R.layout.salida_empresa_transporte, null));
+        }
         p1 fragment = (p1) viewPager.getAdapter().instantiateItem(viewPager, 0);
         fragment.inicializarFormulario();
 
@@ -637,27 +641,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     }
 
 
-    public void generarRecibo() {
-
-
-
-
-
-        synchronized (this) {
-            try {
-
-                CreadorRecibos.generarFactura(inspeccionObject, getBaseContext());
-                Thread.sleep(1000);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        new YesNoDialog().show(getFragmentManager(), "yesno");
-
-
-    }
-
+    public void generarRecibo() { imprimir(); }
 
     @Override
     public void onDataReceive(Object data, int iniadoPor) {
@@ -704,14 +688,31 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     }
 
     private void imprimir() {
-        boolean hayConfig=Impresora.getInstance().cargarDatosImpresora(getApplicationContext());
-        if (!hayConfig)Toast.makeText(this,"No ha configurado ninguna impresora",Toast.LENGTH_LONG).show();
-        else {
-            if (!Impresora.getInstance().conectado()) {
-                Impresora.getInstance().conectar();
+        if (printing || photoBusy()) return;
+        printerGate.request(() -> {
+            if (!Impresora.getInstance().cargarDatosImpresora(this)) {
+                Toast.makeText(this, "No ha configurado ninguna impresora", Toast.LENGTH_LONG).show(); return;
             }
-            generarRecibo();
-        }
+            printing = true;
+            lockPhotoUi(true);
+            Impresora.IO.execute(() -> {
+                String error = null;
+                try {
+                    if (Impresora.getInstance().conectar(getApplicationContext()) != Impresora.OK)
+                        throw new IOException("No se pudo conectar a la impresora; no se imprimió");
+                    CreadorRecibos.generarFactura(inspeccionObject, getApplicationContext());
+                } catch (Exception e) { error = e.getMessage(); }
+                finally { Impresora.getInstance().desconectar(); }
+                final String result = error;
+                runOnUiThread(() -> {
+                    printing = false;
+                    lockPhotoUi(false);
+                    if (isFinishing() || isDestroyed()) return;
+                    if (result != null) Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+                    else new YesNoDialog().show(getFragmentManager(), "yesno");
+                });
+            });
+        });
     }
 
     public void imprimirDespuesDeGuardar() {

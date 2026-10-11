@@ -150,7 +150,7 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
         listaDaniosView = (ListView) getView().findViewById(R.id.danioListView);
         ScrollView daniosSV = (ScrollView) getView().findViewById(R.id.danioScrollView);
-        LayoutInflater l = getLayoutInflater(savedInstanceState);
+        LayoutInflater l = LayoutInflater.from(requireContext());
         View mv = l.inflate(R.layout.nuevo_danio, null);
 
         daniosSV.addView(mv);
@@ -623,8 +623,9 @@ public class p2 extends Fragment implements View.OnFocusChangeListener, Inspecci
 
 
         }
-        if(nombreLista!=null)
-        BusquedaDialog.newInstance((ArrayList<FilaEnConsulta>) Listas.darLista(nombreLista), titulo, this, view.getId()).show(getFragmentManager(), "somelist");
+        if (nombreLista != null) {
+            BusquedaDialog.newInstance((ArrayList<FilaEnConsulta>) Listas.darLista(nombreLista), titulo, this, view.getId()).show(getFragmentManager(), "somelist");
+        }
 
     }
 

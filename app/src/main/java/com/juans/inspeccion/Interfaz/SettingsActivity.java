@@ -47,8 +47,9 @@ public class SettingsActivity extends AppCompatActivity implements View.OnFocusC
                     importLegacyPhotos();
                 } catch (Exception e) { Toast.makeText(this, "No se pudo acceder a la carpeta: " + e.getMessage(), Toast.LENGTH_LONG).show(); }
             });
-    private final androidx.activity.result.ActivityResultLauncher<String> importStoragePermission = registerForActivityResult(
-            new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), granted -> {
+    private final androidx.activity.result.ActivityResultLauncher<String[]> importStoragePermission = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions(), grants -> {
+                boolean granted = !com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.needsStoragePermission(this);
                 if (granted) legacyFolder.launch(null);
                 else Toast.makeText(this, "Permiso denegado; los datos antiguos se conservan", Toast.LENGTH_LONG).show();
             });
@@ -59,7 +60,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnFocusC
                 .setMessage("Seleccione la carpeta Inspecciones de la versión publicada. Las fotos originales se conservarán.")
                 .setNegativeButton("Cancelar", null).setPositiveButton("Seleccionar carpeta", (d, which) -> {
                     if (com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.needsStoragePermission(this))
-                        importStoragePermission.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        importStoragePermission.launch(com.juans.inspeccion.Mundo.Storage.MediaPhotoStore.storagePermissions());
                     else legacyFolder.launch(null);
                 }).show();
     }

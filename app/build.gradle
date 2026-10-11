@@ -4,21 +4,23 @@ android {
     compileSdk 34
 
     lint {
-        //checkReleaseBuilds false
-        abortOnError false
+        abortOnError true
+        baseline file("lint-baseline.xml")
     }
     
     defaultConfig {
         applicationId "com.juans.inspeccion"
         minSdk 22
         targetSdk 33
-        versionCode 9
-        versionName "1.9"
-        signingConfig signingConfigs.debug
+        versionCode 10
+        versionName "1.10"
     }
     
     buildTypes {
+        debug { signingConfig signingConfigs.debug }
         release {
+            // Production signing uses the existing deployed key outside this migration.
+            signingConfig null
             debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -51,15 +53,10 @@ dependencies {
     implementation files('libs/EZioAD.jar')
     implementation files('libs/commons-net-3.3.jar')
     implementation files('libs/commons-io-2.4.jar')
-    implementation 'com.newrelic.agent.android:android-agent:5.+'
     implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
-    //implementation 'pub.devrel:easypermissions:2.0.1'
-    implementation 'pub.devrel:easypermissions:3.0.0'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.exifinterface:exifinterface:1.3.7'
     implementation 'androidx.documentfile:documentfile:1.0.1'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.14.1'
 }
-
-//apply plugin: 'newrelic'

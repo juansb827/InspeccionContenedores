@@ -32,6 +32,7 @@ public class MediaPhotoStoreTest {
     }
     @Test public void publicationIsPendingUntilCopyCompletesAndRetryReusesRow() throws Exception {
         String uri = store.importPhoto(new ByteArrayInputStream(new byte[]{1,2,3}), "inspection", "photo.jpg", "capture");
+        assertTrue(uri.contains("/external_primary/"));
         assertEquals(1, provider.rows.size());
         assertEquals("Pictures/Inspecciones/inspection/", provider.rows.get(1L).getAsString(MediaStore.Images.Media.RELATIVE_PATH));
         assertEquals(Integer.valueOf(0), provider.rows.get(1L).getAsInteger(MediaStore.Images.Media.IS_PENDING));
@@ -53,7 +54,7 @@ public class MediaPhotoStoreTest {
         catch (IOException expected) { assertTrue(provider.rows.isEmpty()); }
     }
     @Test @Config(sdk = 28) public void oldAndroidUsesPublicPicturesAfterStorageGrant() throws Exception {
-        org.robolectric.Shadows.shadowOf((android.app.Application) context).grantPermissions(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        org.robolectric.Shadows.shadowOf((android.app.Application) context).grantPermissions(MediaPhotoStore.storagePermissions());
         String uri = store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", "photo.jpg", "old");
         assertTrue(uri.startsWith("content://media/"));
         assertTrue(provider.rows.get(1L).getAsString(MediaStore.Images.Media.DATA).contains("Pictures/Inspecciones/inspection/photo.jpg"));
@@ -66,18 +67,26 @@ public class MediaPhotoStoreTest {
         try { album.deletePhoto(context, 0); fail(); } catch (IOException expected) { }
         assertEquals(1, album.getFotos().size());
     }
+    @Test @Config(sdk = 28) public void writeOnlyGrantDoesNotPretendAlbumReadsArePermitted() throws Exception {
+        org.robolectric.Shadows.shadowOf((android.app.Application) context).grantPermissions(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        assertTrue(MediaPhotoStore.needsStoragePermission(context));
+        try { store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", "photo.jpg", "partial-grant"); fail(); }
+        catch (IOException expected) { assertTrue(provider.rows.isEmpty()); }
+    }
     public static class MediaProvider extends ContentProvider {
         final Map<Long, ContentValues> rows = new LinkedHashMap<>();
         final Map<Long, File> files = new HashMap<>();
         public boolean onCreate() { return true; }
         public String getType(Uri uri) { return "image/jpeg"; }
         public Uri insert(Uri uri, ContentValues values) {
+            if (android.os.Build.VERSION.SDK_INT >= 29 && "external".equals(uri.getPathSegments().get(0)))
+                throw new IllegalArgumentException("Synthetic external volume is read-only");
             long id = rows.size() + 1; rows.put(id, new ContentValues(values));
             String data = values.getAsString(MediaStore.Images.Media.DATA);
             File file = data == null ? new File(getContext().getFilesDir(), "media-" + id) : new File(data);
             if (data != null) assertTrue("Public photo must be fully written before registration", file.length() > 0);
             files.put(id, file);
-            return Uri.parse("content://media/external/images/media/" + id);
+            return Uri.withAppendedPath(uri, Long.toString(id));
         }
         public Cursor query(Uri uri, String[] projection, String selection, String[] args, String sort) {
             MatrixCursor cursor = new MatrixCursor(projection);

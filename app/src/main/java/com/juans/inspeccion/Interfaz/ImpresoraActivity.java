@@ -1,246 +1,103 @@
 package com.juans.inspeccion.Interfaz;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import androidx.appcompat.app.AppCompatActivity;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.godex.Godex;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import com.juans.inspeccion.Interfaz.Dialogs.ListViewDialog;
-import com.juans.inspeccion.Mundo.FilaEnConsulta;
+import com.juans.inspeccion.Mundo.Comando;
 import com.juans.inspeccion.Mundo.Formularios;
+import com.juans.inspeccion.Mundo.Recibos.ComandosImpresora;
 import com.juans.inspeccion.Mundo.Recibos.Impresora;
-import com.juans.inspeccion.Mundo.Recibos.RecibosTest;
+import com.juans.inspeccion.Mundo.Recibos.PrinterAccess;
 import com.juans.inspeccion.R;
-
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Set;
 
-public class ImpresoraActivity extends AppCompatActivity implements Formularios.DataPass{
-    int REQUEST_ENABLE_BT=1;
-
-    int pudoConectar;
-    Button mostrarDispositivos,probar;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-
-        super.onCreate(savedInstanceState);
+public class ImpresoraActivity extends AppCompatActivity implements Formularios.DataPass {
+    private final PrinterPermissionGate printerGate = new PrinterPermissionGate(this);
+    private boolean working;
+    @Override protected void onCreate(Bundle state) {
+        super.onCreate(state);
         new ActivityHelper(this);
         setContentView(R.layout.activity_impresora);
-        mostrarDispositivos= (Button) findViewById(R.id.btnListarDispositivos);
-        probar= (Button) findViewById(R.id.btnProbarImpresora);
-        mostrarDispositivos.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mostrarDispositivos();
-            }
-        });
-
-        probar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                probarImpresora(null);
-            }
-        });
-        EditText nombre= (EditText) findViewById(R.id.txtNombreImpresora);
-        EditText mac= (EditText) findViewById(R.id.txtDireccionImpresora);
-        boolean hayConfig=Impresora.getInstance().cargarDatosImpresora(getBaseContext());
-        if(hayConfig)
-        {   String _nombre=Impresora.getInstance().getNombreImpresora();
-            nombre.setText(_nombre);
-
-            String _adress=Impresora.getInstance().getMacAdress();
-            mac.setText(_adress);
-        }
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode==RESULT_OK)
-        {
-
-            escojerDispositivo();
-
-
-        }
-
-
-    }
-
-    public void mostrarDispositivos()
-    {
-        BluetoothAdapter bluetoothAdapter=BluetoothAdapter.getDefaultAdapter();
-        if(bluetoothAdapter==null)
-        {
-            //Device does not support bluetooth
-        }
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 1);
-        }
-        else{
-            escojerDispositivo();
+        findViewById(R.id.btnListarDispositivos).setOnClickListener(v -> mostrarDispositivos());
+        findViewById(R.id.btnProbarImpresora).setOnClickListener(v -> probarImpresora(v));
+        if (Impresora.getInstance().cargarDatosImpresora(this)) {
+            ((EditText) findViewById(R.id.txtNombreImpresora)).setText(Impresora.getInstance().getNombreImpresora());
+            ((EditText) findViewById(R.id.txtDireccionImpresora)).setText(Impresora.getInstance().getMacAdress());
         }
     }
-
-    public void escojerDispositivo()
-    {
-        final Set<BluetoothDevice> pairedDevices = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-
-// If there are paired devices
-        if (pairedDevices.size() > 0) {
-
-            // Loop through paired devices
-            String[] listaDispositivos=new String[pairedDevices.size()];
-            int i=0;
-            for (BluetoothDevice device : pairedDevices) {
-                // Add the name and address to an array adapter to show in a ListView
-
-                listaDispositivos[i]=device.getName() + "\n" + device.getAddress();
-                i++;
-
-
-
-            }
-            ListViewDialog dialogo=ListViewDialog.newInstance("Seleccione la impresora",listaDispositivos,0, this);
-            dialogo.show(getSupportFragmentManager(), "Hue");
-        }
-
+    public void mostrarDispositivos() { if (!working) printerGate.request(this::pairedDevices); }
+    public void escojerDispositivo() { mostrarDispositivos(); }
+    private void pairedDevices() {
+        if (!PrinterAccess.isReady(this)) return;
+        if (Build.VERSION.SDK_INT >= 31 && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) return;
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (adapter == null) return;
+        try {
+            Set<BluetoothDevice> devices = adapter.getBondedDevices();
+            if (devices.isEmpty()) { message("No hay impresoras vinculadas; vincule una en Ajustes de Bluetooth"); return; }
+            String[] choices = new String[devices.size()]; int i = 0;
+            for (BluetoothDevice device : devices) choices[i++] = device.getName() + "\n" + device.getAddress();
+            ListViewDialog.newInstance("Seleccione la impresora", choices, 0, this).show(getSupportFragmentManager(), "printer");
+        } catch (SecurityException e) { message("Se revocó el permiso de Bluetooth"); }
     }
-
-
-
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_impresora, menu);
-        return true;
+    @Override public void onDataReceive(Object value, int source) {
+        String device = (String) value; int split = device.lastIndexOf('\n');
+        if (split < 0) return;
+        String name = device.substring(0, split), address = device.substring(split + 1);
+        ((EditText) findViewById(R.id.txtNombreImpresora)).setText(name);
+        ((EditText) findViewById(R.id.txtDireccionImpresora)).setText(address);
+        Impresora.getInstance().setMacAdress(address);
+        Impresora.getInstance().setNombreImpresora(name);
+        Impresora.getInstance().guardarDatosImpresora(this);
     }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
-
-    @Override
-    public void onDataReceive(Object lista, int autor) {
-
-        EditText nombre= (EditText) findViewById(R.id.txtNombreImpresora);
-        EditText mac= (EditText) findViewById(R.id.txtDireccionImpresora);
-        String[] dispositivo=((String)lista).split("\n");
-        nombre.setText(dispositivo[0]);
-        mac.setText(dispositivo[1]);
-        Impresora.getInstance().setMacAdress(dispositivo[1]);
-        Impresora.getInstance().setNombreImpresora(dispositivo[0]);
-        Impresora.getInstance().guardarDatosImpresora(getApplicationContext());
-
-
-    }
-
-    public void conectar()
-    {
-        pudoConectar= Impresora.getInstance().conectar();
-        if(pudoConectar==Impresora.ERROR_AL_CONECTAR)
-            Toast.makeText(getApplicationContext(), "Bluetooth Connect fail", Toast.LENGTH_SHORT).show();
-        else if(pudoConectar==Impresora.OK)
-        {
-            Toast.makeText(getApplicationContext(), "Bluetooth Connected", Toast.LENGTH_SHORT).show();
-
-        }
-    }
-
-
-    public boolean probarImpresora(View v)
-    {
-            String macAdress=Impresora.getInstance().getMacAdress();
-        if(macAdress==null)
-        {
-            Toast.makeText(getApplicationContext(), "Seleccione una impresora primero", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        else {
-            int i=0;
-            if(!Impresora.getInstance().conectado()) {
-                 i = Impresora.getInstance().conectar();
-            }
-            //RecibosTest.Test(getResources());
-
-
+    public void conectar() { if (!working) printerGate.request(() -> operate(false)); }
+    public boolean probarImpresora(View view) { if (!working) printerGate.request(() -> operate(true)); return true; }
+    private void operate(boolean printTest) {
+        working = true;
+        Impresora.IO.execute(() -> {
+            String error = null;
             try {
-                final InputStream bitmap = getAssets().open("test.jpg");
-                if(i==0) {
-                    Thread thead = new Thread() {
-                        @Override
-                        public void run() {
-                            Bitmap myBitmap = BitmapFactory.decodeStream(bitmap);
-                            Godex.sendCommand("^Q25,0,0");
-                            Godex.sendCommand("^L");
-                            Godex.putimage(0, 0, myBitmap);
-                            Godex.sendCommand("E");
-
-
-                        }
-                    };
-                    thead.start();
+                if (Impresora.getInstance().conectar(getApplicationContext()) != Impresora.OK)
+                    throw new java.io.IOException("No se pudo conectar; seleccione una impresora y revise Bluetooth");
+                if (printTest) {
+                    Bitmap bitmap;
+                    try (InputStream source = getAssets().open("test.jpg")) { bitmap = BitmapFactory.decodeStream(source); }
+                    if (bitmap == null) throw new java.io.IOException("Imagen de prueba no disponible");
+                    try {
+                        ArrayList<Comando> commands = new ArrayList<>();
+                        commands.add(new Comando(ComandosImpresora.CMD, "^Q25,0,0"));
+                        commands.add(new Comando(ComandosImpresora.CMD, "^L"));
+                        Comando image = new Comando(ComandosImpresora.IMG, "0,0"); image.setImagen(bitmap); commands.add(image);
+                        commands.add(new Comando(ComandosImpresora.CMD, "E"));
+                        Impresora.getInstance().enviarComandosImpresora(commands, getApplicationContext());
+                    } finally { bitmap.recycle(); }
                 }
-
-                } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-
-
-
-
-
-
-
-
-        }
-        return true;
+            } catch (Exception e) { error = e.getMessage(); }
+            finally { if (printTest) Impresora.getInstance().desconectar(); }
+            String result = error;
+            runOnUiThread(() -> { working = false; if (!isFinishing() && !isDestroyed()) message(result == null ? "Operación completada" : result); });
+        });
     }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Impresora.getInstance().desconectar();
+    private void message(String text) { Toast.makeText(this, text, Toast.LENGTH_LONG).show(); }
+    @Override public boolean onCreateOptionsMenu(Menu menu) { getMenuInflater().inflate(R.menu.menu_impresora, menu); return true; }
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
+        return item.getItemId() == R.id.action_settings || super.onOptionsItemSelected(item);
     }
+    @Override protected void onDestroy() { super.onDestroy(); Impresora.IO.execute(() -> Impresora.getInstance().desconectar()); }
 }

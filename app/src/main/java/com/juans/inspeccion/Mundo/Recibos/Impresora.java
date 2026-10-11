@@ -16,6 +16,7 @@ import java.util.ArrayList;
  */
 public class Impresora {
     private static Impresora instance=null;
+    public static final java.util.concurrent.ExecutorService IO = java.util.concurrent.Executors.newSingleThreadExecutor();
 
     private final String ARCHIVO_IMPRESORA="printerSettings";
     public final static int OK=0;
@@ -30,7 +31,15 @@ public class Impresora {
 
     private String macAdress;
 
-    private boolean pudoConectar;
+    private volatile boolean pudoConectar;
+    interface Transport {
+        boolean open(String address);
+        boolean command(String command);
+        boolean image(int x, int y, android.graphics.Bitmap bitmap);
+        void close() throws IOException;
+    }
+    private final Transport transport;
+    private final PrinterAccess.Gateway access;
 
     public static synchronized Impresora getInstance()
     {
@@ -41,79 +50,50 @@ public class Impresora {
         return instance;
     }
 
-    private Impresora()
-    {
-
+    private Impresora() {
+        this(new Transport() {
+            public boolean open(String address) { return Godex.open(address, 2); }
+            public boolean command(String command) { return Godex.sendCommand(command); }
+            public boolean image(int x, int y, android.graphics.Bitmap bitmap) { return Godex.putimage(x,y,bitmap); }
+            public void close() throws IOException { Godex.close(); }
+        }, PrinterAccess::isReady);
     }
+    Impresora(Transport transport, PrinterAccess.Gateway access) { this.transport = transport; this.access = access; }
 
     public boolean conectado()
     {
         return pudoConectar;
     }
 
-    public int conectar()
-    {
-        if(macAdress==null)
-        {
-            Log.e("Imoresora","macAdress null");
-            return ERROR_PRINTER_NOT_SET;
-        }
-        pudoConectar= Godex.open(macAdress, 2);
-        if(!pudoConectar)
-        {
-            Log.e("Impresora","Error conexion");
-            return ERROR_AL_CONECTAR;
-        }
-
-        else {
-            Log.e("Conecto","Impresora");
-            return OK;
-        }
-
+    public synchronized int conectar(Context context) {
+        pudoConectar = false;
+        if (!access.ready(context)) { desconectar(); return ERROR_AL_CONECTAR; }
+        if (macAdress == null || !android.bluetooth.BluetoothAdapter.checkBluetoothAddress(macAdress)) return ERROR_PRINTER_NOT_SET;
+        try { pudoConectar = transport.open(macAdress); }
+        catch (RuntimeException e) { pudoConectar = false; }
+        if (!pudoConectar) { desconectar(); return ERROR_AL_CONECTAR; }
+        return OK;
     }
 
-    public void desconectar()
-    {
-        synchronized (this) {
-            pudoConectar = false;
-            try {
-
-                Godex.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-
+    public synchronized void desconectar() {
+        pudoConectar = false;
+        try { transport.close(); } catch (IOException | RuntimeException e) { Log.w("Impresora", "No se pudo cerrar la conexión", e); }
     }
 
-    public  void enviarComandosImpresora(ArrayList<Comando> comandos,Resources res)
-    {
-
-
-        for(Comando comando:comandos)
-        {
-            if(comando.getTipo()== ComandosImpresora.IMG)
-            {
-                String[] parametros=comando.getComando().split(",");
-                int x=Integer.parseInt(parametros[0]);
-                int y=Integer.parseInt(parametros[1]);
-
-              Godex.putimage(x,y,comando.darBitMap());
-
-
-
+    public synchronized void enviarComandosImpresora(ArrayList<Comando> commands, Context context) throws IOException {
+        try {
+            for (Comando command : commands) {
+                // Check every command: permissions or adapter state can change during a receipt.
+                if (!pudoConectar || !access.ready(context)) throw new IOException("La impresora no está conectada o se revocó el permiso");
+                boolean sent;
+                if (command.getTipo() == ComandosImpresora.IMG) {
+                    String[] parameters = command.getComando().split(",");
+                    sent = transport.image(Integer.parseInt(parameters[0]), Integer.parseInt(parameters[1]), command.darBitMap());
+                } else sent = transport.command(command.getComando());
+                if (!sent) throw new IOException("No se pudo enviar el recibo a la impresora");
             }
-            else {
-                Godex.sendCommand(comando.getComando());
-            }
-
-        }
-
-
+        } catch (IOException | RuntimeException e) { desconectar(); throw e; }
     }
-
-
 
     public void guardarDatosImpresora(Context c)
     {

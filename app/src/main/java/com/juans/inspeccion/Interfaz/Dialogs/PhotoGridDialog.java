@@ -33,8 +33,10 @@ public class PhotoGridDialog extends DialogFragment {
     private int selected = -1;
     private int deleteIndex = -1;
     private boolean deleting;
-    private final ActivityResultLauncher<String> storagePermission = registerForActivityResult(
-            new ActivityResultContracts.RequestPermission(), granted -> {
+    private final ActivityResultLauncher<String[]> storagePermission = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(), grants -> {
+                if (!isAdded()) return;
+                boolean granted = !MediaPhotoStore.needsStoragePermission(requireContext());
                 if (granted && deleteIndex >= 0) deletePhoto(deleteIndex);
                 else if (isAdded()) Toast.makeText(requireContext(), "Permiso denegado; la foto se conserva", Toast.LENGTH_LONG).show();
             });
@@ -80,7 +82,7 @@ public class PhotoGridDialog extends DialogFragment {
                     .setMessage("Se borrará también de la galería del dispositivo. ¿Continuar?")
                     .setNegativeButton("Cancelar", null).setPositiveButton("Borrar", (d, which) -> {
                         deleteIndex = selected;
-                        if (MediaPhotoStore.needsStoragePermission(activity)) storagePermission.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        if (MediaPhotoStore.needsStoragePermission(activity)) storagePermission.launch(MediaPhotoStore.storagePermissions());
                         else deletePhoto(deleteIndex);
                     }).show();
         });

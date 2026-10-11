@@ -29,9 +29,14 @@ public class MediaPhotoStore implements PhotoStore {
 
     public static String authority(Context context) { return context.getPackageName() + ".fileprovider"; }
 
+    public static String[] storagePermissions() {
+        return new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    }
     public static boolean needsStoragePermission(Context context) {
-        return Build.VERSION.SDK_INT <= 28 && ContextCompat.checkSelfPermission(context,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
+        if (Build.VERSION.SDK_INT >= 29) return false;
+        for (String permission : storagePermissions())
+            if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) return true;
+        return false;
     }
 
     @Override public File createCapture(String id) throws IOException {
@@ -107,13 +112,19 @@ public class MediaPhotoStore implements PhotoStore {
         if (total == 0) throw new IOException("La foto está vacía");
     }
 
+    private static Uri imageCollection() {
+        return Build.VERSION.SDK_INT >= 29
+                ? MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                : MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+    }
+
     private Uri findDestination(String folder, String display) throws IOException {
         String column = Build.VERSION.SDK_INT >= 29 ? MediaStore.Images.Media.RELATIVE_PATH : MediaStore.Images.Media.DATA;
         String location = Build.VERSION.SDK_INT >= 29 ? folder : new File(Environment.getExternalStorageDirectory(), folder + display).getPath();
-        try (Cursor cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        try (Cursor cursor = context.getContentResolver().query(imageCollection(),
                 new String[]{MediaStore.Images.Media._ID}, column + "=? AND " + MediaStore.Images.Media.DISPLAY_NAME + "=?",
                 new String[]{location, display}, null)) {
-            if (cursor != null && cursor.moveToFirst()) return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cursor.getString(0));
+            if (cursor != null && cursor.moveToFirst()) return Uri.withAppendedPath(imageCollection(), cursor.getString(0));
             return null;
         } catch (RuntimeException e) { throw new IOException("No se pudo consultar la biblioteca", e); }
     }
@@ -131,7 +142,7 @@ public class MediaPhotoStore implements PhotoStore {
             values.put(MediaStore.Images.Media.DATA, new File(dir, display).getPath());
         }
         try {
-            Uri result = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            Uri result = context.getContentResolver().insert(imageCollection(), values);
             if (result == null) throw new IOException("No se pudo reservar la foto");
             return result;
         } catch (RuntimeException e) { throw new IOException("No se pudo crear la foto", e); }

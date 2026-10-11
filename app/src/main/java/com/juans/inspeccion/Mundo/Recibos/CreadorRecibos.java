@@ -29,7 +29,7 @@ public class CreadorRecibos {
 
     };
 
-    public  static void generarFactura(Inspeccion inspeccion,Context c) {
+    public  static void generarFactura(Inspeccion inspeccion,Context c) throws java.io.IOException {
 
 
 
@@ -56,20 +56,7 @@ public class CreadorRecibos {
 
 
 
-        if(true)
-        {
-            try {
-                Impresora.getInstance().enviarComandosImpresora(comandos.darListaComandos(), resources);
-            }
-            catch(Exception e)
-            {
-                e.printStackTrace();
-            }
-
-        }
-
-
-
+        Impresora.getInstance().enviarComandosImpresora(comandos.darListaComandos(), c);
     }
 
     private static void agregarFinal(ComandosImpresora comandos, Inspeccion ins,Resources res) {

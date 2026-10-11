@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<issues format="6" by="lint 8.10.1" type="baseline" client="gradle" dependencies="false" name="AGP (8.10.1)" variant="all" version="8.10.1">
+    <issue id="MissingSuperCall" message="Overriding method should call `super.onBackPressed`" errorLine1="    public void onBackPressed() {" errorLine2="                ~~~~~~~~~~~~~">
+        <location file="src/main/java/com/juans/inspeccion/Interfaz/ConsultasActivity.java" line="96" column="17" />
+    </issue>
+    <issue id="MissingSuperCall" message="Overriding method should call `super.onBackPressed`" errorLine1="    public void onBackPressed() {" errorLine2="                ~~~~~~~~~~~~~">
+        <location file="src/main/java/com/juans/inspeccion/Interfaz/FichaContenedorActivity.java" line="293" column="17" />
+    </issue>
+    <issue id="SoonBlockedPrivateApi" message="Reflective access to mCursorDrawableRes will throw an exception when targeting API 33 and above" errorLine1="            Field f=TextView.class.getDeclaredField(&quot;mCursorDrawableRes&quot;);" errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location file="src/main/java/com/juans/inspeccion/Interfaz/Dialogs/EditTextDialog.java" line="105" column="21" />
+    </issue>
+    <issue id="SoonBlockedPrivateApi" message="Reflective access to sHasPermanentMenuKey will throw an exception when targeting API 33 and above" errorLine1="            Field menuKeyField = ViewConfiguration.class.getDeclaredField(&quot;sHasPermanentMenuKey&quot;);" errorLine2="                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location file="src/main/java/com/juans/inspeccion/Interfaz/LoginActivity.java" line="67" column="34" />
+    </issue>
+    <issue id="AppCompatCustomView" message="This custom view should extend `androidx.appcompat.widget.AppCompatCheckBox` instead" errorLine1="public class MyCheckBox extends CheckBox implements CustomView {" errorLine2="                                ~~~~~~~~">
+        <location file="src/main/java/com/juans/inspeccion/CustomView/MyCheckBox.java" line="14" column="33" />
+    </issue>
+    <issue id="AppCompatCustomView" message="This custom view should extend `androidx.appcompat.widget.AppCompatEditText` instead" errorLine1="public class MyEditText extends EditText implements CustomView,Serializable {" errorLine2="                                ~~~~~~~~">
+        <location file="src/main/java/com/juans/inspeccion/CustomView/MyEditText.java" line="17" column="33" />
+    </issue>
+    <issue id="AppCompatCustomView" message="This custom view should extend `androidx.appcompat.widget.AppCompatTextView` instead" errorLine1="public class MyTextView extends TextView {" errorLine2="                                ~~~~~~~~">
+        <location file="src/main/java/com/juans/inspeccion/CustomView/MyTextView.java" line="10" column="33" />
+    </issue>
+</issues>

@@ -412,7 +412,7 @@ public class DAO  {
             if (textField.esLlave(nombreTabla))
             {
 
-                if( numCondiciones>0) CONDICIONES+=" AND ";
+                if (numCondiciones > 0) { CONDICIONES += " AND "; }
 
 
 
@@ -451,11 +451,11 @@ public class DAO  {
             if (textField.esLlave(nombreTabla))
             {
 
-                if( numCondiciones>0) CONDICIONES+=" AND ";
+                if (numCondiciones > 0) { CONDICIONES += " AND "; }
 
 
 
-                    CONDICIONES += " " + textField.getNombreCampo() + "=" + "'" + textField.getTexto().toString() + "'";
+                CONDICIONES += " " + textField.getNombreCampo() + "=" + "'" + textField.getTexto().toString() + "'";
 
 
                 numCondiciones++;
@@ -473,11 +473,11 @@ public class DAO  {
             }
             }
         }
-        if(adicionales!=null)
-        for(int i=0;i<adicionales.size();i++)
-        {
-            if( numCampos>0) CAMPOS+=",";
-            CAMPOS+=adicionales.get(i);
+        if (adicionales != null) {
+            for (int i = 0; i < adicionales.size(); i++) {
+                if (numCampos > 0) { CAMPOS += ","; }
+                CAMPOS += adicionales.get(i);
+            }
         }
         String sentencia="SELECT"+CAMPOS+" FROM "+nombreTabla+" WHERE "+CONDICIONES;
         Log.e("crear select", sentencia);

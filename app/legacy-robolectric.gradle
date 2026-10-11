@@ -1,0 +1,75 @@
+// Keep historical API 22/28 regression tests runnable after raising the app's
+// minimum SDK. Only Robolectric receives this copy; installable APKs stay at 29.
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.util.zip.ZipFile
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+
+tasks.withType(Test).configureEach {
+    def variant = name.replaceFirst('^test', '').replaceFirst('UnitTest$', '')
+    variant = variant.substring(0, 1).toLowerCase() + variant.substring(1)
+    def fixture = layout.buildDirectory.dir("historical-test-resources/${variant}").get().asFile
+    // DefaultManifestFactory reads the first test_config.properties on the classpath.
+    doFirst {
+        fixture.mkdirs()
+        def generated = file("${buildDir}/intermediates/unit_test_config_directory/${variant}UnitTest/generate${variant.capitalize()}UnitTestConfig/out/com/android/tools/test_config.properties")
+        def properties = new Properties()
+        generated.withInputStream { properties.load(it) }
+        def historicalApk = new File(fixture, 'historical-resources.ap_')
+        def sourceApk = file(properties.getProperty('android_resource_apk'))
+        new ZipFile(sourceApk).withCloseable { input ->
+            new ZipOutputStream(new FileOutputStream(historicalApk)).withCloseable { output ->
+                input.entries().each { entry ->
+                    byte[] bytes = input.getInputStream(entry).withCloseable { it.bytes }
+                    if (entry.name == 'AndroidManifest.xml') {
+                        // Walk Android's binary XML chunks and identify minSdkVersion
+                        // by resource ID, not a byte pattern or resource string order.
+                        def xml = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+                        def ids = []
+                        int changed = 0
+                        for (int offset = 8; offset < bytes.length;) {
+                            int type = xml.getShort(offset) & 0xffff
+                            int header = xml.getShort(offset + 2) & 0xffff
+                            int size = xml.getInt(offset + 4)
+                            if (size < header || size == 0 || offset + size > bytes.length) {
+                                throw new GradleException('Invalid binary test manifest')
+                            }
+                            if (type == 0x0180) {
+                                for (int i = offset + header; i < offset + size; i += 4) ids.add(xml.getInt(i))
+                            } else if (type == 0x0102) {
+                                int start = xml.getShort(offset + 24) & 0xffff
+                                int stride = xml.getShort(offset + 26) & 0xffff
+                                int count = xml.getShort(offset + 28) & 0xffff
+                                for (int i = 0; i < count; i++) {
+                                    int attribute = offset + 16 + start + i * stride
+                                    int nameIndex = xml.getInt(attribute + 4)
+                                    if (nameIndex < ids.size() && ids[nameIndex] == 0x0101020c) {
+                                        xml.putInt(attribute + 8, -1) // no raw string value
+                                        xml.put(attribute + 15, (byte) 0x10) // TYPE_INT_DEC
+                                        xml.putInt(attribute + 16, 22)
+                                        changed++
+                                    }
+                                }
+                            }
+                            offset += size
+                        }
+                        if (changed != 1) throw new GradleException('Expected one test minSdkVersion attribute')
+                    }
+                    output.putNextEntry(new ZipEntry(entry.name))
+                    output.write(bytes)
+                    output.closeEntry()
+                }
+            }
+        }
+        def historicalManifest = new File(fixture, 'AndroidManifest.xml')
+        historicalManifest.text = file(properties.getProperty('android_merged_manifest')).text
+                .replaceFirst('android:minSdkVersion="[0-9]+"', 'android:minSdkVersion="22"')
+        properties.setProperty('android_resource_apk', historicalApk.absolutePath)
+        properties.setProperty('android_merged_manifest', historicalManifest.absolutePath)
+        def override = new File(fixture, 'com/android/tools/test_config.properties')
+        override.parentFile.mkdirs()
+        override.withOutputStream { properties.store(it, 'Robolectric historical SDK fixture; never installed') }
+        classpath = files(fixture) + classpath
+    }
+}

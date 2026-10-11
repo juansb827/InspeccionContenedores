@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply from: 'legacy-robolectric.gradle'
 
 android {
     compileSdk 34
@@ -10,7 +11,7 @@ android {
     
     defaultConfig {
         applicationId "com.juans.inspeccion"
-        minSdk 22
+        minSdk 29
         targetSdk 33
         versionCode 10
         versionName "1.10"

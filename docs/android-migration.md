@@ -58,7 +58,7 @@ queue entries after successful transfers; the background service stays inactive.
 ## Permissions and build
 
 The build stays at AGP 8.10.1 / Gradle 8.11.1, compile SDK 34, target SDK 33,
-minimum SDK 22, application ID `com.juans.inspeccion`, version 10 / 1.10.
+minimum SDK 29 (Android 10), application ID `com.juans.inspeccion`, version 10 / 1.10.
 AndroidX AppCompat 1.6.1 and Material 1.11.0 remain pinned. ExifInterface is
 1.3.7 and DocumentFile is 1.0.1. Repositories are Google and Maven Central.
 New Relic and EasyPermissions are removed. Legacy resource-ID and BuildConfig
@@ -101,6 +101,22 @@ back navigation uses the dispatcher so pending capture and printing guards remai
 active without suppressing a lifecycle diagnostic.
 
 ## Validation
+
+The Android 10 minimum checkpoint changes the minimum SDK, documentation, and
+test-resource configuration required to retain historical SDK coverage.
+The existing photo dialog, dependencies, target/compile SDKs and storage paths are
+retained so this checkpoint can be tested independently of the new gallery.
+Robolectric receives a copy of its compiled resource APK with a minimum SDK of 22;
+the installable APK remains at 29. Tests explicitly running API 22/28 remain historical regression coverage; these
+versions are no longer supported for installation. Previously recorded validation
+below describes the earlier minimum-SDK-22 build.
+
+The minimum-SDK-29 checkpoint passed `assembleDebug testDebugUnitTest lintDebug`
+using the configured JBR: all 52 JVM tests passed and lint reported no new errors.
+APK inspection confirmed minimum SDK 29, target SDK 33 and compile SDK 34. Its
+debug APK and build log are retained outside the repository under
+`~/.local/state/inspeccion-validation/2026-10-11/`. Device acceptance is recorded
+separately; automated checks do not establish OEM camera or printer behavior.
 
 Validation ran locally using JBR 21.0.11 and the configured Android SDK:
 
@@ -156,7 +172,7 @@ that deployed key.
 
 Before production release, use test devices and non-production services to check:
 
-- Android 5.1–9 storage denial/grant and publication into Pictures; Android 10+
+- Android 10+
   pending MediaStore writes, visibility in Gallery, and survival after uninstall.
 - OEM camera URI grants, cancellation/empty output, rotation/mirroring, missing
   camera handlers, rotation/recreation and process death while capturing or

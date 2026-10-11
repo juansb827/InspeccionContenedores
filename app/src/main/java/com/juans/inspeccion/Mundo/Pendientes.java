@@ -1,173 +1,72 @@
 package com.juans.inspeccion.Mundo;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;;
-import android.widget.Toast;
-
 import com.juans.inspeccion.Interfaz.MainActivity;
+import com.juans.inspeccion.Mundo.Storage.StoredInspections;
 import com.juans.inspeccion.R;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by juan__000 on 10/31/2014.
- */
 public class Pendientes {
-     private static ArrayList<Inspeccion> listaPendientes;
-     private static ArrayList<HashMap<String,String>> resumenTurnos;
-     private final static String FILE_NAME = "listaPendientes";
-    public final static String PENDIENTE="PENDIENTE";
+    private static ArrayList<Inspeccion> listaPendientes;
+    private static ArrayList<HashMap<String,String>> resumenTurnos;
+    public static final String PENDIENTE = "PENDIENTE";
 
-     public static void guardarListaTurnos(Context c)
-     {
-         if(listaPendientes !=null) {
-             try {
-
-                 File file = c.getFileStreamPath(FILE_NAME);
-                 if (file.exists()) {
-                     file.delete();
-                 }
-                 FileOutputStream fos = MainActivity.context.openFileOutput(FILE_NAME, Context.MODE_PRIVATE);
-                 ObjectOutputStream os = new ObjectOutputStream(fos);
-                 os.writeObject(listaPendientes);
-                 os.close();
-             }
-             catch (IOException e)
-             {
-                 Toast.makeText(MainActivity.context, "Hubo un error guardando los turnos pendientes",Toast.LENGTH_SHORT).show();
-                 e.printStackTrace();
-             }
-         }
-
-     }
-
-    public static void cargarListaTurnos(Context c)
-    {
-        try {
-
-            File file = c.getFileStreamPath(FILE_NAME);
-            if (file.exists()) {
-
-                FileInputStream fis = MainActivity.context.openFileInput(FILE_NAME);
-                ObjectInputStream is = new ObjectInputStream(fis);
-                 listaPendientes =(ArrayList<Inspeccion>) is.readObject();
-                is.close();
-            }
-
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
-        if(listaPendientes ==null){
-            listaPendientes =new ArrayList();
-        }
-
+    public static synchronized void guardarListaTurnos(Context context) {
+        if (listaPendientes != null) StoredInspections.write(context, StoredInspections.DRAFTS, listaPendientes);
     }
-
-
-    public static Inspeccion darPendiente(int i,Context c)
-    {
-        Inspeccion inspeccion=null;
-        if(listaPendientes ==null)cargarListaTurnos(c);
-        if(listaPendientes !=null && listaPendientes.size()>i)
-        {
-            inspeccion= listaPendientes.get(i);
-        }
-            return inspeccion;
+    public static synchronized void cargarListaTurnos(Context context) {
+        listaPendientes = StoredInspections.read(context, StoredInspections.DRAFTS);
+        resumenTurnos = null;
     }
-    @NonNull
-    public static ArrayList<Inspeccion> darListaTurnos(Context c)
-    {
-       if(listaPendientes ==null)cargarListaTurnos(c);
+    public static synchronized void invalidate() { listaPendientes = null; resumenTurnos = null; }
+    public static synchronized Inspeccion darPendiente(int index, Context context) {
+        ArrayList<Inspeccion> list = darListaTurnos(context);
+        return index >= 0 && index < list.size() ? list.get(index) : null;
+    }
+    public static synchronized ArrayList<Inspeccion> darListaTurnos(Context context) {
+        if (listaPendientes == null) cargarListaTurnos(context);
         return listaPendientes;
     }
-
-    public  static ArrayList<HashMap<String,String>> darResumenTurnos(Context c)
-    {
-        if(listaPendientes ==null) cargarListaTurnos(c);
-        if(resumenTurnos==null )
-        {
-        resumenTurnos=new ArrayList();
-        for(int i=0;i< listaPendientes.size();i++) {
-            Inspeccion t = listaPendientes.get(i);
-            HashMap<String, String> mapa = t.getInformacion();
-            String Nturno = MainActivity.context.getResources().getString(R.string.NTURNO);
-            String numeroTurno = mapa.get(Nturno);
-            String fechaMostar = MainActivity.context.getResources().getString(R.string.FECHA_MOSTRAR);
-            String fechaTurno = mapa.get(fechaMostar);
-            String ctipoturno = MainActivity.context.getResources().getString(R.string.CTIPOTURNO);
-            String tipoTurno = mapa.get(ctipoturno);
-
-            HashMap<String, String> resumen = new HashMap<String, String>();
-            resumen.put(Nturno, numeroTurno);
-            resumen.put(fechaMostar, fechaTurno);
-            resumen.put(ctipoturno, tipoTurno);
-            resumenTurnos.add(resumen);
-
-        }
-
-
-
-
+    public static synchronized ArrayList<HashMap<String,String>> darResumenTurnos(Context context) {
+        if (listaPendientes == null) cargarListaTurnos(context);
+        if (resumenTurnos == null) {
+            resumenTurnos = new ArrayList<>();
+            String turno = context.getString(R.string.NTURNO);
+            String fecha = context.getString(R.string.FECHA_MOSTRAR);
+            String tipo = context.getString(R.string.CTIPOTURNO);
+            for (Inspeccion inspection : listaPendientes) {
+                HashMap<String,String> summary = new HashMap<>();
+                summary.put(turno, inspection.getInformacion().get(turno));
+                summary.put(fecha, inspection.getInformacion().get(fecha));
+                summary.put(tipo, inspection.getInformacion().get(tipo));
+                resumenTurnos.add(summary);
+            }
         }
         return resumenTurnos;
     }
-
-    public static void agregarInspeccion(Inspeccion inspeccion, Context c)
-    {
-       if(listaPendientes ==null) cargarListaTurnos(c);
-        listaPendientes.add(inspeccion);
-        resumenTurnos=null;
-        guardarListaTurnos(c);
+    public static synchronized void agregarInspeccion(Inspeccion inspection, Context context) {
+        ArrayList<Inspeccion> next = new ArrayList<>(darListaTurnos(context));
+        next.add(inspection);
+        commit(context, next);
     }
-
-    public static void remplazarTurno(int indice,Inspeccion inspeccion,Context c)
-    {
-        if(listaPendientes ==null) cargarListaTurnos(c);
-        listaPendientes.set(indice, inspeccion);
-        guardarListaTurnos(c);
+    public static synchronized void remplazarTurno(int index, Inspeccion inspection, Context context) {
+        ArrayList<Inspeccion> next = new ArrayList<>(darListaTurnos(context));
+        next.set(index, inspection);
+        commit(context, next);
     }
-
-    public static void borrarTurno(int indice,Context c)
-    {
-      try {
-          if (listaPendientes != null && indice < listaPendientes.size()) {
-              listaPendientes.remove(indice);
-              resumenTurnos = null;
-              guardarListaTurnos(c);
-          }
-      }
-      catch (Exception e)
-      {
-          e.printStackTrace();
-      }
-
+    public static synchronized void borrarTurno(int index, Context context) {
+        ArrayList<Inspeccion> next = new ArrayList<>(darListaTurnos(context));
+        if (index >= 0 && index < next.size()) { next.remove(index); commit(context, next); }
     }
-
-    public static void borrarTodo()
-    {
-        File file = MainActivity.context.getFileStreamPath(FILE_NAME);
-        if (file.exists()) {
-            file.delete();
-        }
-        listaPendientes.clear();
-        resumenTurnos.clear();
-
+    public static synchronized void borrarTodo() { borrarTodo(MainActivity.context); }
+    public static synchronized void borrarTodo(Context context) {
+        darListaTurnos(context); // Refuse to overwrite a damaged store.
+        commit(context, new ArrayList<>());
     }
-
-
-
-
-
-
-
+    private static void commit(Context context, ArrayList<Inspeccion> next) {
+        StoredInspections.write(context, StoredInspections.DRAFTS, next);
+        listaPendientes = next;
+        resumenTurnos = null;
+    }
 }

@@ -1,85 +1,61 @@
 package com.juans.inspeccion.Mundo;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import android.content.Context;
+import com.juans.inspeccion.Mundo.Storage.PhotoStore;
+import com.juans.inspeccion.Mundo.Storage.MediaPhotoStore;
+import com.juans.inspeccion.Interfaz.MainActivity;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
 
-/**
- * Created by Juan on 04/05/2015.
- */
-public class Album implements Serializable{
+public class Album implements Serializable {
+    // Generated from the released d9c52d3 sources.
+    private static final long serialVersionUID = 4164294007417506670L;
     private int fotos_tomadas;
+    private ArrayList<String> fotos = new ArrayList<>();
+    private String id;
+    private HashMap<String, String> remoteNames = new HashMap<>();
 
-    public ArrayList<String> getFotos() {
-        return fotos;
+    public String getId() {
+        if (id == null) id = UUID.randomUUID().toString();
+        return id;
     }
+    public ArrayList<String> getFotos() { return fotos; }
+    public void setFotos(ArrayList<String> fotos) { this.fotos = fotos; }
+    public int getFotos_tomadas() { return fotos_tomadas; }
+    public void setFotos_tomadas(int count) { fotos_tomadas = count; }
 
-    public void setFotos(ArrayList<String> fotos) {
-        this.fotos = fotos;
+    public void agregarFoto(String reference) throws IOException {
+        if (reference == null || !reference.startsWith("content://")) throw new IOException("Importe las fotos antiguas desde Configuración");
+        if (!fotos.contains(reference)) { fotos.add(reference); fotos_tomadas++; }
     }
-
-    public int getFotos_tomadas() {
-        return fotos_tomadas;
+    public void setRemoteName(String reference, String name) { remoteNames.put(reference, name); }
+    public String remoteName(String reference, PhotoStore store) throws IOException {
+        String name = remoteNames.get(reference);
+        return name == null ? store.displayName(reference) : name;
     }
-
-    public void setFotos_tomadas(int fotos_tomadas) {
-        this.fotos_tomadas = fotos_tomadas;
+    public void replaceReference(String oldReference, String newReference) {
+        for (int i = 0; i < fotos.size(); i++) if (fotos.get(i).equals(oldReference)) fotos.set(i, newReference);
+        String name = remoteNames.remove(oldReference);
+        if (name != null) remoteNames.put(newReference, name);
     }
-
-    private ArrayList<String> fotos;
-    public Album()
-    {
-        fotos=new ArrayList<>();
-        fotos_tomadas=0;
-
+    public void deletePhoto(Context context, int index) throws IOException {
+        String reference = fotos.get(index);
+        new MediaPhotoStore(context).delete(reference);
+        fotos.remove(index);
+        remoteNames.remove(reference);
     }
-
-    public void agregarFoto(String foto) throws Exception {
-
-        Bitmap bitmap= BitmapFactory.decodeFile(foto);
-        Bitmap resized= MyCameraHelper.getResizedWidth(bitmap,1280);
-        File file=new File(foto);
-        file.delete();
-        FileOutputStream fos=new FileOutputStream(file);
-        resized.compress(Bitmap.CompressFormat.JPEG, 90, fos);
-
-
-        Log.e("Album:agrego",foto);
-        fotos.add(foto);
-        fotos_tomadas++;
+    public void eliminarFoto(int index) throws IOException { deletePhoto(MainActivity.context, index); }
+    /** Clearing a form/damage unlinks photos; it never deletes gallery copies. */
+    public void borrarAlbum() throws IOException { fotos.clear(); remoteNames.clear(); }
+    public void renombrarFotos(String name) throws IOException {
+        for (int i = 0; i < fotos.size(); i++) remoteNames.put(fotos.get(i), name + "_" + i + ".jpg");
     }
-
-    public void eliminarFoto(int i) throws IOException
-    {
-       String fotoPath=fotos.get(i);
-        File foto=new File(fotoPath);
-        foto.delete();
-        Log.e("Album:elimino",fotoPath);
-        fotos.remove(i);
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if (fotos == null) fotos = new ArrayList<>();
+        if (remoteNames == null) remoteNames = new HashMap<>();
+        getId();
     }
-
-    public void borrarAlbum() throws IOException {
-
-        while(fotos.size()!=0) {
-            eliminarFoto(0);
-            fotos_tomadas--;
-        }
-
-
-    }
-
-    public void renombrarFotos(String nuevoNombre) throws IOException
-    {
-        while(fotos.size()!=0) {
-            eliminarFoto(0);
-            fotos_tomadas--;
-        }
-    }
-
 }

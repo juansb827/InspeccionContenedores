@@ -22,54 +22,15 @@ public class FotosPendientes {
      static ArrayList<Inspeccion> fotosPendientes;
     private final static String FILE_NAME = "fotosPendientes";
 
-    public  void cargarArchivo()
-    {
-       if (fotosPendientes==null)
-       {
-          try{
-              File file = MainActivity.context.getFileStreamPath(FILE_NAME);
-              if (file.exists()) {
-                  FileInputStream fis = MainActivity.context.openFileInput(FILE_NAME);
-                  ObjectInputStream is = new ObjectInputStream(fis);
-                  fotosPendientes =(ArrayList<Inspeccion>) is.readObject();
-                  is.close();
-              }
-          }
-          catch (Exception e)
-          {
-              e.printStackTrace();
-          }
-
-
-       }
-       if(fotosPendientes==null)
-       {
-           fotosPendientes=new ArrayList<>();
-       }
-
-
+    public void cargarArchivo() {
+        if (fotosPendientes == null) fotosPendientes = com.juans.inspeccion.Mundo.Storage.StoredInspections.read(
+                MainActivity.context, com.juans.inspeccion.Mundo.Storage.StoredInspections.UPLOADS);
     }
-
-    public  void guardarArchivo() throws Exception
-    {
-        if(fotosPendientes!=null && fotosPendientes.size()!=0) {
-
-                    File file = MainActivity.context.getFileStreamPath(FILE_NAME);
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                    FileOutputStream fos = MainActivity.context.openFileOutput(FILE_NAME, Context.MODE_PRIVATE);
-                    ObjectOutputStream os = new ObjectOutputStream(fos);
-                    os.writeObject(fotosPendientes);
-                    os.close();
-
-
-            }
-
-
-
+    public void guardarArchivo() throws Exception {
+        if (fotosPendientes != null) com.juans.inspeccion.Mundo.Storage.StoredInspections.write(
+                MainActivity.context, com.juans.inspeccion.Mundo.Storage.StoredInspections.UPLOADS, fotosPendientes);
     }
-
+    public static void invalidate() { fotosPendientes = null; }
 
     public  boolean agregarFotos(Inspeccion inspeccion)
     {

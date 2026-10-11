@@ -9,6 +9,33 @@ import java.util.HashMap;
  * This class represents the data that we want to store and retrieve from the database.
  */
 public class Inspeccion implements Serializable{
+    // Generated from the released d9c52d3 sources; do not change for new fields.
+    private static final long serialVersionUID = 7140579573600875404L;
+    private String photoId;
+
+    public String getPhotoId() {
+        if (photoId == null) photoId = java.util.UUID.randomUUID().toString();
+        return photoId;
+    }
+
+    public ArrayList<Album> allAlbums() {
+        ArrayList<Album> result = new ArrayList<>();
+        if (fotosGenerales != null) result.add(fotosGenerales);
+        if (daniosManager != null) for (Danio damage : daniosManager.getListaDanios()) result.add(damage.getAlbum());
+        if (fotosInspeccion != null) for (Album album : fotosInspeccion) if (!result.contains(album)) result.add(album);
+        return result;
+    }
+
+    public Album findAlbum(String id) {
+        for (Album album : allAlbums()) if (album.getId().equals(id)) return album;
+        return null;
+    }
+
+    public void initializePhotoIds() {
+        getPhotoId();
+        for (Album album : allAlbums()) album.getId();
+    }
+
 
     String tipoInspeccion;
     String tipoDocumento;

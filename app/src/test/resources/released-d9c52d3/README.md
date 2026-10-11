@@ -1,0 +1,1 @@
+Serialized using unmodified model sources from d9c52d3 (javac --release 8), without launching the app. Includes a draft with general/damage photos and an upload queue using released /Inspecciones paths. See docs/android-migration.md for serialVersionUID values.

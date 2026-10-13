@@ -2,5 +2,15 @@
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
+/.idea/caches/
+/.idea/deviceManager.xml
+/.idea/deploymentTargetSelector.xml
+/.idea/modules.xml
+*.iml
 .DS_Store
 /build
+
+# Generated Android release artifacts
+/app/release/
+*.apk
+*.aab

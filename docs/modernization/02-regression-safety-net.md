@@ -17,7 +17,7 @@ The existing docs record a local JBR 21 setup and extra heap for the video graph
 
 ## Work sequence and initial test priorities
 
-1. Run the baseline, record failures before changing code, and distinguish environment failures from behavior failures. Preserve `released-d9c52d3` serialized fixtures.
+1. Run the baseline, record failures before changing code, and distinguish environment failures from behavior failures. Preserve `released-d9c52d3` fixture bytes for old-format recognition tests. Existing deserialization tests remain baseline evidence until the deliberate cutover PR replaces their superseded expectations.
 2. Create a behavior-to-test matrix with the cases below. Add characterization tests: tests recording important existing outcomes, including intentional quirks. Suspected defects get separate proposed corrections rather than becoming permanent requirements.
 3. Add the smallest seams needed to test logic without a live database or device. Keep those changes local; the full repository architecture comes in step 04. If a behavior cannot yet be isolated, cover it at the nearest feasible integration boundary and record the gap.
 4. Make fast checks repeatable locally and in the repository's selected CI system. Add a separate opt-in test-service/device suite; default tests must not discover or connect to production settings.
@@ -29,10 +29,10 @@ The existing docs record a local JBR 21 setup and extra heap for the video graph
 | Form binding | All visible and hidden fields map to the same business keys; date conversion; editable/read-only modes | Robolectric inflation/binding tests |
 | Inspection save/modify | Entry vs exit; with/without turno; document-number preservation; header/details atomicity | Fake repository first, isolated SQL Server integration in step 05 |
 | Containers/bookings | Membership/balance checks; container-code changes and associated turno update | Recorded fixtures and operation contracts |
-| Pending drafts | Save, replace by stable identity, reopen, corrupt file, interrupted replacement | Existing storage fixtures plus new workflow tests |
+| Pending drafts | Current-format save/reopen; unsupported old/newer schemas; corruption/I/O failure; interrupted cutover/replacement | Old-format detection fixtures and new workflow/storage tests |
 | Submission failure | Duplicate tap, duplicate document, timeout, uncertain commit; draft retained | Submission coordinator/repository contract |
 | Permissions/read-only state | Actions blocked in handlers as well as visually; retry/cancel preserves work | Screen/controller tests |
-| Media and printing | Existing camera/video/gallery recovery, partial photo upload, printer failure | Retain existing tests; add only uncovered changed behavior |
+| Media and printing | Camera/video/gallery recovery, public media preservation, printer failure; retired upload queue cannot replay or block saving | Retain active media/printing tests; replace obsolete upload compatibility expectations at cutover |
 
 Use real SQL Server for dialect, function, collation, and transaction integration tests; SQLite/H2 and mocked SQL strings cannot establish those properties. Add that environment as part of step 05 if it is not available yet.
 
@@ -43,7 +43,7 @@ Suggested PRs: baseline/check runner; business-rule fixtures; submission/form-bi
 - [ ] Baseline checks run reproducibly, with existing failures explicitly documented.
 - [ ] Every high-risk behavior about to be refactored has a meaningful regression test or an explicit integration gate before its change.
 - [ ] Tests run without production SQL Server, FTP, printer, or credentials.
-- [ ] Existing storage/media compatibility tests remain active.
+- [ ] Old-format recognition, distinct corruption/I/O errors and new-draft recovery are covered; active media/printing tests remain. Retired draft/queue deserialization requirements are deliberately replaced, not disabled to hide unrelated failures.
 - [ ] CI/local reports distinguish JVM, database integration, emulator, and physical-device evidence.
 
 Rollback: revert new harness changes independently of behavior fixtures. A disabled/failing test is an unresolved item, not a passing phase.

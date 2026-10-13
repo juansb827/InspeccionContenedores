@@ -6,9 +6,9 @@ Status: proposed. Prerequisite: agreement to begin implementation. Outcome: a sh
 
 1. Record the starting commit, SDK/build configuration, device fleet, distribution method, and available test services. Inventory screens, menus, document types, entry/exit modes, editable/read-only modes, and external interactions.
 2. Walk through representative workflows with an operator using sanitized data. Mark each statement as confirmed by walkthrough, observed in code/tests, or awaiting confirmation. Capture baseline screenshots with window dimensions in dp, Android version, font scale, and display scaling.
-3. Inventory durable state: drafts, photo upload queue, connection settings, reference-list caches, media references, capture/deletion journals, and local video index. Classify which are business data versus rebuildable caches. Record retention/recovery behavior without copying secrets.
+3. Inventory durable state: drafts, photo upload queue, connection settings, reference-list caches, media references, capture/deletion journals, and local video index. Mark old drafts/unused uploads as intentionally retired under the [storage version policy](storage-version-policy.md); distinguish preserved media and current data from rebuildable caches. Record retention/recovery behavior without copying secrets.
 4. Reconcile existing documentation. `android-migration.md` describes an external-camera checkpoint; current code and `embedded-camera.md` describe CameraX and video. `photo-gallery.md` predates mixed media. Preserve historical validation as history, with links to current behavior.
-5. Resolve the serialization documentation discrepancy before editing persisted models: the migration document describes explicit identifiers for four models, while current source explicitly declares them only in `Album` and `Inspeccion`. Check compiled identifiers and released fixtures for `Danio` and `DaniosManager`; do not assume a regression or add guessed values.
+5. Record that historical serialization-preservation requirements have been superseded for drafts/unused uploads. Keep released fixtures to test format recognition rather than require successful deserialization. Audit other serialized consumers, especially capture/publication journals, before moving models; do not restore old draft compatibility identifiers merely to preserve abandoned data.
 6. Establish the documentation structure below and add a concise root `AGENTS.md` during this phase. It should link to facts and checks, rather than duplicate all feature requirements.
 
 ## Proposed documentation structure
@@ -38,7 +38,7 @@ These are proposed destinations, not files claimed to exist today. Use stable ke
 
 Feature documents answer: who can do what, under which conditions, with which visible outcomes; what happens on cancellation, failure, retry, loss of connectivity, or reopening. Use Spanish UI labels verbatim. Keep SQL, class names, libraries, and package diagrams in architecture/testing documents. Give behavior requirements stable IDs so tests and changes can refer to them. Start from the [template](feature-document-template.md).
 
-Proposed `AGENTS.md` contents: app purpose; entry points to feature/architecture docs; tested build commands and environment requirements; how to select relevant tests; persisted-model compatibility constraints; fixture/test-service conventions; current package rules; and the requirement to update behavior docs alongside intentional behavior changes. Do not present proposed architecture as already implemented. Keep it brief and change it with the repository.
+Proposed `AGENTS.md` contents: app purpose; entry points to feature/architecture docs; tested build commands and environment requirements; how to select relevant tests; the accepted storage-version/retirement policy and media preservation boundaries; fixture/test-service conventions; current package rules; and the requirement to update behavior docs alongside intentional behavior changes. Do not present proposed architecture as already implemented. Keep it brief and change it with the repository.
 
 ## Suggested review slices
 
@@ -50,7 +50,7 @@ Proposed `AGENTS.md` contents: app purpose; entry points to feature/architecture
 
 - [ ] Every primary workflow has a behavior document or a clearly assigned unresolved item.
 - [ ] Current, proposed, and historical behavior are distinguishable.
-- [ ] A compatibility inventory covers saved object names/formats, IDs, files, and upgrade constraints.
+- [ ] A storage inventory identifies retired formats, recognition/error outcomes, preserved media/journals, and current-data recovery requirements.
 - [ ] No credentials, real customer records, or machine-only paths are required to understand the docs.
 - [ ] The baseline commands and manual acceptance limitations are recorded honestly.
 

@@ -11,7 +11,7 @@ Status: proposed. Depends on step 06. Outcome: background work, navigation, and 
 5. Store small restoration keys such as inspection/album IDs, active tab, selected damage and pending operation identity in saved state. Persist durable edits/recovery records through the draft adapter. Do not put large images, media bytes, or entire growing object graphs into Bundles.
 6. Migrate login, lookup/search, pending and settings work in separate slices. Confirm cancellation actually stops or safely ignores the underlying work; do not equate abandoning a callback with canceling a server commit.
 
-A ViewModel preserves state across configuration changes; it is not durable storage across process death. Saved state is for restoration, and the existing drafts/journals protect durable work. Process-death tests must actually recreate the process/state boundary rather than only rotating an Activity. [Android UI state guidance](https://developer.android.com/topic/libraries/architecture/saving-states)
+A ViewModel preserves state across configuration changes; it is not durable storage across process death. Saved state is for restoration, and current-format drafts/journals protect durable work. Unsupported pre-cutover snapshots follow the storage policy; stale serialized extras must not crash a new screen. Process-death tests must actually recreate the process/state boundary rather than only rotating an Activity. [Android UI state guidance](https://developer.android.com/topic/libraries/architecture/saving-states)
 
 WorkManager is a future option for explicitly requested persistent background jobs. Do not introduce it merely to replace every AsyncTask or activate the dormant upload service. Printing and uncertain submissions cannot be blindly replayed by a worker.
 

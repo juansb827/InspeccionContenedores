@@ -11,8 +11,8 @@ Consulted during planning on 2026-10-13. These explain platform capabilities; th
 | [Android accessibility guidance](https://developer.android.com/guide/topics/ui/accessibility/apps) | Touch targets, labels and accessible interaction |
 | [Android testing fundamentals](https://developer.android.com/training/testing/fundamentals) | Local vs instrumented tests, scopes and testable boundaries |
 | [Saving UI state](https://developer.android.com/topic/libraries/architecture/saving-states) | Distinguish configuration-change state, saved state and durable storage |
-| [Java serialization versioning](https://docs.oracle.com/en/java/javase/17/docs/specs/serialization/version.html) | Persisted class compatibility needs deliberate migration |
+| [Java serialization versioning](https://docs.oracle.com/en/java/javase/17/docs/specs/serialization/version.html) | Explains the old format's coupling to classes; this plan deliberately retires old drafts/queues instead of preserving their deserialization |
 | [Kysely getting started](https://kysely.dev/docs/getting-started) | Future reference only: possible TypeScript backend tooling; backend implementation is outside this plan |
 | [jOOQ editions](https://www.jooq.org/download/) | Future reference only: SQL Server edition/licensing and Java compatibility for a possible JVM backend; outside this plan |
 
-Repository sources are linked from the [master plan](00-master-plan.md). The three existing migration/media documents contain valuable historical evidence but are not a complete current feature specification. No production services were queried for this plan, and no new build/test execution is claimed.
+Repository sources are linked from the [master plan](00-master-plan.md). The accepted [storage version policy](storage-version-policy.md) supersedes older draft/queue compatibility requirements. The three existing migration/media documents contain valuable historical evidence but are not a complete current feature specification. No production services were queried for this plan, and no new build/test execution is claimed.

@@ -908,9 +908,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         final String tablaCabecera = txtTurno.getVaPara();
         final String tablaDanios = getResources().getString(R.string.TBDETMOVPATIO);
 
-        AsyncTask<Void, Void, String> guardarTodo = new AsyncTask<Void, Void, String>() {
-            String nuevoNum=null;
-            String photoRenameError;
+        AsyncTask<Void, Void, com.juans.inspeccion.Mundo.Data.InspectionSubmission.Result> guardarTodo = new AsyncTask<Void, Void, com.juans.inspeccion.Mundo.Data.InspectionSubmission.Result>() {
             @Override
             protected void onPreExecute() {
 
@@ -918,39 +916,25 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
             }
 
             @Override
-            protected String doInBackground(Void... params) {
-                InspeccionDataSource dataSource = new InspeccionDataSource();
-                try {
-                    if (InspeccionActivity.tipoAccion == null || !InspeccionActivity.tipoAccion.equals(InspeccionActivity.MODIFICAR_DOCUMENTO)) {
-                        if (!InspeccionActivity.usaTurno) {
-                            InspeccionActivity.this.cambiarNumeroDocumento(dataSource.generarConsecutivoSinTurno(InspeccionActivity.this.inspeccionObject, InspeccionActivity.this.getResources()));
-                            InspeccionActivity.this.inspeccionObject.getInformacion().put(InspeccionActivity.this.getString(R.string.TER_RAZONS), dataSource.darAgenteLinea(InspeccionActivity.this.inspeccionObject.getInformacion(), InspeccionActivity.this.getResources()));
-                        }
-                        dataSource.insert(InspeccionActivity.this.listaCampos, InspeccionActivity.this.inspeccionObject, InspeccionActivity.this.getResources());
-                    } else {
-                        dataSource.re_insert(InspeccionActivity.this.listaCampos, InspeccionActivity.this.inspeccionObject, InspeccionActivity.this.getResources());
-                    }
-                    try { renombrarFotos(getInfoInspeccion().get(getString(R.string.NNUMDOC)),
-                            inspeccionObject.getDatosContenedor().get(getString(R.string.CCODCNTR))); }
-                    catch (IOException e) { photoRenameError = e.getMessage(); }
-                    return null;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return e.getMessage();
-                }
+            protected com.juans.inspeccion.Mundo.Data.InspectionSubmission.Result doInBackground(Void... params) {
+                return com.juans.inspeccion.Mundo.Data.InspectionSubmission.save(
+                        new InspeccionDataSource(), listaCampos, inspeccionObject, getResources(),
+                        tipoAccion, usaTurno, InspeccionActivity.this::cambiarNumeroDocumento,
+                        InspeccionActivity.this::renombrarFotos);
             }
 
             @Override
-            protected void onPostExecute(String error) {
+            protected void onPostExecute(com.juans.inspeccion.Mundo.Data.InspectionSubmission.Result result) {
+                String error = result.remoteError;
                 if(Varios.isActityEnding(InspeccionActivity.this)) return;
                 String mensaje = "GUARDADO CORRECTO\"";
                 if (error != null) mensaje = error;
                 Toast.makeText(getBaseContext(), mensaje, Toast.LENGTH_LONG).show();
                 if (error == null) {
                     try {
-                        if (photoRenameError != null) throw new IOException(photoRenameError);
-                        if (isCargarPendiente) Pendientes.remove(inspeccionObject.getPhotoId(), getBaseContext());
-                        if (captureCoordinator != null) captureCoordinator.acknowledgeSavedState(); if (videoCoordinator != null) videoCoordinator.acknowledgeSavedState();
+                        com.juans.inspeccion.Mundo.Data.InspectionSubmission.completeLocal(
+                                result, getBaseContext(), inspeccionObject, isCargarPendiente,
+                                captureCoordinator, videoCoordinator);
                     } catch (Exception e) {
                         Toast.makeText(InspeccionActivity.this, "El documento se guardó; las fotos/borrador requieren recuperación: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         return;

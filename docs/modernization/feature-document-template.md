@@ -1,11 +1,11 @@
 # Feature behavior document template
 
-This is a planning template for future `docs/features/*.md` files, not a statement that the example behavior below is already implemented or confirmed.
+This is the maintenance template for current and future `docs/features/*.md` files, not a statement that the example behavior below is already implemented or confirmed.
 
 ```markdown
 # <Feature name>
 
-Status: observed / operator-confirmed / proposed
+Status: S (source) / T (test source) / E (executed) / O (operator) / H (historical) / P (planned)
 Last reviewed: <date and app version/commit>
 Owner/reviewer: <role or person>
 

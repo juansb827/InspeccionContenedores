@@ -164,7 +164,7 @@ public class DAO  {
 
 
 
-    private DAO()
+    protected DAO()
     {
         columnas=ColumnasTablas.getInstance();
     }
@@ -1256,9 +1256,13 @@ public class DAO  {
         return cursor;
     }
 
+    protected HashMap<String, String> columns(String table) {
+        return ColumnasTablas.getInstance().darTabla(table);
+    }
+
     public ArrayList<String> generarINSERTSlista(String destino, ArrayList<HashMap<String, String>> cursores) throws DiccionariosException {
         ArrayList<String> sentencias=new ArrayList<>();
-        HashMap<String, String> columnas = ColumnasTablas.getInstance().darTabla(destino);
+        HashMap<String, String> columnas = columns(destino);
         for(int i=0;i<cursores.size();i++)
         {
             sentencias.add(DAO.getInstance().crearSentenciaINSERT(destino, cursores.get(i), columnas));

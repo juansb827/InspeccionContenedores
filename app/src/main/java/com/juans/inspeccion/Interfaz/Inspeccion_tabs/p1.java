@@ -629,53 +629,16 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
     }
 
     private boolean validarFormulario(boolean comprobarCampos) {
-        String mensaje=null;
-        boolean camposLlenos=Formularios.comprobarCamposObligatorios(inspeccion.darListaCampos());
-        if(!camposLlenos) mensaje = "Faltan campos obligatorios";
-
-        String lineaCntr=inspeccion.getInspeccion().getDatosContenedor().get(getString(R.string.CCTELNA));
-        String lineaTurno=infoInspeccion.get(getString(R.string.CCTELNA));
-        if (lineaCntr != null) {
-            boolean pertenece = TextUtils.equals(lineaCntr,lineaTurno);
-            if(!pertenece)  mensaje = "El contenedor no peternece a la linea";
+        String mensaje = com.juans.inspeccion.Mundo.InspectionRules.validationMessage(
+                Formularios.comprobarCamposObligatorios(inspeccion.darListaCampos()),
+                inspeccion.getInspeccion(), infoInspeccion, InspeccionActivity.tipoAccion, getResources());
+        if (mensaje != null) {
+            android.content.Context context = InspeccionActivity.tipoAccion != null ||
+                    TextUtils.equals(infoInspeccion.get(getString(R.string.CTIPDOC)), InspeccionActivity.ET)
+                    ? inspeccion : MainActivity.context;
+            Toast.makeText(context, mensaje, Toast.LENGTH_LONG).show();
         }
-
-        boolean estaEnpatio = inspeccion.getInspeccion().estaEnPatio();
-        if (!estaEnpatio && inspeccion.darTipoInspeccion().equals(InspeccionActivity.SALIDA) && InspeccionActivity.tipoAccion==null)
-            mensaje = "El contenedor NO se encuentra en el patio";
-        else if (estaEnpatio && inspeccion.darTipoInspeccion().equals(InspeccionActivity.ENTRADA) && InspeccionActivity.tipoAccion==null )
-            mensaje = "El contenedor YA se encuentra en el patio";
-
-
-        if( InspeccionActivity.tipoAccion!=null ||
-                TextUtils.equals(infoInspeccion.get(getString(R.string.CTIPDOC)), InspeccionActivity.ET)){
-            if(mensaje!=null) Toast.makeText(inspeccion, mensaje, Toast.LENGTH_LONG).show();
-            return mensaje==null;
-        }
-
-        if (inspeccion.darTipoInspeccion().equals(InspeccionActivity.SALIDA)) {
-            //Si no usa turno ,el booking solo se valida si existe
-            ArrayList<HashMap<String, String>> infoBook = inspeccion.getInspeccion().getInfoBooking();
-            if( infoBook==null || infoBook.isEmpty() ) //!inspeccion.usaTurno && infoBook==null) || infoBook.isEmpty()
-            {
-
-            }
-            else {
-
-
-                if (!inspeccion.getInspeccion().isPerteneceEnBooking())
-                    mensaje = "El contenedor no pertenece al Booking";
-
-                if (!inspeccion.getInspeccion().isHaySaldoBooking())
-                    mensaje = "El booking ya fue atendido totalmente";
-            }
-        }
-
-
-        if (mensaje!=null) {
-            Toast.makeText(MainActivity.context, mensaje, Toast.LENGTH_LONG).show();
-        }
-        return mensaje==null;
+        return mensaje == null;
     }
 
     public void cambiarEIR(String nuevoEIR)
@@ -1278,25 +1241,8 @@ public class p1 extends Fragment implements View.OnFocusChangeListener, Inspecci
     }
 
     private String validarTurno(HashMap<String, String> datos) {
-
-        String mensaje = null;
-        if (datos.size() == 0) {
-            mensaje = "No se ha encontrado el turno";
-
-        } else {
-            String tipoTurno = datos.get(getResources().getString(R.string.CTIPOTURNO));
-            String turnoAtendido = datos.get(getResources().getString(R.string.NATENDIDO));
-            String tipo = inspeccion.darTipoInspeccion();
-            if (turnoAtendido.equals("1")) {
-                mensaje = "Este turno ya fue atendido";
-
-            } else if (tipoTurno != null && !tipoTurno.trim().equals(tipo)) {
-                mensaje = "El tipo de turno no es de :" + tipo;
-
-            }
-
-        }
-        return mensaje;
+        return com.juans.inspeccion.Mundo.InspectionRules.turnoMessage(datos,
+                inspeccion.darTipoInspeccion(), getResources());
     }
 
     private static class BuscarTask extends DataLoader<Object> {

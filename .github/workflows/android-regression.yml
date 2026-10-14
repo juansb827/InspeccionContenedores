@@ -1,0 +1,34 @@
+name: Android regression checks
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  jvm-build-lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install compile SDK and build tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;35.0.0"'
+      - name: Fresh JVM, assembly and lint checks (no service or device tests)
+        run: ./scripts/check.sh --fresh
+      - name: Retain JVM and lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jvm-build-lint-reports
+          if-no-files-found: warn
+          path: |
+            app/build/test-results/testDebugUnitTest/
+            app/build/reports/tests/testDebugUnitTest/
+            app/build/reports/lint-results-debug.*
+            build/reports/problems/

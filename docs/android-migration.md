@@ -1,5 +1,7 @@
 # Android migration
 
+> **Historical checkpoint (H), reconciled 2026-10-13.** This document records the Android migration/external-camera stage and its original validation claims. Current source uses embedded CameraX photo/video and a mixed gallery: see [current media behavior](features/camera-and-media.md), [architecture/storage inventory](architecture/storage-and-side-effects.md) and [fresh baseline results](testing/baseline.md). Camera/permission details and old draft/queue import requirements below describe that checkpoint, not current acceptance. The future cutover supersedes draft/unused-queue deserialization/import requirements under [ADR 002](decisions/002-storage-retirement.md); public media and independently audited recovery journals remain protected. No historical device, signing or service checks were rerun for step 01. Original sections/anchors/provenance are retained.
+
 Compatibility begins at the last released commit, `d9c52d3`. Storage introduced
 by unreleased commits is deliberately not imported. Application ID and the
 release signing identity must stay the same for an in-place upgrade.

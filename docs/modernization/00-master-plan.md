@@ -1,8 +1,8 @@
 # Application modernization plan
 
-Status: **proposed; implementation has not started**. Prepared 2026-10-13 against `8ad90c0`.
+Status: **step 01 documentation satisfied; step 02 regression implementation delivered with explicit future-cutover gate open; steps 03–10 unstarted**. Prepared 2026-10-13 against `8ad90c0`; baseline documentation reviewed 2026-10-13 against working-tree source at `0a365c1`. Operator/device/service acceptance remains explicitly deferred.
 
-This plan improves maintainability, database access, layout adaptability, tests, and behavior documentation while preserving the existing inspection workflows and familiar Spanish UI. This planning change adds Markdown only. It does not move classes, change dependencies, introduce an active `AGENTS.md`, or modify application behavior.
+This plan improves maintainability, database access, layout adaptability, tests, and behavior documentation while preserving the existing inspection workflows and familiar Spanish UI. The original roadmap was planning-only. Step 01 now adds the [documentation index](../README.md), feature/architecture/testing documents, decisions and root [AGENTS.md](../../AGENTS.md). It does not move classes, change dependencies or modify application behavior.
 
 ## Recommended approach
 
@@ -26,7 +26,7 @@ Database modernization has two distinct concerns: remote SQL Server operations a
 | SQL generation extends beyond `DAO` | `Consultas`, `InspeccionDataSource`, `UsuarioDataSource`, `DaniosManager`, list/metadata loaders, and UI callers need an operation inventory. |
 | UI widgets supply database field metadata and values | `InspeccionDataSource` accepts `CustomView`; `Formularios` traverses a particular table hierarchy. Layout changes require a binding regression check. |
 | Damage screen uses table spans and weighted vertical space | `nuevo_danio.xml`, `fragment_entrada_pag2.xml`, and shared styles explain likely width/height pressure in the supplied screenshot. Reproduce at a known window width/font scale before confirming measurements. |
-| Tests already exist | 18 JVM test classes, with 94 `@Test` annotations found in source, concentrated on storage/media/printing. This is a static inventory, not a fresh passing test result or coverage measurement. |
+| Tests already exist | Step-01 baseline: 18 JVM suites / 94 tests. Step 02 now executes 26 suites / 174 tests (80 added), with rule/form/request/submission/recovery/preflight coverage. Counts are not a coverage percentage or device/SQL acceptance. |
 | Existing docs already exist | [Android migration](../android-migration.md), [photo gallery](../photo-gallery.md), [embedded camera and video](../embedded-camera.md). They mix behavior, implementation, historical checkpoints, and validation. |
 | Several local formats are in use | Retire serialized `listaPendientes` / `fotosPendientes` with explicit recognition; preserve public media and independently assess media IDs, capture journals and video sidecars. |
 
@@ -38,8 +38,8 @@ Each step begins after the preceding step's exit criteria are met, or its explic
 
 | Step | Outcome | Relative size / risk | Detailed plan |
 | --- | --- | --- | --- |
-| 01 | Record existing behavior, compatibility constraints, and documentation conventions | Small–medium / low | [Baseline and documentation](01-baseline-and-documentation.md) |
-| 02 | Protect critical business workflows with regression tests and repeatable checks | Medium / medium | [Regression safety net](02-regression-safety-net.md) |
+| 01 | Documentation complete; operator/device/service acceptance assigned as unresolved | Small–medium / low | [Baseline and documentation](01-baseline-and-documentation.md) |
+| 02 | 80 regression tests added; future cutover/new-format recovery criterion gated for step 03 | Medium / medium | [Regression safety net](02-regression-safety-net.md) |
 | 03 | Recognize/retire old draft storage, then reorganize packages and preserve Android entry points | Medium / high | [Package structure](03-package-structure.md) |
 | 04 | Separate form binding, business inputs, and data operations | Medium–large / high | [Data and business boundaries](04-data-and-business-boundaries.md) |
 | 05 | Modernize direct SQL Server queries, transactions, and connection ownership | Large / high | [Database access](05-database-access.md) |
@@ -75,8 +75,28 @@ Unanswered questions block only the decision or test requiring them. Continue in
 
 ## Completion and evidence
 
-For each phase, record the commit, behavior/test IDs covered, checks run, results, remaining exceptions, and rollback constraints. All implementation checkboxes in the detailed plans are initially open. Existing historical reports are references, not proof that this planning revision was tested.
+For each phase, record the commit, behavior/test IDs covered, checks run, results, remaining exceptions, and rollback constraints. Step 01 documentation criteria are satisfied; step 02 satisfies four criteria with its full future-storage criterion explicitly deferred to real step-03 cutover. Steps 03–10 remain unstarted. Existing historical reports are references, not proof that this planning revision was tested.
 
 The overall result is complete when the direct SQL Server adapter covers the operation inventory, critical workflows have regression tests, package boundaries are enforced, the UI passes the agreed device/text matrix, old-format drafts/queues are recognized and retired cleanly, new drafts and public media remain safe, and the current feature documents match operator-visible behavior. Optional work explicitly deferred in a decision record is not silently counted as implemented. A backend API or restored photo-upload feature is not required for completion.
 
 Supporting documents: [storage version policy](storage-version-policy.md), [feature-document template](feature-document-template.md) and [primary references](references.md).
+
+## Step 01 completion and handoff — 2026-10-13
+
+Documentation-only work now describes all primary workflows with stable IDs and S/T/E/H/P evidence, current architecture/integrations, local stores/media/journals and external effects, accepted scope/storage ADRs, verified commands and an [acceptance register](../testing/acceptance.md). Historical camera/gallery/migration files remain in place with reconciliation notices; root README links to the index and AGENTS.md links to current facts/checks.
+
+Fresh verification against working-tree source at `0a365c1`: debug assembly, test APK assembly, lintDebug and unsigned release assembly succeeded. The combined command reused its JVM test output; a forced fresh run then executed **94 tests in 18 suites, zero failures/errors/skips**. Lint reported **645 warnings and 7 errors filtered by the existing baseline**. This was not a clean-cache build, device acceptance or production-signing result. [Commands/environment/evidence](../testing/baseline.md).
+
+All step-01 documentation exit criteria are satisfied, with unavailable operator/service/physical-device acceptance assigned to ACCEPT-01–08. No walkthrough/screenshots, authenticated SQL workflows, device suites, printing or in-place upgrade were performed. The connected API 37 emulator was inspected read-only. Device fleet, distribution/signing owner, usable test services, turno availability and suspected damage/receipt quirks remain unresolved. No application code, tests, dependencies, build configuration or storage behavior changed; the pre-existing IDE edit was preserved.
+
+Step 02 should reproduce the baseline and add targeted characterization/failure tests and small test seams for damage rules/costs, field binding, inspection save/modify, container/booking branches and storage recognition. Preserve legacy fixture bytes for recognition and active media/printing checks. Do not assume historical deserialization is a permanent requirement, implement the full cutover/package moves yet, enable uploads or connect default tests to production. See [step 01 evidence/handoff](01-baseline-and-documentation.md) and the [coverage matrix](../testing/acceptance.md).
+
+## Step 02 implementation and step-03 handoff — 2026-10-13
+
+[Step-02 evidence](../testing/step-02-regression.md) and the updated [coverage matrix](../testing/acceptance.md) connect 80 new tests to stable behavior IDs. The real calculation/validation, form XML/helpers/menu, SQL request generation, submission/local cleanup, current draft recovery and unwired recognition preflight are exercised with synthetic inputs/fake external operations. Minimal seams retain existing defaults, SQL, serialization, layouts and quirks; no domain/package rewrite or cutover was implemented.
+
+The original 94 tests were freshly reproduced, then the final fresh local runner passed **174 tests in 26 suites** (zero failures/errors/skips), debug/test APK assembly and lint: **645 warnings, 7 baseline-filtered errors unchanged**. Local shell/YAML/report and documentation checks were performed; hosted CI, device suites, operator/service/physical printer and upgrade acceptance remain unverified. The final reviewed unsigned release assembly also passed (51s); the GitHub Actions workflow is configured, not a reported hosted pass. Existing uncommitted documentation, unrelated IDE/title edits and fixture bytes were preserved.
+
+Step 02's future storage criterion is explicitly partial. **GATE-03-01/02 must be satisfied by the actual prerequisite cutover before persisted-model renaming:** record-schema/encoding validation and supported-format reading independent of writer app version; separate atomic current namespace; accurate older/newer/corrupt/unknown/I/O states; durable isolation/notice/markers; interruption/repeat/new-draft recovery; no queue replay/blocking; independent capture/deletion/publication/import/index/backup/Android-extra audit and preservation. Probe tests prove neither record semantics nor a migration. Preserve legacy bytes and replace obsolete deserialization expectations only at intentional cutover.
+
+GATE-03-03 then protects Android entry points/XML/runner/recreation after small move groups. Full UI/loader/receipt/no-turno paths and operator intent remain GATE-04-01 / ACCEPT-01–08; real SQL Server transaction/dialect/concurrency/uncertain-commit evidence remains GATE-05-01. Keep suspected calculation/validation/workflow fixes separate from characterization and package/storage changes.

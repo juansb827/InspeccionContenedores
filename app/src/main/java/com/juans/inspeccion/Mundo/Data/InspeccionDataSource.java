@@ -45,6 +45,13 @@ public class InspeccionDataSource  {
         // TODO Auto-generated constructor stub
     }
 
+    // Narrow external-operation seams; default behavior still uses the existing adapters.
+    protected DAO dao() { return DAO.getInstance(); }
+    protected HashMap<String, String> columns(String table) {
+        return ColumnasTablas.getInstance().darTabla(table);
+    }
+    protected String[] currentDate() { return Consultas.darFecha(); }
+
     public void re_insert(ArrayList<CustomView> listaCampos, Inspeccion inspeccion, Resources res) throws DiccionariosException, ConnectionException, DataBaseException
     {
         HashMap<String,String> info=inspeccion.getInformacion();
@@ -59,7 +66,7 @@ public class InspeccionDataSource  {
             info.put(cw.getNombreCampoDestino(), cw.getTexto());
         }
 
-        HashMap<String, String> columnas = ColumnasTablas.getInstance().darTabla(destino);
+        HashMap<String, String> columnas = columns(destino);
 
         String tbDanios=res.getString(R.string.TBDETMOVPATIO);
 
@@ -69,16 +76,16 @@ public class InspeccionDataSource  {
         HashMap<String,String> condiciones=new HashMap<>();
         condiciones.put(res.getString(R.string.NNUMDOC),numdoc);
         String borrarCabecera=DAO.crearSentenciaDELETE(destino, condiciones   );
-        String sentCabecera=DAO.getInstance().crearSentenciaINSERT(destino, info, columnas);
+        String sentCabecera=dao().crearSentenciaINSERT(destino, info, columnas);
         sentencias.add(borrarCabecera);
         sentencias.add(sentCabecera);
 
         if(inspeccion.getTipoInspeccion().equals(InspeccionActivity.ENTRADA)) {
             String borrarDanios=DAO.crearSentenciaDELETE(res.getString(R.string.TBDETMOVPATIO),condiciones);
             sentencias.add(borrarDanios);
-            sentencias.addAll(DAO.getInstance().generarINSERTSlista(tbDanios, DaniosManager.darListaSoloDetalles(danios)));
+            sentencias.addAll(dao().generarINSERTSlista(tbDanios, DaniosManager.darListaSoloDetalles(danios)));
         }
-        DAO.getInstance().ejecutarComoTransaccion(sentencias);
+        dao().ejecutarComoTransaccion(sentencias);
 
     }
 
@@ -110,18 +117,18 @@ public class InspeccionDataSource  {
             info.put(res.getString(R.string.NNUMDOC),numdoc);
         }
 
-        HashMap<String, String> columnas = ColumnasTablas.getInstance().darTabla(destino);
+        HashMap<String, String> columnas = columns(destino);
 
         String tbDanios=res.getString(R.string.TBDETMOVPATIO);
-        String sentCabecera=DAO.getInstance().crearSentenciaINSERT(destino, info, columnas);
+        String sentCabecera=dao().crearSentenciaINSERT(destino, info, columnas);
 
         ArrayList<String> sentencias=new ArrayList<>();
         sentencias.add(sentCabecera);
 
         if(inspeccion.getTipoInspeccion().equals(InspeccionActivity.ENTRADA)) {
-            sentencias.addAll(DAO.getInstance().generarINSERTSlista(tbDanios, DaniosManager.darListaSoloDetalles(danios)));
+            sentencias.addAll(dao().generarINSERTSlista(tbDanios, DaniosManager.darListaSoloDetalles(danios)));
         }
-         DAO.getInstance().ejecutarComoTransaccion(sentencias);
+         dao().ejecutarComoTransaccion(sentencias);
 
 
     }
@@ -141,7 +148,7 @@ public class InspeccionDataSource  {
             }
             datosContenedor.put(cw.getNombreCampoDestino(),texto);
         }
-        HashMap<String, String> columnas = ColumnasTablas.getInstance().darTabla(destino);
+        HashMap<String, String> columnas = columns(destino);
 
         String cntrOriginal=codigoOriginal.remove(res.getString(R.string.CCODCNTR));
         String cntrFinal=datosContenedor.get(res.getString(R.string.CCODCNTR));
@@ -158,11 +165,11 @@ public class InspeccionDataSource  {
             ArrayList<String> sentencias=new ArrayList();
             sentencias.add(sentenciaTurnos);
             sentencias.add(sentenciaContenedores);
-            DAO.getInstance().ejecutarComoTransaccion(sentencias);
+            dao().ejecutarComoTransaccion(sentencias);
         }
         else
         {
-            DAO.getInstance().ejecutarSQL(sentenciaContenedores);
+            dao().ejecutarSQL(sentenciaContenedores);
         }
 
 
@@ -185,7 +192,7 @@ public class InspeccionDataSource  {
             }
             datosContenedor.put(cw.getNombreCampoDestino(), texto);
         }
-        HashMap<String, String> columnas = ColumnasTablas.getInstance().darTabla(destino);
+        HashMap<String, String> columnas = columns(destino);
         String cntrOriginal=codigoOriginal.remove(res.getString(R.string.CCODCNTR));
         String cntrFinal=datosContenedor.get(res.getString(R.string.CCODCNTR));
         //Si el usuario cambio el codigo del contenedor hay que actualizarlo en la tabla turnos tambien
@@ -200,11 +207,11 @@ public class InspeccionDataSource  {
             ArrayList<String> sentencias=new ArrayList();
             sentencias.add(sentenciaTurnos);
             sentencias.add(sentenciaContenedores);
-            DAO.getInstance().ejecutarComoTransaccion(sentencias);
+            dao().ejecutarComoTransaccion(sentencias);
         }
         else
         {
-            DAO.getInstance().ejecutarSQL(sentenciaContenedores);
+            dao().ejecutarSQL(sentenciaContenedores);
         }
 
 
@@ -229,19 +236,19 @@ public class InspeccionDataSource  {
     public Inspeccion read(String codCntr, String tipoInspeccion,String tipoOperacion,Resources res) throws ConnectionException, InvalidOperationException, DiccionariosException, DataBaseException {
 
 
-        HashMap<String, String> documentos = DAO.getInstance().generarHashConConsulta(Consultas.consultaNumDocDeContenedor(codCntr));
+        HashMap<String, String> documentos = dao().generarHashConConsulta(Consultas.consultaNumDocDeContenedor(codCntr));
         String numDoc=documentos.get("NNUMDOCORI");
         String numDocSalida=documentos.get("NNUMDOCSAL");
 
         String numDocCabecera= tipoInspeccion.equals("ENTRADA") ? numDoc: numDocSalida;
-        HashMap<String,String>  informacion = DAO.getInstance().generarHashConConsulta(Consultas.consultaInfoDeCabecera(numDocCabecera));
+        HashMap<String,String>  informacion = dao().generarHashConConsulta(Consultas.consultaInfoDeCabecera(numDocCabecera));
         if (informacion.size()==0) throw new DataBaseException("No se ha encontrado el documento para \n "+codCntr);
         if(TextUtils.equals(tipoOperacion,InspeccionActivity.MODIFICAR_DOCUMENTO))
         {
 
              String fechaLog=informacion.get(res.getString(R.string.DFECHALOG));
              String[] fechaGuia=Formularios.fechaToArray(fechaLog);
-             String[] fechaActual=Consultas.darFecha();
+             String[] fechaActual=currentDate();
             if(!Formularios.fechaEsMismoDia(fechaActual,fechaGuia))
             {
                 throw new InvalidOperationException("Esta guia no es de hoy");
@@ -254,12 +261,12 @@ public class InspeccionDataSource  {
         String telefono=informacion.get(res.getString(R.string.CDESTELEFO));
         informacion.put(res.getString(R.string.CCELULAR),telefono);
 
-        HashMap<String,String> datosContenedor=DAO.getInstance().generarHashConConsulta(Consultas.consultaDatosContenedor(codCntr));
+        HashMap<String,String> datosContenedor=dao().generarHashConConsulta(Consultas.consultaDatosContenedor(codCntr));
         String cestadocntr=res.getString(R.string.CESTADOCNTR);
         datosContenedor.put(cestadocntr,informacion.get(cestadocntr));
 
-        HashMap<String,String> tbdanios=ColumnasTablas.getInstance().darTabla(res.getString(R.string.TBDETMOVPATIO));
-        ArrayList<HashMap<String,String>> listaDanios= DAO.getInstance().generarHashConsultaListaConFechas(tbdanios, Consultas.consultaDaniosDeDocumento(numDoc));
+        HashMap<String,String> tbdanios=columns(res.getString(R.string.TBDETMOVPATIO));
+        ArrayList<HashMap<String,String>> listaDanios= dao().generarHashConsultaListaConFechas(tbdanios, Consultas.consultaDaniosDeDocumento(numDoc));
         if(informacion==null || listaDanios==null) return null;
         Inspeccion inspeccion=new Inspeccion();
 
@@ -312,9 +319,9 @@ public class InspeccionDataSource  {
 
 
 
-        HashMap<String,String> esquema=ColumnasTablas.getInstance().darTabla(tbTurnos);
-        String sentenciaInfo=DAO.getInstance().buscarCamposFormulario(tbTurnos,listaCampos,adicionales,esquema);
-        HashMap<String,String> informacion= DAO.getInstance().generarHashConConsulta(sentenciaInfo);
+        HashMap<String,String> esquema=columns(tbTurnos);
+        String sentenciaInfo=dao().buscarCamposFormulario(tbTurnos,listaCampos,adicionales,esquema);
+        HashMap<String,String> informacion= dao().generarHashConConsulta(sentenciaInfo);
 
 
 
@@ -345,7 +352,7 @@ public class InspeccionDataSource  {
         informacion.put(res.getString(R.string.CCLIENTE),nombreTercero );
             //busca el nombre de la linea con su id
         String nombreLineaCorto = informacion.get(res.getString(R.string.CCTELNA));
-        String nombreLineaLargo = DAO.getInstance().consulta_1_Dato(DAO.NOMBRE_LINEA_CON_ID + "'" + nombreLineaCorto + "'");
+        String nombreLineaLargo = dao().consulta_1_Dato(DAO.NOMBRE_LINEA_CON_ID + "'" + nombreLineaCorto + "'");
         informacion.put(res.getString(R.string.CDESCTELNA), nombreLineaLargo);
             //pone el numero de documento para el formulario
         String consecutivo= generarConsecutivo(informacion,res);
@@ -410,13 +417,13 @@ public class InspeccionDataSource  {
 
             if(TextUtils.equals(tipoTurno,InspeccionActivity.ENTRADA))
             {
-                if (uso_empty)   tipoActividad = DAO.getInstance().consulta_1_Dato(DAO.ACTIVIDAD_ENTRADA_VACIO);
-                else  tipoActividad = DAO.getInstance().consulta_1_Dato(DAO.ACTIVIDAD_ENTRADA_FULL);
+                if (uso_empty)   tipoActividad = dao().consulta_1_Dato(DAO.ACTIVIDAD_ENTRADA_VACIO);
+                else  tipoActividad = dao().consulta_1_Dato(DAO.ACTIVIDAD_ENTRADA_FULL);
             }
             else if(TextUtils.equals(tipoTurno,InspeccionActivity.SALIDA))
             {
-                if(uso_empty)   tipoActividad = DAO.getInstance().consulta_1_Dato(DAO.ACTIVIDAD_SALIDA_VACIO);
-                else  tipoActividad = DAO.getInstance().consulta_1_Dato(DAO.ACTIVIDAD_SALIDA_FULL);
+                if(uso_empty)   tipoActividad = dao().consulta_1_Dato(DAO.ACTIVIDAD_SALIDA_VACIO);
+                else  tipoActividad = dao().consulta_1_Dato(DAO.ACTIVIDAD_SALIDA_FULL);
             }
 
 
@@ -428,7 +435,7 @@ public class InspeccionDataSource  {
     public String generarConsecutivoSinTurno(Inspeccion inspeccion,Resources res) throws Exception {
         HashMap<String, String> info = inspeccion.getInformacion();
         String consulta=Consultas.countDocsDelDia(info,res);
-        String countDocs=DAO.getInstance().consulta_1_Dato(consulta);
+        String countDocs=dao().consulta_1_Dato(consulta);
         int numDocs=Integer.parseInt(countDocs);
         info.put(res.getString(R.string.NTURNO), ""+(numDocs+1) );
         return generarConsecutivo(info,res);
@@ -468,7 +475,7 @@ public class InspeccionDataSource  {
 
         if (codCntr==null || codCntr.isEmpty())  datosContenedor=new HashMap<>();
         else {
-            datosContenedor=DAO.getInstance().generarHashConConsulta(Consultas.consultaDatosContenedor(codCntr));
+            datosContenedor=dao().generarHashConConsulta(Consultas.consultaDatosContenedor(codCntr));
             inspeccion.setEstaEnPatio(Contenedores.contenedorEstaEnPatio(nombreLineaCorto, codCntr));
             inspeccion.setDatosContenedor(datosContenedor);
         }
@@ -476,7 +483,7 @@ public class InspeccionDataSource  {
         if(tipoTurno!=null && tipoTurno.trim().equals("SALIDA"))
         {
             datosContenedor.put(res.getString(R.string.NNUMDOC), generarConsecutivo(informacion,res));
-            HashMap<String,String> historicoCntr= DAO.getInstance().generarHashConConsulta( Consultas.consutlaHistoriCntr(nombreLineaCorto,codCntr));
+            HashMap<String,String> historicoCntr= dao().generarHashConConsulta( Consultas.consutlaHistoriCntr(nombreLineaCorto,codCntr));
             datosContenedor.putAll(historicoCntr);
             String booking=informacion.get(res.getString(R.string.CBOOKING));
             inspeccion.setPerteneceEnBooking(Consultas.contenedorPerteneceBooking(nombreLineaCorto,booking,codCntr));
@@ -489,10 +496,10 @@ public class InspeccionDataSource  {
         Inspeccion inspeccion=new Inspeccion();
         String codCntr=informacion.get(res.getString(R.string.CCODCNTR));
         if(codCntr==null || codCntr.isEmpty()) return inspeccion;
-        HashMap<String, String> entrada = DAO.getInstance().generarHashConConsulta(Consultas.consultaNumDocDeContenedor(codCntr));
+        HashMap<String, String> entrada = dao().generarHashConConsulta(Consultas.consultaNumDocDeContenedor(codCntr));
         if (entrada==null) return null;
         String numDocEntrada=entrada.get(res.getString(R.string.NNUMDOCORI));
-        ArrayList<HashMap<String, String>> danios = DAO.getInstance().generarHashConsultaLista(Consultas.consultaDaniosDeDocumento(numDocEntrada));
+        ArrayList<HashMap<String, String>> danios = dao().generarHashConsultaLista(Consultas.consultaDaniosDeDocumento(numDocEntrada));
         if (danios==null) return null;
         DaniosManager daniosManager=new DaniosManager();
         daniosManager.setListaDanios(DaniosManager.crearListaDanios(danios));
@@ -516,7 +523,7 @@ public class InspeccionDataSource  {
         HashMap<String,String> condiciones=generarCondicionTurnos(informacion,res);
         condiciones.remove(res.getString(R.string.NTURNO));
         String sentencia=Consultas.darTurnosRestantes(condiciones  , tipoTurno,usuario.getPatio());
-        ArrayList<HashMap<String,String>> lista = DAO.getInstance().generarHashConsultaLista(sentencia);
+        ArrayList<HashMap<String,String>> lista = dao().generarHashConsultaLista(sentencia);
         inspeccion.setTurnosPendientes(lista);
         return inspeccion;
 

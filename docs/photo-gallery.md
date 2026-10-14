@@ -1,4 +1,6 @@
-# Photo gallery
+22# Photo gallery
+
+> **Historical photo-only checkpoint (H), reconciled 2026-10-13.** Video deferrals and serialization/rollback assertions below belong to the photo-gallery stage. Current source supports embedded photo/video capture and mixed browsing; see [current behavior](features/camera-and-media.md), [storage inventory](architecture/storage-and-side-effects.md) and [fresh baseline results](testing/baseline.md). Earlier API 29/34 reports remain historical evidence, not new step-01 execution. Future draft/unused-queue retirement follows [ADR 002](decisions/002-storage-retirement.md); the current serialized compatibility baseline remains until cutover. Original sections/anchors/provenance are retained.
 
 The Android 10 minimum and gallery are separate commits. The baseline is
 `30079d6`: minimum SDK 29, original photo dialog, unchanged capture/storage

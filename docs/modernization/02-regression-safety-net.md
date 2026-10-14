@@ -1,6 +1,6 @@
 # 02 — Regression safety net
 
-Status: proposed. Depends on step 01. Outcome: important behavior is protected before broad refactoring.
+Status: **regression implementation delivered 2026-10-13; four exit criteria satisfied, future cutover/recovery criterion partially open**. Depends on step 01. Outcome: 80 additional JVM tests and narrow supporting seams; no package move, SQL rewrite, storage cutover or behavior fix.
 
 ## Starting point
 
@@ -40,10 +40,28 @@ Use real SQL Server for dialect, function, collation, and transaction integratio
 
 Suggested PRs: baseline/check runner; business-rule fixtures; submission/form-binding contracts. Measure coverage to locate gaps if useful, but do not set a cosmetic global percentage as the completion criterion. Test behavior and failure boundaries, not getters or exact internal call sequences. Local and instrumented tests serve different scopes. [Android testing fundamentals](https://developer.android.com/training/testing/fundamentals)
 
-- [ ] Baseline checks run reproducibly, with existing failures explicitly documented.
-- [ ] Every high-risk behavior about to be refactored has a meaningful regression test or an explicit integration gate before its change.
-- [ ] Tests run without production SQL Server, FTP, printer, or credentials.
+- [x] Baseline checks run reproducibly, with existing failures explicitly documented.
+- [x] Every high-risk behavior about to be refactored has a meaningful regression test or an explicit integration gate before its change.
+- [x] Tests run without production SQL Server, FTP, printer, or credentials.
 - [ ] Old-format recognition, distinct corruption/I/O errors and new-draft recovery are covered; active media/printing tests remain. Retired draft/queue deserialization requirements are deliberately replaced, not disabled to hide unrelated failures.
-- [ ] CI/local reports distinguish JVM, database integration, emulator, and physical-device evidence.
+- [x] CI/local reports distinguish JVM, database integration, emulator, and physical-device evidence.
 
 Rollback: revert new harness changes independently of behavior fixtures. A disabled/failing test is an unresolved item, not a passing phase.
+
+## Implementation and measured results — 2026-10-13
+
+[Full implementation/evidence/coverage](../testing/step-02-regression.md) records eight new suites (80 tests), protected SQL/metadata/date seams, tariff lookup, source-characterized rules and save/local-cleanup work. The existing SQL builders and persisted model signatures remain; original fixture bytes and all 94 existing tests were preserved. An unwired format probe tests legacy signature/location, proposed old/supported/newer JSON envelope schemas and corruption/unknown/I/O distinctions. It does not deserialize models, validate record semantics, switch writers, isolate/reset data or retire uploads.
+
+Fresh pre-change baseline: 18 suites / 94 tests, zero failures/errors/skips; debug/test APK/lint successful in 2m 56s, 74 tasks executed. Final `./scripts/check.sh --fresh`: **26 suites / 174 tests, zero failures/errors/skips**, fresh debug/test APK and lint successful in the final reviewed 2m 34s run, 74 tasks executed. Lint remained **645 warnings with 7 errors filtered by the unchanged baseline**. Initial development compile/fixture failures were corrected, not disabled or hidden. The final reviewed unsigned release assembly passed in 51s (8 tasks executed, 36 up-to-date); no deployment/signing/upgrade acceptance is inferred. No operator/device/service workflow or hosted CI was executed.
+
+The portable local runner supports fresh or focused checks and reports JVM XML separately from device/service/coverage evidence. A GitHub Actions workflow now runs that runner and retains build/lint/JVM reports without business credentials; only local syntax/configuration validation is claimed. Existing custom instrumentation runner/suite commands remain unchanged.
+
+Characterization includes repeated total accumulation, zero-tariff/blank-quantity fallback, booking bypass/message precedence, copy without photos, month 00, empty hidden-field destination, modify-date conversion, linked update without turno, repeated submission and null-message error ambiguity. These are test-observed quirks awaiting business review, not approved fixes.
+
+## Open exit criterion and authorized handoff
+
+The storage criterion remains unchecked: recognition/error preflight and current serialized draft recovery are covered, but real future versioned draft save/reopen, interrupted/repeated cutover, queue retirement/no replay, notices and deliberate replacement of deserialization expectations cannot run before their step-03 implementation. This is an explicit sequencing deferral under the accepted storage policy, not a fake test counted as a migration pass.
+
+Step 03 may start with **GATE-03-01/02 prerequisite cutover only**: define/validate real records and encoding limits, implement a separate atomic current namespace and durable classification/notice/marker state, exercise all failure/restart stages and new-store recovery, prevent queue replay/blocking, and independently protect/isolate snapshot and publication/deletion/index/import journals. Preserve original fixture bytes; replace only obsolete deserialization expectations at that deliberate change. Do not rename persisted models until those gates pass. Then use GATE-03-03 for small move groups/Android restoration, keeping application identity/provider/runner stable and re-running appropriate tests/build/lint/device checks.
+
+Before business/form/receipt changes, GATE-04-01 still requires real handler/lifecycle characterization with sanitized fixtures. Real SQL Server dialect/atomicity/concurrency/uncertain commit evidence is GATE-05-01. Manual ACCEPT-01–08 remain open; no unit/fake result closes them. No step-03 implementation was begun here.

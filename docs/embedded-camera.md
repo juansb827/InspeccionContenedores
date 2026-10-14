@@ -1,5 +1,7 @@
 # Embedded camera
 
+> **Camera/video checkpoint record (H), reconciled 2026-10-13.** Most behavior described here remains source-observed, but validation/rollback claims below are earlier checkpoint reports. Use [current operator behavior](features/camera-and-media.md), [current architecture](architecture/current-system.md), [storage/journal audit](architecture/storage-and-side-effects.md) and [fresh baseline results](testing/baseline.md) for step-01 evidence. No camera/gallery/video device suite or upgrade/rollback was rerun here. Future old draft/unused-queue cutover supersedes serialization-preservation/downgrade expectations under [ADR 002](decisions/002-storage-retirement.md); it does not authorize deleting media/journals. Original sections/anchors/provenance are retained.
+
 The CameraX photo checkpoint replaces external-camera launch with an inspection-hosted,
 full-window camera screen. All capture buttons use `openCamera(Album, damageIndex)`;
 opening or canceling the screen creates no file. The private destination and unchanged

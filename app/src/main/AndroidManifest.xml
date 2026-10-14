@@ -96,6 +96,50 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+    <activity
+            android:name="com.juans.inspeccion.ui.access.LoginActivity"
+            android:label="Focus Inspeccion"
+            android:exported="false"
+             >
+
+
+        </activity>
+    <activity
+            android:name="com.juans.inspeccion.ui.access.MainActivity"
+            android:label="@string/app_name" >
+
+
+        </activity>
+    <activity android:name="com.juans.inspeccion.ui.settings.SettingsActivity" >
+        </activity>
+    <activity
+            android:name="com.juans.inspeccion.ui.inspection.InspeccionActivity"
+            android:windowSoftInputMode="stateAlwaysHidden" >
+        </activity>
+    <activity android:name="com.juans.inspeccion.ui.containers.FichaContenedorActivity" >
+        </activity>
+    <activity
+            android:name="com.juans.inspeccion.ui.pending.PendientesActivity"
+            android:label="@string/title_activity_pendientes" >
+        </activity>
+    <activity
+            android:name="com.juans.inspeccion.ui.search.ConsultasActivity"
+            android:label="@string/title_activity_consultas" >
+        </activity>
+    <activity
+            android:name="com.juans.inspeccion.ui.search.VisualizarActivity"
+            android:label="@string/title_activity_visualizar" >
+        </activity>
+    <activity
+            android:name="com.juans.inspeccion.ui.printing.ImpresoraActivity"
+            android:label="@string/title_activity_impresora" >
+        </activity>
+    <receiver android:name="com.juans.inspeccion.app.NetWorkChangeReceiver"
+         android:exported="false" >
+
+        </receiver>
+    <service android:name="com.juans.inspeccion.platform.media.SimpleService" >
+        </service>
     </application>
 
 </manifest>

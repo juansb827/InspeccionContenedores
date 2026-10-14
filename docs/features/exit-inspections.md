@@ -36,7 +36,7 @@ Exit updates business document information; its damage view refers to existing e
 
 ## Evidence and questions
 
-Source: [validation/loading](../../app/src/main/java/com/juans/inspeccion/Interfaz/Inspeccion_tabs/p1.java), [damage controls](../../app/src/main/java/com/juans/inspeccion/Interfaz/Inspeccion_tabs/p2.java), [save/load boundary](../../app/src/main/java/com/juans/inspeccion/Mundo/Data/InspeccionDataSource.java), [album admission tests](../../app/src/test/java/com/juans/inspeccion/Interfaz/Gallery/GalleryAlbumsTest.java). Confirm whether absent booking information should allow save, server-loaded damage costs, available turno modes and media availability for reopened documents (ACCEPT-02/03).
+Source: [validation/loading](../../app/src/main/java/com/juans/inspeccion/ui/inspection/InspectionInformationFragment.java), [damage controls](../../app/src/main/java/com/juans/inspeccion/ui/inspection/InspectionDamageFragment.java), [save/load boundary](../../app/src/main/java/com/juans/inspeccion/data/remote/sqlserver/InspeccionDataSource.java), [album admission tests](../../app/src/test/java/com/juans/inspeccion/ui/media/gallery/GalleryAlbumsTest.java). Confirm whether absent booking information should allow save, server-loaded damage costs, available turno modes and media availability for reopened documents (ACCEPT-02/03).
 
 ## Step 02 regression evidence
 

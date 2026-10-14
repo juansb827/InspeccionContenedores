@@ -1,7 +1,11 @@
 package com.juans.inspeccion.data.local;
 
+import com.juans.inspeccion.Mundo.Album;
+import com.juans.inspeccion.Mundo.Danio;
+import com.juans.inspeccion.Mundo.Inspeccion;
+
 import com.juans.inspeccion.Mundo.*;
-import com.juans.inspeccion.Mundo.Storage.StorageFormatProbe.Outcome;
+import com.juans.inspeccion.data.local.StorageFormatProbe.Outcome;
 import org.json.*;
 import java.util.*;
 import java.lang.reflect.Field;
@@ -132,7 +136,7 @@ public final class DraftCodec {
     private static ArrayList<HashMap<String,String>> readMaps(Object v) throws JSONException { if(v==JSONObject.NULL) return null; JSONArray a=array(v,1000); ArrayList<HashMap<String,String>> maps=new ArrayList<>(); for(int n=0;n<a.length();n++) maps.add(readMap(a.get(n))); return maps; }
     private static boolean validReference(String ref) {
         if(ref.startsWith("content://")) { try { java.net.URI uri=new java.net.URI(ref); return uri.getRawAuthority()!=null&&!uri.getRawAuthority().isEmpty()&&uri.getRawFragment()==null; } catch(java.net.URISyntaxException e) { return false; } }
-        try { com.juans.inspeccion.Mundo.Storage.LegacyPhotoImporter.relativePath(ref); return true; } catch(java.io.IOException e) { return false; }
+        try { com.juans.inspeccion.platform.media.LegacyPhotoImporter.relativePath(ref); return true; } catch(java.io.IOException e) { return false; }
     }
     private static String choice(Object v,String... allowed) { String s=optional(v); if(s!=null&&!Arrays.asList(allowed).contains(s)) throw bad(); return s; }
     private static String optional(Object v) { return v==JSONObject.NULL ? null : text(v); }

@@ -1,13 +1,17 @@
 package com.juans.inspeccion.Mundo;
 
+import com.juans.inspeccion.data.remote.sqlserver.Consultas;
+import com.juans.inspeccion.data.remote.sqlserver.DAO;
+import com.juans.inspeccion.data.remote.sqlserver.DamageCostLookup;
+
 import android.content.res.Resources;
 import android.text.TextUtils;
 
-import com.juans.inspeccion.ConnectionException;
-import com.juans.inspeccion.DataBaseException;
-import com.juans.inspeccion.Interfaz.MainActivity;
+import com.juans.inspeccion.data.remote.sqlserver.ConnectionException;
+import com.juans.inspeccion.data.remote.sqlserver.DataBaseException;
+import com.juans.inspeccion.ui.access.MainActivity;
 import com.juans.inspeccion.R;
-import com.juans.inspeccion.Varios;
+import com.juans.inspeccion.ui.common.Varios;
 
 import org.w3c.dom.Text;
 

@@ -4,5 +4,7 @@
         <!-- Local instrumentation fixture only; absent from release builds. -->
         <activity android:name="com.juans.inspeccion.Interfaz.Gallery.GalleryDeviceHost"
             android:exported="false" android:theme="@style/PhotoGalleryTheme" />
+    <activity android:name="com.juans.inspeccion.ui.media.gallery.GalleryDeviceHost"
+            android:exported="false" android:theme="@style/PhotoGalleryTheme" />
     </application>
 </manifest>

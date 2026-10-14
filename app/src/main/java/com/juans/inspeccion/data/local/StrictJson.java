@@ -5,7 +5,7 @@ import java.io.*;
 import java.nio.*;
 import java.nio.charset.*;
 import java.nio.file.Files;
-import com.juans.inspeccion.Mundo.Storage.StorageFormatProbe.Outcome;
+import com.juans.inspeccion.data.local.StorageFormatProbe.Outcome;
 
 /** Bounded, strict UTF-8/JSON input. Android's JSONTokener alone accepts non-JSON syntax. */
 public final class StrictJson {

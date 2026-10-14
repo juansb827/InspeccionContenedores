@@ -37,7 +37,7 @@ Damage rows are saved with entry inspections and local drafts. Exit shows existi
 
 ## Evidence and questions
 
-Source: [damage screen](../../app/src/main/java/com/juans/inspeccion/Interfaz/Inspeccion_tabs/p2.java), [rules/costs](../../app/src/main/java/com/juans/inspeccion/Mundo/DaniosManager.java), [labels](../../app/src/main/res/layout/nuevo_danio.xml), [album retention](../../app/src/main/java/com/juans/inspeccion/Mundo/Album.java). Confirm zero-cost tariff fallback, intended update/copy behavior, numeric bounds, rounding and total recalculation (ACCEPT-03). Implementation detail belongs in [architecture](../architecture/current-system.md).
+Source: [damage screen](../../app/src/main/java/com/juans/inspeccion/ui/inspection/InspectionDamageFragment.java), [rules/costs](../../app/src/main/java/com/juans/inspeccion/Mundo/DaniosManager.java), [labels](../../app/src/main/res/layout/nuevo_danio.xml), [album retention](../../app/src/main/java/com/juans/inspeccion/Mundo/Album.java). Confirm zero-cost tariff fallback, intended update/copy behavior, numeric bounds, rounding and total recalculation (ACCEPT-03). Implementation detail belongs in [architecture](../architecture/current-system.md).
 
 ## Step 02 regression evidence
 

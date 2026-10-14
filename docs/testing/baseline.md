@@ -79,7 +79,7 @@ The [historical Robolectric resource override](../../app/legacy-robolectric.grad
 
 ## Device commands and limits (not run here)
 
-The custom [GalleryInstrumentation](../../app/src/androidTest/java/com/juans/inspeccion/Interfaz/Gallery/GalleryInstrumentation.java) runner delegates `suite camera` / `suite video` to [CameraInstrumentation](../../app/src/androidTest/java/com/juans/inspeccion/Interfaz/Camera/CameraInstrumentation.java). It uses a debug-only local fixture host, not authenticated production screens.
+The custom [GalleryInstrumentation](../../app/src/androidTest/java/com/juans/inspeccion/ui/media/gallery/GalleryInstrumentation.java) runner delegates `suite camera` / `suite video` to [CameraInstrumentation](../../app/src/androidTest/java/com/juans/inspeccion/ui/media/camera/CameraInstrumentation.java). It uses a debug-only local fixture host, not authenticated production screens.
 
 Use a dedicated disposable test emulator/device, a selected serial and the current built APKs. These suites create/delete local public fixture media and may replace fixture drafts; do not run against an operator's app data. Building the test APK does not execute them. We did not install, clear app data, grant permissions, run suites or capture screenshots on the already-running API 37 emulator because its test-data suitability and matrix compatibility were not established.
 
@@ -117,3 +117,7 @@ A local Python/pathlib scan resolved Markdown local link targets across root REA
 ## Step 02 update
 
 The 94-test results above remain step-01 evidence. Step 02 independently reproduced them before adding tests, then executed **174 JVM tests in 26 suites**, with zero failures/errors/skips, plus fresh debug/test APK assembly and lint. Lint remained at 645 warnings and 7 baseline-filtered errors. [Step-02 implementation/results](step-02-regression.md) gives exact commands, new coverage, narrow production seams and open gates. The new portable entry point is `./scripts/check.sh --fresh`; use repeated `--tests` options for a focused JVM run. The GitHub Actions workflow is configured but has not been executed; no hosted/device/service acceptance is claimed.
+
+## Step 03 update
+
+The step-01/02 results above remain historical evidence. Step 03 freshly reproduced 174 tests before changes, implemented and executed the real JSON cutover, and moved implementation/test packages while preserving Android entries and active serialized exceptions. [Step-03 results](step-03-cutover-and-moves.md) records current counts, exact checks, dedicated API-34 local suites, signed-update/operator gaps and review separation. The original configured GalleryInstrumentation entry still works through a bridge; `-e suite storage` is an additional local fixture choice. The storage runner intentionally replaces fixture draft/marker/archive state and must never run on operator data. No hosted CI run is claimed; the existing workflow uses the unchanged check entry point.

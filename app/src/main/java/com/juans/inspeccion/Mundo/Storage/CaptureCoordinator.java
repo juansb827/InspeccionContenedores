@@ -1,5 +1,9 @@
 package com.juans.inspeccion.Mundo.Storage;
 
+import com.juans.inspeccion.data.local.AtomicObjects;
+
+import com.juans.inspeccion.platform.media.PhotoStore;
+
 import android.net.Uri;
 import com.juans.inspeccion.Mundo.Album;
 import com.juans.inspeccion.Mundo.Inspeccion;

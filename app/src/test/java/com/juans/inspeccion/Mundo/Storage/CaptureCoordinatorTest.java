@@ -1,5 +1,11 @@
 package com.juans.inspeccion.Mundo.Storage;
 
+import com.juans.inspeccion.platform.media.LegacyPhotoImporterTest;
+
+import com.juans.inspeccion.Mundo.Album;
+import com.juans.inspeccion.Mundo.Danio;
+import com.juans.inspeccion.Mundo.Inspeccion;
+
 import android.net.Uri;
 import com.juans.inspeccion.Mundo.*;
 import org.junit.*;

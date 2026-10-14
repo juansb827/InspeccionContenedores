@@ -1,5 +1,13 @@
 package com.juans.inspeccion.Mundo.Storage;
 
+import com.juans.inspeccion.data.local.AtomicObjects;
+
+import com.juans.inspeccion.platform.media.LocalMediaIndex;
+import com.juans.inspeccion.platform.media.VideoStore;
+
+import com.juans.inspeccion.Mundo.Album;
+import com.juans.inspeccion.Mundo.Inspeccion;
+
 import androidx.camera.video.VideoRecordEvent;
 import com.juans.inspeccion.Mundo.*;
 import java.io.*;

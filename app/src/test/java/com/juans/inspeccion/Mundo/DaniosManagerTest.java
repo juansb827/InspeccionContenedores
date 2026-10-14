@@ -1,7 +1,7 @@
 package com.juans.inspeccion.Mundo;
 
 import android.content.res.Resources;
-import com.juans.inspeccion.Interfaz.MainActivity;
+import com.juans.inspeccion.ui.access.MainActivity;
 import com.juans.inspeccion.R;
 import org.junit.*;
 import org.junit.runner.RunWith;

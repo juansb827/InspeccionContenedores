@@ -1,8 +1,8 @@
 package com.juans.inspeccion.data.local;
 
 import android.content.Context;
-import com.juans.inspeccion.Mundo.Storage.StorageFormatProbe;
-import com.juans.inspeccion.Mundo.Storage.StorageFormatProbe.Outcome;
+import com.juans.inspeccion.data.local.StorageFormatProbe;
+import com.juans.inspeccion.data.local.StorageFormatProbe.Outcome;
 import org.json.*;
 import java.io.*;
 import java.nio.file.*;
@@ -74,8 +74,8 @@ public final class StorageCutover {
     }
     public static File currentJournal(Context context,String oldName) {
         try { prepare(context); }
-        catch(StrictJson.Invalid e) { throw new com.juans.inspeccion.Mundo.Storage.StoredInspections.StorageException(e.outcome,e.getMessage(),e); }
-        catch(IOException e) { throw new com.juans.inspeccion.Mundo.Storage.StoredInspections.StorageException(Outcome.IO_ERROR,"No se pudo preparar la recuperación local. Los archivos se conservan.",e); }
+        catch(StrictJson.Invalid e) { throw new com.juans.inspeccion.data.local.StoredInspections.StorageException(e.outcome,e.getMessage(),e); }
+        catch(IOException e) { throw new com.juans.inspeccion.data.local.StoredInspections.StorageException(Outcome.IO_ERROR,"No se pudo preparar la recuperación local. Los archivos se conservan.",e); }
         if(!Arrays.asList(SOURCES).contains(oldName)||!oldName.startsWith("pending-")) throw new IllegalArgumentException(oldName);
         return context.getFileStreamPath(oldName+"-v1");
     }

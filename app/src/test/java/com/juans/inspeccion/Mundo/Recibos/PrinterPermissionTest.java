@@ -1,5 +1,7 @@
 package com.juans.inspeccion.Mundo.Recibos;
 
+import com.juans.inspeccion.platform.printing.PrinterAccess;
+
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -8,7 +10,7 @@ import androidx.activity.result.ActivityResultRegistry;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.ActivityResult;
 import androidx.core.app.ActivityOptionsCompat;
-import com.juans.inspeccion.Interfaz.PrinterPermissionGate;
+import com.juans.inspeccion.ui.printing.PrinterPermissionGate;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.robolectric.*;

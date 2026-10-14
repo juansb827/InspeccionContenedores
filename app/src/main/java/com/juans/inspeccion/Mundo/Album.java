@@ -1,9 +1,9 @@
 package com.juans.inspeccion.Mundo;
 
 import android.content.Context;
-import com.juans.inspeccion.Mundo.Storage.PhotoStore;
+import com.juans.inspeccion.platform.media.PhotoStore;
 import com.juans.inspeccion.Mundo.Storage.MediaPhotoStore;
-import com.juans.inspeccion.Interfaz.MainActivity;
+import com.juans.inspeccion.ui.access.MainActivity;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;

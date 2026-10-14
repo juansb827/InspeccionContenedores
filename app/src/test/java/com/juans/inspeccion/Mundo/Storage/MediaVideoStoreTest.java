@@ -1,4 +1,6 @@
 package com.juans.inspeccion.Mundo.Storage;
+
+import com.juans.inspeccion.platform.media.VideoStore;
 import android.content.*;
 import android.provider.MediaStore;
 import org.junit.*;

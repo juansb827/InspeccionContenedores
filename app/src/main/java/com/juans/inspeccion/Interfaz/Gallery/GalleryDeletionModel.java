@@ -1,5 +1,13 @@
 package com.juans.inspeccion.Interfaz.Gallery;
 
+import com.juans.inspeccion.ui.media.gallery.GalleryHost;
+
+import com.juans.inspeccion.data.local.AtomicObjects;
+import com.juans.inspeccion.Mundo.Storage.MediaPhotoStore;
+import com.juans.inspeccion.Mundo.Storage.MediaVideoStore;
+import com.juans.inspeccion.platform.media.PhotoStore;
+import com.juans.inspeccion.platform.media.VideoStore;
+
 import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;

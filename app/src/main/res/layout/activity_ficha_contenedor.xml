@@ -7,7 +7,7 @@
 
         xmlns:custom="http://schemas.android.com/apk/res-auto"
 
-        tools:context="com.juans.inspeccion.Interfaz.FichaContenedorActivity"
+        tools:context="com.juans.inspeccion.ui.containers.FichaContenedorActivity"
         android:orientation="vertical"
         android:focusableInTouchMode="true"
         android:id="@+id/scrollView" >
@@ -151,7 +151,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent">
 
-                <com.juans.inspeccion.CustomView.MyCheckBox
+                <com.juans.inspeccion.ui.common.widgets.MyCheckBox
                     android:id="@+id/checkShipOwner"
                     style="@style/EditableTextField"
                     android:layout_width="234dp"

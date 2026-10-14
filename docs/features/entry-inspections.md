@@ -37,7 +37,7 @@ Submission writes business records, adjusts photo names used for the document, r
 
 ## Evidence and questions
 
-Source: [screen](../../app/src/main/java/com/juans/inspeccion/Interfaz/InspeccionActivity.java), [information/validation](../../app/src/main/java/com/juans/inspeccion/Interfaz/Inspeccion_tabs/p1.java), [save/load boundary](../../app/src/main/java/com/juans/inspeccion/Mundo/Data/InspeccionDataSource.java), [main labels](../../app/src/main/res/layout/activity_main.xml). Turno/no-turno initialization has contradictory guards; available operator paths must be confirmed (ACCEPT-02). Required-field membership depends on mode and loaded metadata; do not infer a complete accepted field contract from labels alone. See [technical risks](../architecture/current-system.md).
+Source: [screen](../../app/src/main/java/com/juans/inspeccion/ui/inspection/InspeccionActivity.java), [information/validation](../../app/src/main/java/com/juans/inspeccion/ui/inspection/InspectionInformationFragment.java), [save/load boundary](../../app/src/main/java/com/juans/inspeccion/data/remote/sqlserver/InspeccionDataSource.java), [main labels](../../app/src/main/res/layout/activity_main.xml). Turno/no-turno initialization has contradictory guards; available operator paths must be confirmed (ACCEPT-02). Required-field membership depends on mode and loaded metadata; do not infer a complete accepted field contract from labels alone. See [technical risks](../architecture/current-system.md).
 
 ## Step 02 regression evidence
 

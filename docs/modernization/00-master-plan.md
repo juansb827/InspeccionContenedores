@@ -1,6 +1,6 @@
 # Application modernization plan
 
-Status: **step 01 documentation satisfied; step 02 regression implementation delivered with explicit future-cutover gate open; steps 03–10 unstarted**. Prepared 2026-10-13 against `8ad90c0`; baseline documentation reviewed 2026-10-13 against working-tree source at `0a365c1`. Operator/device/service acceptance remains explicitly deferred.
+Status: **steps 01/02 delivered; step 03 storage cutover and package implementation delivered with active-serialization exceptions and explicit operator/signed-update acceptance open; steps 04–10 unstarted**. The starting roadmap was prepared against `8ad90c0`; baseline documentation reviewed the working tree at `0a365c1`. Current execution and handoff are in [step-03 evidence](../testing/step-03-cutover-and-moves.md).
 
 This plan improves maintainability, database access, layout adaptability, tests, and behavior documentation while preserving the existing inspection workflows and familiar Spanish UI. The original roadmap was planning-only. Step 01 now adds the [documentation index](../README.md), feature/architecture/testing documents, decisions and root [AGENTS.md](../../AGENTS.md). It does not move classes, change dependencies or modify application behavior.
 
@@ -21,8 +21,8 @@ Database modernization has two distinct concerns: remote SQL Server operations a
 | Observation | Evidence and planning implication |
 | --- | --- |
 | Java/XML, one application module; min SDK 29, target 33, compile 34; AGP 8.10.1 | [App build](../../app/build.gradle), [root build](../../build.gradle). Preserve this baseline until a separate compatibility step. |
-| Broad `Mundo`, `Interfaz`, `Other`, and `CustomView` packages | Reorganize by responsibility and feature; avoid a mass rename. |
-| Direct SQL Server access via bundled `jtds-1.2.7.jar` | [DAO](../../app/src/main/java/com/juans/inspeccion/Mundo/DAO.java) owns a shared connection, builds SQL and transaction batches, relaxes StrictMode, and logs a credential-bearing connection URL. |
+| Lowercase responsibility/feature implementations; retained serialized types and Android bridges | [84-class move inventory/exceptions](../architecture/package-moves.md); package ownership is not step-04 architectural separation. |
+| Direct SQL Server access via bundled `jtds-1.2.7.jar` | [DAO](../../app/src/main/java/com/juans/inspeccion/data/remote/sqlserver/DAO.java) owns a shared connection, builds SQL and transaction batches, relaxes StrictMode, and logs a credential-bearing connection URL. |
 | SQL generation extends beyond `DAO` | `Consultas`, `InspeccionDataSource`, `UsuarioDataSource`, `DaniosManager`, list/metadata loaders, and UI callers need an operation inventory. |
 | UI widgets supply database field metadata and values | `InspeccionDataSource` accepts `CustomView`; `Formularios` traverses a particular table hierarchy. Layout changes require a binding regression check. |
 | Damage screen uses table spans and weighted vertical space | `nuevo_danio.xml`, `fragment_entrada_pag2.xml`, and shared styles explain likely width/height pressure in the supplied screenshot. Reproduce at a known window width/font scale before confirming measurements. |
@@ -40,7 +40,7 @@ Each step begins after the preceding step's exit criteria are met, or its explic
 | --- | --- | --- | --- |
 | 01 | Documentation complete; operator/device/service acceptance assigned as unresolved | Small–medium / low | [Baseline and documentation](01-baseline-and-documentation.md) |
 | 02 | 80 regression tests added; future cutover/new-format recovery criterion gated for step 03 | Medium / medium | [Regression safety net](02-regression-safety-net.md) |
-| 03 | Recognize/retire old draft storage, then reorganize packages and preserve Android entry points | Medium / high | [Package structure](03-package-structure.md) |
+| 03 | Atomic JSON cutover and 84 moves delivered; stable Android entries/active serialization exceptions verified locally; operator/signed-update acceptance open | Medium / high | [Package structure](03-package-structure.md) |
 | 04 | Separate form binding, business inputs, and data operations | Medium–large / high | [Data and business boundaries](04-data-and-business-boundaries.md) |
 | 05 | Modernize direct SQL Server queries, transactions, and connection ownership | Large / high | [Database access](05-database-access.md) |
 | 06 | Fix truncation, cramped fields, scrolling, and layout adaptation with familiar styling | Medium–large / medium | [Responsive interface](06-responsive-interface.md) |
@@ -100,3 +100,9 @@ The original 94 tests were freshly reproduced, then the final fresh local runner
 Step 02's future storage criterion is explicitly partial. **GATE-03-01/02 must be satisfied by the actual prerequisite cutover before persisted-model renaming:** record-schema/encoding validation and supported-format reading independent of writer app version; separate atomic current namespace; accurate older/newer/corrupt/unknown/I/O states; durable isolation/notice/markers; interruption/repeat/new-draft recovery; no queue replay/blocking; independent capture/deletion/publication/import/index/backup/Android-extra audit and preservation. Probe tests prove neither record semantics nor a migration. Preserve legacy bytes and replace obsolete deserialization expectations only at intentional cutover.
 
 GATE-03-03 then protects Android entry points/XML/runner/recreation after small move groups. Full UI/loader/receipt/no-turno paths and operator intent remain GATE-04-01 / ACCEPT-01–08; real SQL Server transaction/dialect/concurrency/uncertain-commit evidence remains GATE-05-01. Keep suspected calculation/validation/workflow fixes separate from characterization and package/storage changes.
+
+## Step 03 delivery and step-04 handoff — 2026-10-13
+
+GATE-03-01/02 now use real schema/read/write/isolation/notice/queue-retirement paths, not an envelope-only preflight or fake reset. Current drafts and recovery survive package moves; original fixture bytes and public-media/bookkeeping identities remain. GATE-03-03 has component/fragment/XML/JVM/build/local-device evidence, with authenticated saved-task and deployed signed-update acceptance still open. [Step-03 status](03-package-structure.md), [schema/recovery](../architecture/draft-schema-v1.md), [package inventory](../architecture/package-moves.md) and [results](../testing/step-03-cutover-and-moves.md) define the actual scope.
+
+Step 04 should begin with typed inspector lookup and plain form-input mapping, then narrow contracts around existing adapters. Preserve hidden keys, dates, mode distinctions, characterized business quirks, schema 1 and media recovery. Replace active serialized widget/model/journal contracts safely before removing their exceptions. No API, SQL rewrite, Room or layout redesign was introduced in step 03; SQL integration remains step 05. No operator approval, physical printer/camera quality or hosted CI execution is implied.

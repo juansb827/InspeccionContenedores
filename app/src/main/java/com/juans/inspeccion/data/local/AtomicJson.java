@@ -3,7 +3,7 @@ package com.juans.inspeccion.data.local;
 import android.util.AtomicFile;
 import java.io.*;
 import java.nio.file.Files;
-import com.juans.inspeccion.Mundo.Storage.StorageFormatProbe.Outcome;
+import com.juans.inspeccion.data.local.StorageFormatProbe.Outcome;
 
 /** Validates the committed candidate before allowing Android AtomicFile to recover it. */
 public final class AtomicJson {

@@ -1,8 +1,10 @@
 package com.juans.inspeccion.Interfaz.Gallery;
 
+import com.juans.inspeccion.ui.media.gallery.GalleryHost;
+
 import android.os.Looper;
 import com.juans.inspeccion.Mundo.Album;
-import com.juans.inspeccion.Mundo.Storage.PhotoStore;
+import com.juans.inspeccion.platform.media.PhotoStore;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.robolectric.*;

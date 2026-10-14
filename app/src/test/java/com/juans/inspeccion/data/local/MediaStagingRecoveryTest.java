@@ -1,8 +1,7 @@
 package com.juans.inspeccion.data.local;
 
 import com.juans.inspeccion.Mundo.*;
-import com.juans.inspeccion.Mundo.Storage.LocalMediaIndex;
-import com.juans.inspeccion.Mundo.Storage.AtomicObjects;
+import com.juans.inspeccion.platform.media.LocalMediaIndex;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.robolectric.*;

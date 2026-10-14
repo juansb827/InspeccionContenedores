@@ -1,6 +1,6 @@
 # Current architecture and integrations
 
-Step-01 baseline evidence: S, reviewed 2026-10-13 against working-tree source at `0a365c1e8035f38fe13c358704fb6ab8e2a83e10`. Execution is recorded in [testing baseline](../testing/baseline.md). Proposed package/data boundaries in modernization steps 03–05 are not implemented here.
+Step-01 baseline evidence: S, reviewed 2026-10-13 against working-tree source at `0a365c1e8035f38fe13c358704fb6ab8e2a83e10`. Execution is recorded in [testing baseline](../testing/baseline.md). The baseline tables below predate step 03; the current ownership update at the end supersedes package/storage claims. Step-04/05 boundaries remain unimplemented.
 
 ## Identity and build
 
@@ -91,4 +91,22 @@ These are S findings, not operator-approved defects or fixes. Step 01 changes do
 
 ## Step 02 narrow test seams
 
-Step 02 introduces protected external-operation accessors on InspeccionDataSource, a subclassable DAO constructor and metadata accessor, extracted DamageCostLookup remote reads, InspectionRules from p1 and InspectionSubmission save/local-cleanup work used by the activity. Default SQL/metadata/date sources, calculation/validation quirks, serialization, layouts, prompts and async ownership remain. This is not a completed repository/business architecture; static Consultas/Contenedores and form coupling still exist. The new StorageFormatProbe is unwired, with no writer/reset/quarantine/retirement changes. [Tests, actual results and limitations](../testing/step-02-regression.md) define the supported seams and gates before broader changes. The existing serialized model method signatures were preserved and released deserialization cases still pass.
+Step 02 introduces protected external-operation accessors on InspeccionDataSource, a subclassable DAO constructor and metadata accessor, extracted DamageCostLookup remote reads, InspectionRules from p1 and InspectionSubmission save/local-cleanup work used by the activity. Default SQL/metadata/date sources, calculation/validation quirks, serialization, layouts, prompts and async ownership remain. This is not a completed repository/business architecture; static Consultas/Contenedores and form coupling still exist. The step-02 StorageFormatProbe was then unwired, with no writer/reset/quarantine/retirement changes. [Tests, actual results and limitations](../testing/step-02-regression.md) define the supported seams and gates before broader changes. The existing serialized model method signatures were preserved and released deserialization cases passed before the intentional step-03 cutover.
+
+## Step 03 current ownership map
+
+The original package/dependency tables above describe the step-01/02 baseline. Implementations now live under lowercase feature UI, SQL Server adapters, local storage/cache, platform media/printing/export, a small rules/model group and app network notifications. [Move inventory](package-moves.md) lists every class and stable Android bridge; [schema/recovery](draft-schema-v1.md) replaces old draft/queue encodings. Resource IDs/layout structure, application ID/namespace/provider authority/version and signing configuration remain unchanged.
+
+| Current package | Actual responsibility / remaining coupling |
+| --- | --- |
+| `ui.access`, `ui.settings`, `ui.inspection`, `ui.containers`, `ui.pending`, `ui.search`, `ui.printing` | Existing screen implementations and direct legacy operations; information/damage fragments have descriptive names |
+| `ui.common`, `ui.common.dialogs`, `ui.common.widgets` | Existing binding helpers, loaders, genuinely shared dialogs/nonserialized widgets; metadata and static-screen coupling remain |
+| `ui.media.camera`, `ui.media.gallery` | Camera/gallery UI, hosts and retained capture ViewModel; serialized deletion/presentation Kind exceptions remain stable |
+| `data.remote.sqlserver` | Existing JDBC/query/data-source/tariff implementations; SQL and connection semantics are unchanged |
+| `data.local`, `data.local.cache` | JSON drafts/cutover and old cache loaders; caches retain their encodings/identities |
+| `platform.media`, `platform.printing`, `platform.export` | Nonpersisted media/file/transfer helpers, retired service, Bluetooth access and existing exports |
+| `domain.rules`, `domain.model` | Existing narrow inspection rules and plain Usuario; rules still depend on Resources/UI constants |
+| `app` | Existing network receiver/observer; no DI framework or full repository composition |
+| Retained legacy classes / entry bridges | Active serialized snapshot/publication/deletion/cache/Bundle contracts, plus Android public entry compatibility; explicit reasons/destinations in inventory |
+
+Step 04 must break the UI/widget/resource/SQL cycles; package moves are not that architecture. No repository scaffold or SQL rewrite has been introduced. [Executed results](../testing/step-03-cutover-and-moves.md) separates compile/JVM/local-device verification from authenticated/operator/service acceptance.

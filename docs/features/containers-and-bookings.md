@@ -35,7 +35,7 @@ Saving a container can update its associated turno when the code changes. These 
 
 ## Evidence and questions
 
-Source: [information lookup](../../app/src/main/java/com/juans/inspeccion/Interfaz/Inspeccion_tabs/p1.java), [container form](../../app/src/main/java/com/juans/inspeccion/Interfaz/FichaContenedorActivity.java), [business writes](../../app/src/main/java/com/juans/inspeccion/Mundo/Data/InspeccionDataSource.java). Confirm available turno/no-turno entry paths, allowed code changes, check-digit validation intent, absent booking behavior, and test schema/transaction outcomes. See [acceptance register](../testing/acceptance.md).
+Source: [information lookup](../../app/src/main/java/com/juans/inspeccion/ui/inspection/InspectionInformationFragment.java), [container form](../../app/src/main/java/com/juans/inspeccion/ui/containers/FichaContenedorActivity.java), [business writes](../../app/src/main/java/com/juans/inspeccion/data/remote/sqlserver/InspeccionDataSource.java). Confirm available turno/no-turno entry paths, allowed code changes, check-digit validation intent, absent booking behavior, and test schema/transaction outcomes. See [acceptance register](../testing/acceptance.md).
 
 ## Step 02 regression evidence
 

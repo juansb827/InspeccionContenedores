@@ -1,5 +1,11 @@
 package com.juans.inspeccion.Mundo.Storage;
 
+import com.juans.inspeccion.data.local.AtomicObjects;
+
+import com.juans.inspeccion.platform.export.ExportFiles;
+import com.juans.inspeccion.platform.media.ImageProcessor;
+import com.juans.inspeccion.platform.media.PhotoStore;
+
 import android.Manifest;
 import android.content.ContentValues;
 import android.content.Context;

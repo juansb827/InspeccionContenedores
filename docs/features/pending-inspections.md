@@ -36,11 +36,11 @@ Earlier steps characterized opening serialized drafts. Those expectations are su
 
 ## Evidence and questions
 
-Source: [draft list](../../app/src/main/java/com/juans/inspeccion/Interfaz/PendientesActivity.java), [inspection menus/save](../../app/src/main/java/com/juans/inspeccion/Interfaz/InspeccionActivity.java), [draft operations](../../app/src/main/java/com/juans/inspeccion/Mundo/Pendientes.java), [compatibility tests](../../app/src/test/java/com/juans/inspeccion/Mundo/Storage/StorageCompatibilityTest.java). Confirm “Borrar todo” intent and restored form completeness; the current notice is reviewed through automated local paths, with operator wording/cleanup acceptance still open.
+Source: [draft list](../../app/src/main/java/com/juans/inspeccion/ui/pending/PendientesActivity.java), [inspection menus/save](../../app/src/main/java/com/juans/inspeccion/ui/inspection/InspeccionActivity.java), [draft operations](../../app/src/main/java/com/juans/inspeccion/data/local/Pendientes.java), [compatibility tests](../../app/src/test/java/com/juans/inspeccion/Mundo/Storage/StorageCompatibilityTest.java). Confirm “Borrar todo” intent and restored form completeness; the current notice is reviewed through automated local paths, with operator wording/cleanup acceptance still open.
 
-## Step 02 regression evidence
+## Historical step 02 regression evidence
 
-DraftRecoveryTest covers current serialized reopen/backup/error preservation; InspectionSubmissionTest covers real local removal after fake remote outcomes. StorageFormatProbeTest covers an unwired encoding/envelope preflight only. DRAFT-006 application behavior remains planned; real record validation/new-format recovery/notices/no replay require GATE-03-01/02. See [executed tests and precise gates](../testing/step-02-regression.md). Helper/request tests do not establish operator, full-screen, device or service acceptance.
+At step 02, DraftRecoveryTest covered serialized reopen/backup/error preservation; InspectionSubmissionTest covered real local removal after fake remote outcomes. StorageFormatProbeTest then covered an unwired encoding/envelope preflight only. DRAFT-006 application behavior was planned; real record validation/new-format recovery/notices/no replay required GATE-03-01/02. See [executed tests and precise gates](../testing/step-02-regression.md). Helper/request tests do not establish operator, full-screen, device or service acceptance.
 
 ## Step 03 evidence
 

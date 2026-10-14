@@ -131,7 +131,7 @@ public final class DraftCodec {
     private static Object maps(ArrayList<HashMap<String,String>> maps) throws JSONException { if(maps==null) return JSONObject.NULL; if(maps.size()>1000) throw bad(); JSONArray a=new JSONArray(); for(HashMap<String,String> m:maps) a.put(map(m)); return a; }
     private static HashMap<String,String> readMap(Object v) throws JSONException {
         JSONObject o=object(v); if(o.length()>256) throw bad(); HashMap<String,String> m=new HashMap<>(); Iterator<String> keys=o.keys();
-        while(keys.hasNext()) { String key=text(keys.next()); if(key.isEmpty()) throw bad(); m.put(key,optional(o.get(key))); } return m;
+        while(keys.hasNext()) { String key=text(keys.next()); m.put(key,optional(o.get(key))); } return m;
     }
     private static ArrayList<HashMap<String,String>> readMaps(Object v) throws JSONException { if(v==JSONObject.NULL) return null; JSONArray a=array(v,1000); ArrayList<HashMap<String,String>> maps=new ArrayList<>(); for(int n=0;n<a.length();n++) maps.add(readMap(a.get(n))); return maps; }
     private static boolean validReference(String ref) {

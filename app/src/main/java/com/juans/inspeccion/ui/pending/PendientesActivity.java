@@ -51,7 +51,6 @@ public class PendientesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pendientes);
-        com.juans.inspeccion.ui.settings.StorageNotice.show(this,false);
         listaPendientesView= (ListView) findViewById(R.id.listaRegistrosPendientes);
         loadDrafts();
         setAdapter();

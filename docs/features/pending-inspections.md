@@ -24,7 +24,7 @@ Leaving an inspection does not automatically save a draft. Capture recovery can 
 
 Earlier steps characterized opening serialized drafts. Those expectations are superseded; fixture bytes remain as historical evidence.
 
-**DRAFT-006 (S/T/E):** recognized unsupported older drafts are excluded with a notice allowing new drafts in a separate current store. Supported formats remain readable regardless of writer app version. Newer schemas, corrupt/unknown data and I/O errors have distinct outcomes and must be preserved. Do not guess originating app versions or draft counts. [ADR 002](../decisions/002-storage-retirement.md) and the [storage policy](../modernization/storage-version-policy.md) govern this change; [Current storage/recovery](../architecture/draft-schema-v1.md) and [step-03 results](../testing/step-03-cutover-and-moves.md) describe the implementation.
+**DRAFT-006 (S/T/E):** recognized unsupported older drafts are excluded, allowing new drafts in a separate current store. Storage status is available on request in Configuración; no automatic retirement disclaimer is shown. Supported formats remain readable regardless of writer app version. Newer schemas, corrupt/unknown data and I/O errors have distinct outcomes and must be preserved. Do not guess originating app versions or draft counts. [ADR 002](../decisions/002-storage-retirement.md) and the [storage policy](../modernization/storage-version-policy.md) govern this change; [Current storage/recovery](../architecture/draft-schema-v1.md) and [step-03 results](../testing/step-03-cutover-and-moves.md) describe the implementation.
 
 ## Acceptance examples
 
@@ -32,11 +32,11 @@ Earlier steps characterized opening serialized drafts. Those expectations are su
 | --- | --- | --- | --- | --- |
 | DRAFT-001 | Existing draft with same identity | Save again | Existing draft replaced | T: StorageCompatibilityTest identity case |
 | DRAFT-004 | Damaged existing store | Save/clear is attempted | Error; previous file preserved | T: StorageCompatibilityTest; UI manual gap |
-| DRAFT-006 | Recognized retired collection | The app opens storage | Unsupported notice; isolated source; new drafts possible | T/E: DraftCutoverTest; dedicated local storage runner |
+| DRAFT-006 | Recognized retired collection | The app opens storage | Isolated source; new drafts possible; status available in Configuración | T/E: DraftCutoverTest; dedicated local storage runner |
 
 ## Evidence and questions
 
-Source: [draft list](../../app/src/main/java/com/juans/inspeccion/ui/pending/PendientesActivity.java), [inspection menus/save](../../app/src/main/java/com/juans/inspeccion/ui/inspection/InspeccionActivity.java), [draft operations](../../app/src/main/java/com/juans/inspeccion/data/local/Pendientes.java), [compatibility tests](../../app/src/test/java/com/juans/inspeccion/Mundo/Storage/StorageCompatibilityTest.java). Confirm “Borrar todo” intent and restored form completeness; the current notice is reviewed through automated local paths, with operator wording/cleanup acceptance still open.
+Source: [draft list](../../app/src/main/java/com/juans/inspeccion/ui/pending/PendientesActivity.java), [inspection menus/save](../../app/src/main/java/com/juans/inspeccion/ui/inspection/InspeccionActivity.java), [draft operations](../../app/src/main/java/com/juans/inspeccion/data/local/Pendientes.java), [compatibility tests](../../app/src/test/java/com/juans/inspeccion/Mundo/Storage/StorageCompatibilityTest.java). Confirm “Borrar todo” intent and restored form completeness; the storage status is covered through automated local paths, with operator/cleanup acceptance still open.
 
 ## Historical step 02 regression evidence
 
@@ -44,4 +44,4 @@ At step 02, DraftRecoveryTest covered serialized reopen/backup/error preservatio
 
 ## Step 03 evidence
 
-DRAFT-001–006 use the real current-format reader/writer, with complete field/album/ordering recovery and distinct error outcomes. A notice titled “Estado de almacenamiento” explains retirement and public photo/video preservation. “Entendido” acknowledges it durably; “Cerrar” leaves it pending. The same status remains available in Configuración. New drafts work after recognized old data is isolated; newer, corrupt or unknown current data is preserved and blocks replacement. No public media is inferred into a new draft. See [storage tests and limitations](../testing/step-03-cutover-and-moves.md). The preceding step-02 paragraph is historical evidence of its unwired preflight, superseded by this implementation.
+DRAFT-001–006 use the real current-format reader/writer, with complete field/album/ordering recovery and distinct error outcomes. Following the operator-requested removal, no automatic storage disclaimer appears. “Estado de almacenamiento” in Configuración shows isolated-file counts and unresolved status, with “Cerrar” to dismiss it. New drafts work after recognized old data is isolated; newer, corrupt or unknown current data is preserved and blocks replacement. No public media is inferred into a new draft. See [storage tests and limitations](../testing/step-03-cutover-and-moves.md). The preceding step-02 paragraph is historical evidence of its unwired preflight, superseded by this implementation.

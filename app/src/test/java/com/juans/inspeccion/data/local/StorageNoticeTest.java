@@ -16,19 +16,18 @@ public class StorageNoticeTest {
     public static class Host extends AppCompatActivity {
         @Override public void onCreate(Bundle state) { setTheme(com.juans.inspeccion.R.style.CustomActionBarTheme); super.onCreate(state); }
     }
-    // DRAFT-006: actual dialog action, not just a marker method tested in isolation.
-    @Test public void closingDoesNotAcknowledgeButEntendidoIsDurable() throws Exception {
+    // DRAFT-006: explicitly requested diagnostics, without a retirement disclaimer.
+    @Test public void explicitStatusShowsCountsAndClosingLeavesStorageIntact() throws Exception {
         Host host=Robolectric.buildActivity(Host.class).setup().get();
         Files.write(host.getFileStreamPath("listaPendientes").toPath(),new byte[]{(byte)0xac,(byte)0xed,0,5});
-        StorageNotice.show(host,false);
+        StorageNotice.show(host);
         AlertDialog first=(AlertDialog)ShadowDialog.getLatestDialog(); assertTrue(first.isShowing());
-        first.getButton(AlertDialog.BUTTON_NEGATIVE).performClick(); org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
-        assertTrue(StorageCutover.prepare(host).noticePending);
-        StorageNotice.show(host,false); AlertDialog second=(AlertDialog)ShadowDialog.getLatestDialog();
-        assertEquals("Entendido",second.getButton(AlertDialog.BUTTON_POSITIVE).getText().toString());
-        second.getButton(AlertDialog.BUTTON_POSITIVE).performClick(); org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
-        assertFalse(StorageCutover.prepare(host).noticePending); assertFalse(StorageCutover.prepare(host).noticePending);
-        StorageNotice.show(host,false); assertSame(second,ShadowDialog.getLatestDialog());
-        StorageNotice.show(host,true); assertNotSame(second,ShadowDialog.getLatestDialog()); host.finish();
+        android.widget.TextView message=first.findViewById(android.R.id.message);
+        assertEquals("Archivos aislados: 1\nNo hay archivos sin resolver.",message.getText().toString());
+        assertEquals("Cerrar",first.getButton(AlertDialog.BUTTON_POSITIVE).getText().toString());
+        first.getButton(AlertDialog.BUTTON_POSITIVE).performClick(); org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+        assertFalse(first.isShowing());
+        assertEquals(1,StorageCutover.prepare(host).isolated.size());
+        StorageNotice.show(host); assertNotSame(first,ShadowDialog.getLatestDialog()); host.finish();
     }
 }

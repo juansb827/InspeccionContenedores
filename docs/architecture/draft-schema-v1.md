@@ -8,7 +8,7 @@ The envelope governs all records. Missing/extra required fields, wrong types, du
 | --- | --- |
 | `id` | Inspection UUID, unique in the collection |
 | `inspectionType`, `documentType` | `ENTRADA`/`SALIDA`, `EP`/`ET`, respectively; null permits an unfinished form |
-| `information`, `container` | Complete string-key maps, including hidden/business keys, empty and null values |
+| `information`, `container` | Complete string-key maps, including the existing entry placeholder’s blank key, hidden/business keys, empty and null values |
 | `date` | Null or the existing ordered 3/5/7 string date representation; no date conversion or calendar normalization |
 | `inBooking`, `inYard`, `bookingBalance`, `usesTurn` | Actual booleans |
 | `bookingRows`, `pendingTurns` | Null or ordered arrays of complete maps |
@@ -28,13 +28,13 @@ A positively recognized newer primary, backup or staging candidate blocks readin
 
 Current drafts with unknown/corrupt/newer content are not reset, cleared or overwritten. Corrected compatible builds can recover them or a validated committed backup. Operator recovery should first copy the complete primary/backup/staging/marker/archive set, then investigate on an isolated test installation; there is no automated destructive cleanup control in this change.
 
-## Cutover and notice
+## Cutover and storage status
 
 `storage-cutover-v1.json` is a separately validated atomic marker containing an envelope/version, acknowledged boolean and exact archived filenames. Recognized old `listaPendientes`, `fotosPendientes`, `pending-photo-capture`, `pending-video-capture`, `pending-media-deletion`, and their `.bak`/`.new` candidates move into `files/retired-storage/<original-name>.<sha256>`. Explicitly retired JSON schema 0 in the current draft namespace is isolated the same way. Current version 1 files are preserved; newer versions are not retired.
 
-There is no Java deserialization during classification/isolation. Hash-named destinations preserve bytes and avoid replacing different evidence. A restart after a rename but before marker publication finds the archived recognized bytes and reconstructs pending notification. Repetition does not replace a new store. Acknowledgement becomes durable only after successful marker publication; cancel/dismiss does not acknowledge. A new isolated item reopens the notice. Unknown/failed queue or old-operation isolation is retained as an unresolved status and never replays or blocks a healthy draft store. An unknown old draft blocks interpreting the absence of current drafts as empty. Marker/read/write failures are explicit errors rather than age guesses.
+There is no Java deserialization during classification/isolation. Hash-named destinations preserve bytes and avoid replacing different evidence. A restart after a rename but before marker publication finds the archived recognized bytes and reconstructs pending notification. Repetition does not replace a new store. Acknowledgement becomes durable only after successful marker publication; cancel/dismiss does not acknowledge. A new isolated item resets the retained acknowledgement marker; it does not trigger a dialog. Unknown/failed queue or old-operation isolation is retained as an unresolved status and never replays or blocks a healthy draft store. An unknown old draft blocks interpreting the absence of current drafts as empty. Marker/read/write failures are explicit errors rather than age guesses.
 
-The Spanish notice appears on login, pending inspections and inspection entry until acknowledged with **“Entendido”**. **“Cerrar”** leaves it pending. **“Estado de almacenamiento”** in Configuración remains available for isolated/unresolved status. No lost-record count or exact source app version is claimed. The upload helper/service does not enqueue, deserialize, connect or transfer; remaining service entry points show **“La cola de fotos está retirada; no se envían archivos.”**
+Following the operator-requested UI change, login, pending inspections and inspection entry do not show an automatic storage disclaimer. **“Estado de almacenamiento”** in Configuración shows only isolated-file counts and unresolved status, dismissed with **“Cerrar”**. The marker acknowledgement fields remain readable for storage compatibility but no longer control automatic UI. No lost-record count or exact source app version is claimed. The upload helper/service does not enqueue, deserialize, connect or transfer; remaining service entry points show **“La cola de fotos está retirada; no se envían archivos.”**
 
 Current photo/video/deletion operations use `pending-photo-capture-v1`, `pending-video-capture-v1`, `pending-media-deletion-v1`. Their active snapshot/result classes retain their names until that separate serialized contract can be replaced safely. Pre-cutover operations are never loaded from their old names. Private unfinished bytes, public media, publication maps, import mappings and `local-media-index.json` are retained. Only associations in retired drafts are unavailable; no ownership guessing or journal blanket deletion occurs.
 

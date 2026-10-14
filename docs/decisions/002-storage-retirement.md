@@ -4,7 +4,7 @@ Date: 2026-10-13. Status: accepted decision, **implemented in step 03; operator/
 
 ## Decision
 
-Backward-compatible reading/import of old drafts and the unused photo queue is not required at the deliberate future cutover. Positively recognized retired storage must be excluded with an understandable unsupported-format notice, while new drafts work in a separate current store. Never infer exact originating app versions or individual lost-draft counts from an old collection.
+Backward-compatible reading/import of old drafts and the unused photo queue is not required at the deliberate future cutover. Positively recognized retired storage must be excluded with accessible storage status, while new drafts work in a separate current store. Never infer exact originating app versions or individual lost-draft counts from an old collection.
 
 Format/schema version is independent of app version. Supported data from another writer app version opens normally. Distinguish missing data, supported valid data, recognized retired formats, unsupported newer formats, corruption, unknown formats and I/O failures. Preserve unrecognized/damaged/newer data and failed-write state; do not silently convert these outcomes to an empty store or incompatibility. Legacy location plus serialization signature recognizes encoding without deserializing model classes; generic deserialization exceptions or filenames alone are insufficient.
 
@@ -23,3 +23,5 @@ Historical steps 01/02 source deserialized both collections and assigns missing 
 Read the [storage inventory](../architecture/storage-and-side-effects.md) and [testing gates](../testing/acceptance.md) for affected consumers, backups and journal formats. The original historical documents remain evidence of earlier choices, with supersession notices added instead of removing history.
 
 Step 03 implements the atomic JSON collection, validated marker, isolation/notice and queue retirement; [schema/recovery](../architecture/draft-schema-v1.md) defines concrete fields and boundaries. Active serialized media snapshot/publication classes and Android bundles remain deliberate naming exceptions, not abandoned-draft compatibility. Public media/bookkeeping are preserved. [Executed evidence](../testing/step-03-cutover-and-moves.md) distinguishes local automation from operator/signing/service acceptance.
+
+Subsequent operator decision: remove the automatic retirement disclaimer and acknowledgement UI. Configuración retains explicit storage diagnostics (counts and unresolved outcomes); classification, isolation, current draft persistence and public media preservation remain unchanged. The original step-03 notice execution below is historical evidence.

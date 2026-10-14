@@ -30,6 +30,31 @@ public class FormBindingTest {
     // ENTRY-001/003 and EXIT-003/004: real XML and business-key metadata, including invisible rows.
     @Test public void allFourFormsIncludeHiddenDateAndDirectionKeys(){for(int layout:new int[]{R.layout.fragment_entrada_pag1,R.layout.fragment_salida_pag1,R.layout.entrada_empresa_transporte,R.layout.salida_empresa_transporte}){View root=inflate(layout);ArrayList<CustomView>f=fields(root);HashSet<String>keys=new HashSet<>();for(CustomView cw:f)keys.add(cw.getNombreCampo());assertTrue(keys.containsAll(Arrays.asList("NANO","NMES","NDIA","CTIPOTURNO","NNUMDOC","CCODCNTR")));CustomView direction=(CustomView)root.findViewById(R.id.txtTipoTurno);assertEquals("CTIPOMOV",direction.getNombreCampoDestino());assertEquals("TBCABMOVPATIO",direction.getVaPara());assertTrue(f.contains(direction));assertEquals(View.GONE,((View)direction).getParent() instanceof View?((View)((View)direction).getParent()).getVisibility():-1);}}
     @Test public void hiddenAndVisibleValuesRoundTripThroughRealBindingHelper(){View root=inflate(R.layout.fragment_entrada_pag1);ArrayList<CustomView>f=fields(root);HashMap<String,String>map=new HashMap<>();map.put("NANO","2026");map.put("NMES","10");map.put("NDIA","13");map.put("CTIPOTURNO","ENTRADA");map.put("CCTELNA","TEST");ActivityHelper helper=new ActivityHelper(activity);helper.actualizarInterfaz(f,map);HashMap<String,String>saved=new HashMap<>();helper.actualizarMapaCampos(f,saved);assertEquals("2026",saved.get("NANO"));assertEquals("ENTRADA",saved.get("CTIPOTURNO"));assertEquals("TEST",saved.get("CCTELNA"));assertFalse(saved.containsKey("CTIPOMOV"));}
+    // DRAFT-001/002: persist the actual form maps, including the entry placeholder's blank key.
+    @Test public void allFourFormMapsCanBeSavedAndReopenedAsDrafts() {
+        com.juans.inspeccion.data.local.Pendientes.invalidate();
+        try {
+            for(int layout:new int[]{R.layout.fragment_entrada_pag1,R.layout.fragment_salida_pag1,R.layout.entrada_empresa_transporte,R.layout.salida_empresa_transporte}) {
+                com.juans.inspeccion.Mundo.Inspeccion inspection=new com.juans.inspeccion.Mundo.Inspeccion();
+                boolean entry=layout==R.layout.fragment_entrada_pag1||layout==R.layout.entrada_empresa_transporte;
+                inspection.setTipoInspeccion(entry?"ENTRADA":"SALIDA");
+                inspection.setTipoDocumento(layout==R.layout.entrada_empresa_transporte||layout==R.layout.salida_empresa_transporte?"ET":"EP");
+                inspection.setFechaInspeccion(Formularios.fechaToArray("2026-10-13 08:05:00"));
+                for(CustomView field:fields(inflate(layout))) {
+                    if("TBCONTENEDORES".equals(field.getVieneDe())) inspection.getDatosContenedor().put(field.getNombreCampo(),field.getTexto());
+                    else inspection.getInformacion().put(field.getNombreCampo(),field.getTexto());
+                }
+                if(layout==R.layout.fragment_entrada_pag1) assertTrue(inspection.getInformacion().containsKey(""));
+                com.juans.inspeccion.data.local.Pendientes.upsert(inspection,activity);
+                com.juans.inspeccion.data.local.Pendientes.invalidate();
+                int index=com.juans.inspeccion.data.local.Pendientes.findIndex(inspection.getPhotoId(),activity);
+                com.juans.inspeccion.Mundo.Inspeccion restored=com.juans.inspeccion.data.local.Pendientes.darPendiente(index,activity);
+                assertEquals(inspection.getInformacion(),restored.getInformacion());
+                assertEquals(inspection.getDatosContenedor(),restored.getDatosContenedor());
+                assertArrayEquals(inspection.getFechaInspeccion(),restored.getFechaInspeccion());
+            }
+        } finally { com.juans.inspeccion.data.local.Pendientes.invalidate(); }
+    }
     @Test public void requiredFieldsBlockBlankInputWhileOptionalFieldsRemainEmpty(){ArrayList<CustomView>f=fields(inflate(R.layout.fragment_entrada_pag1));assertFalse(Formularios.comprobarCamposObligatorios(f));int required=0;for(CustomView cw:f)if(cw.esObligatorio()){cw.setTexto("TEST");required++;}assertTrue(required>0);assertTrue(Formularios.comprobarCamposObligatorios(f));}
     @Test public void dateBindingUsesBusinessDateRatherThanLocaleOrder(){MyEditText date=new MyEditText(activity){@Override public String getNombreCampo(){return "DATE";}};date.setMyInputType(CustomView.DIALOGO_CON_DATE_PICKER);ArrayList<CustomView>f=new ArrayList<>();f.add(date);HashMap<String,String>map=new HashMap<>();map.put("DATE","2026-01-03 08:05:00");new ActivityHelper(activity).actualizarInterfaz(f,map);assertEquals("2026/01/03",date.getTexto());assertEquals("20260103",Formularios.dateToDbParser(date.getTexto()));assertEquals("2026/01/03  08:05",Formularios.dateFromDbParser(map.get("DATE"),"/",true));}
     // CONTAINER-003: source-characterized date validation gaps, not approved calendar validation.

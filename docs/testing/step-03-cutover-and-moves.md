@@ -2,6 +2,8 @@
 
 Evidence date: 2026-10-13 (local timezone; XML timestamps may be UTC 2026-10-14). Starting HEAD `0a365c1e8035f38fe13c358704fb6ab8e2a83e10`, plus the preserved step-01/02 working tree. No commit or production-service execution. The configured JDK/SDK are documented in [baseline](baseline.md); no machine paths or credentials were added to executable tracked configuration.
 
+The original notice/acknowledgement UI results below are historical. The subsequent operator-requested removal is recorded at the end of this document.
+
 ## Storage prerequisite (GATE-03-01/02)
 
 The real [schema/reader/writer/cutover](../architecture/draft-schema-v1.md) replaced the unwired preflight contract. `DraftCutoverTest` has 28 cases executed on Robolectric API 29 and 34; `StorageNoticeTest` exercises actual dialog close/acknowledgement and persistent status. Total addition: 29 test methods / 57 JVM executions. Legacy fixture bytes are unchanged. Only deliberately superseded draft/queue deserialization/replay expectations were replaced; media/import/printing and step-02 business/request characterization remain.
@@ -75,3 +77,19 @@ Session snapshots/delta patches (`storage-change.patch`, `package-moves.patch`, 
 Final consistency checks resolved every local Markdown target; external URLs were retained without revalidation. Legacy binary fixture SHA-256 values, original IDE-file bytes and the unrelated `22# Photo gallery` title were preserved. No dependencies/build configuration, SQL literals, resource IDs/layout structure, package-independent storage schema, application identity or signing settings were changed by the move slice. No test was disabled and the lint baseline was not broadened.
 
 A final preservation case verifies that a newer primary cannot be replaced by a supported backup, and newer staging cannot be discarded by a new save. Real classification precedes atomic backup selection; all candidate bytes remain intact. The dedicated storage runner also exercises this newer-primary/backup refusal. The final 239-execution / 2m57s full check and 1m36s unsigned release supersede the earlier 237-execution milestone. The final storage device command passed and adb exited 0.
+
+## Follow-up: remove the storage disclaimer
+
+Per the operator request, removed automatic storage dialog calls from login, pending inspections and inspection entry, plus the retirement disclaimer text and acknowledgement button. The explicit “Estado de almacenamiento” Settings entry now shows only isolated-file counts and unresolved outcomes with “Cerrar”. Storage classification/isolation, marker schema, draft writes and public-media safeguards are unchanged. The updated StorageNoticeTest covers actual diagnostic contents, dismissal and retained isolated files; marker/recovery tests remain intact.
+
+Fresh execution of the affected test task (`./scripts/check.sh --tests '*StorageNoticeTest' --tests '*DraftCutoverTest'`, using the configured JDK) passed **57 executions / two suites**, zero failures/errors/skips. Gradle executed the test task and production/test compilation; other unchanged prerequisites were up-to-date. Incremental `:app:assembleDebug` passed (four executed tasks, 28 up-to-date). Local Markdown link validation passed **289 targets**, and `git diff --check` passed. No new device/operator walkthrough was performed for this UI follow-up.
+
+## Follow-up: entry form draft save regression
+
+A subsequent operator report showed the corruption toast during draft save. Source review found that the invisible `txtNada` placeholder in `fragment_entrada_pag1.xml` has no business field metadata. The real information-form binding therefore produces a blank string map key. The new JSON writer validates by decoding its proposed bytes, and `readMap` incorrectly rejected that legitimate existing form key before any draft publication. The same corruption toast was reproduced by FormBindingTest with real inflated XML and Pendientes persistence on an empty test store; this does not establish the contents of the operator’s device files.
+
+The adapter now preserves blank string keys alongside the rest of each complete form map. Layouts and form binding are unchanged; malformed JSON, wrong types, duplicate keys, unsupported formats, resource bounds and committed-file preservation guards remain enforced. The regression saves/reopens all four real information-layout maps and checks map/date preservation (DRAFT-001/002). This is a targeted storage-adapter correction, not step 04 form redesign.
+
+Verification: the new real-form persistence regression failed before the correction with the exact Spanish corruption message. After correction, `./scripts/check.sh --tests '*FormBindingTest' --tests '*DraftCutoverTest' --tests '*StorageNoticeTest'` freshly executed **66 tests / three suites**, zero failures/errors/skips; production compilation and the test task executed, with unchanged prerequisites cached. No operator/service/device execution was performed for this correction.
+
+The incremental debug APK build (`:app:assembleDebug`) also passed: three tasks executed, 29 up-to-date. Documentation link validation passed 289 targets and `git diff --check` passed.

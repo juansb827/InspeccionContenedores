@@ -14,7 +14,6 @@ import java.util.*;
 public final class StorageCutover {
     public static final String STATE="storage-cutover-v1.json";
     public static final String ARCHIVE="retired-storage";
-    public static final String NOTICE="Los borradores y la cola de fotos de formatos anteriores ya no se abren ni se envían. Las operaciones de cámara y borrado anteriores quedan aisladas, sin reanudarse. Los archivos se conservan para revisión. Las fotos y videos públicos se conservan. Puede guardar nuevos borradores.";
     private static final String[] SOURCES={"listaPendientes","fotosPendientes","pending-photo-capture","pending-video-capture","pending-media-deletion","inspection-drafts-v1.json"};
     private StorageCutover() {}
     public interface Boundary { void afterIsolation(File source) throws IOException; }
@@ -108,7 +107,7 @@ public final class StorageCutover {
         public final Map<String,Outcome> unresolved;
         Status(boolean pending,Set<String> isolated,Map<String,Outcome> unresolved) { this.noticePending=pending; this.isolated=Collections.unmodifiableSet(isolated); this.unresolved=Collections.unmodifiableMap(unresolved); }
         public String description() {
-            StringBuilder text=new StringBuilder(NOTICE).append("\n\nArchivos aislados: ").append(isolated.size());
+            StringBuilder text=new StringBuilder("Archivos aislados: ").append(isolated.size());
             if(unresolved.isEmpty()) return text.append("\nNo hay archivos sin resolver.").toString();
             text.append("\nArchivos sin resolver:");
             for(Map.Entry<String,Outcome> entry:unresolved.entrySet()) text.append("\n").append(entry.getKey()).append(": ").append(label(entry.getValue()));

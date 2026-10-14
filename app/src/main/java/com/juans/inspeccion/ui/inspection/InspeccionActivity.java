@@ -356,7 +356,6 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         });
 
     setContentView(R.layout.activity_inspeccion);
-        com.juans.inspeccion.ui.settings.StorageNotice.show(this,false);
 
     viewPager = (ViewPager) findViewById(R.id.pager);
     TabLayout tabLayout = findViewById(R.id.tab_layout);

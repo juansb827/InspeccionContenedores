@@ -1,6 +1,6 @@
 # ADR 002 — Retire old drafts/unused uploads; preserve public media
 
-Date: 2026-10-13. Status: accepted decision, **not implemented**. Authority: user's confirmed decisions and the current [storage version policy](../modernization/storage-version-policy.md), which is the full normative contract.
+Date: 2026-10-13. Status: accepted decision, **implemented in step 03; operator/signed-update acceptance open**. Authority: user's confirmed decisions and the current [storage version policy](../modernization/storage-version-policy.md), which is the full normative contract.
 
 ## Decision
 
@@ -18,6 +18,8 @@ An explicit atomic, package-independent versioned format is required; JSON envel
 
 ## Sequencing and evidence
 
-Current source still deserializes both collections and assigns missing media IDs. Existing compatibility tests characterize this baseline; no version envelope/cutover notice has been added here. Step 02 preserves released fixture bytes and adds recognition/error/recovery contracts. Step 03 implements cutover before renaming persisted models; step 08 may change storage engine without reintroducing old draft import.
+Historical steps 01/02 source deserialized both collections and assigns missing media IDs. Existing compatibility tests characterize this baseline; no version envelope/cutover notice was added in those steps. Step 02 preserves released fixture bytes and adds recognition/error/recovery contracts. Step 03 implements cutover before renaming persisted models; step 08 may change storage engine without reintroducing old draft import.
 
 Read the [storage inventory](../architecture/storage-and-side-effects.md) and [testing gates](../testing/acceptance.md) for affected consumers, backups and journal formats. The original historical documents remain evidence of earlier choices, with supersession notices added instead of removing history.
+
+Step 03 implements the atomic JSON collection, validated marker, isolation/notice and queue retirement; [schema/recovery](../architecture/draft-schema-v1.md) defines concrete fields and boundaries. Active serialized media snapshot/publication classes and Android bundles remain deliberate naming exceptions, not abandoned-draft compatibility. Public media/bookkeeping are preserved. [Executed evidence](../testing/step-03-cutover-and-moves.md) distinguishes local automation from operator/signing/service acceptance.

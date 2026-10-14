@@ -1,6 +1,6 @@
 # Local storage, media, recovery and side effects
 
-Evidence: S/T at `0a365c1`, reviewed 2026-10-13. No device filesystem/customer records were inspected. Paths below are logical app-relative/public paths, not machine setup paths. **Current formats and planned retirement are separate.** [ADR 002](../decisions/002-storage-retirement.md) and the [storage policy](../modernization/storage-version-policy.md) define future behavior.
+Evidence: S/T at `0a365c1`, reviewed 2026-10-13. No device filesystem/customer records were inspected. Paths below are logical app-relative/public paths, not machine setup paths. **The original inventory below is the pre-cutover baseline; the step-03 current inventory at the end supersedes its draft/queue/journal paths.** [ADR 002](../decisions/002-storage-retirement.md) and the [storage policy](../modernization/storage-version-policy.md) define the implemented step-03 cutover.
 
 ## Durable inventory
 
@@ -68,3 +68,23 @@ Step 02 adds sanitized recognition/failure fixtures without requiring old deseri
 [StorageFormatProbe](../../app/src/main/java/com/juans/inspeccion/Mundo/Storage/StorageFormatProbe.java) now tests encoding/envelope recognition independently; it is not called by the app. It distinguishes absent/older/newer/malformed/unknown/I/O results and supported envelope schema independently of writerAppVersion. SUPPORTED_SCHEMA does not validate inspection records; schema 0/1/>1 is the proposed preflight contract, not a shipped storage change. Future adoption must define record semantics/strict encoding/bounds and cutover namespaces/markers/backups before wiring it in (GATE-03-01/02).
 
 Current writers/readers, import controls, queue and journals are unchanged. DraftRecoveryTest extends real serialized save/reopen and backup/error preservation; InspectionSubmissionTest tests real resumed-draft cleanup with fake remote operations. Released fixture hashes were rechecked; all existing deserialization/media/printing tests remain. [Step-02 results and mandatory cutover gates](../testing/step-02-regression.md) prevent treating an unwired classifier or a fake reset as proof of new-format recovery or queue retirement.
+
+## Step 03 cutover: current inventory supersedes the draft/queue rows above
+
+The preceding table describes the pre-cutover step-01/02 baseline and remains historical evidence. [Schema 1 and recovery](draft-schema-v1.md) is now authoritative for draft/notice semantics and bounds. Current namespaces are:
+
+| Current store | Ownership / preservation |
+| --- | --- |
+| `inspection-drafts-v1.json` + `.bak`/`.new` | Atomic validated UTF-8 JSON; complete active draft graph, IDs and ordering; no Java names |
+| `storage-cutover-v1.json` + companions | Validated atomic classification/isolation list and durable acknowledgement |
+| `retired-storage/<original-name>.<sha256>` | Byte-preserved recognized drafts/queues/old operations, including their backups/staging; no deserialization or replay |
+| `pending-photo-capture-v1`, `pending-video-capture-v1` | New active operations only; retained serializable snapshot/model identities |
+| `pending-media-deletion-v1` | New active deletion metadata recovery; retained Result/Kind identities |
+| Old unknown/corrupt/unreadable names | Remain in place, reported separately; no cleanup or age guess |
+| `photo-publications`, `video-publications` | Preserved original maps and nested class identities; prevent duplicate public publication |
+| `legacy-photo-imports` | Preserved string mapping; importing current associated photos does not read retired drafts/queues |
+| `local-media-index.json`, public photos/videos, unfinished private capture bytes | Preserved; no ownership guessing, blanket deletion or draft-triggered media deletion |
+| SQL/cache/connection/printer/export stores | Same filenames and encoding; outside draft/queue retirement |
+| Android extras/saved state | Inspection/damage/album/widget identities and stable component/fragment entry points retained; not a durable draft JSON substitute |
+
+[S/T/E implementation and device limitations](../testing/step-03-cutover-and-moves.md) distinguishes local execution from signed-update/operator acceptance. The serialized-consumer exceptions are deliberate safeguards for active state and independent bookkeeping, not compatibility for abandoned draft files. Step 04 must address widget/form coupling without silently changing these contracts.

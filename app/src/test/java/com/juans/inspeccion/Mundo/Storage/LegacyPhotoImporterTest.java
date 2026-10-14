@@ -56,7 +56,7 @@ public class LegacyPhotoImporterTest {
     @Test public void canceledImportLeavesReleasedStoresByteForByteUnchanged() throws Exception {
         android.content.Context context = RuntimeEnvironment.getApplication();
         Map<String, byte[]> originals = new HashMap<>();
-        for (String name : new String[]{StoredInspections.DRAFTS, StoredInspections.UPLOADS}) {
+        for (String name : new String[]{StoredInspections.LEGACY_DRAFTS, StoredInspections.UPLOADS}) {
             File file = context.getFileStreamPath(name);
             try (InputStream fixture = getClass().getResourceAsStream("/released-d9c52d3/" + name)) {
                 java.nio.file.Files.copy(fixture, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);

@@ -40,3 +40,7 @@ Feature tables give stable behavior IDs. Keep IDs when moving documents; add new
 ## Historical checkpoints (H)
 
 [Android migration](android-migration.md) records an external-camera checkpoint; [photo gallery](photo-gallery.md) records the photo-only checkpoint; [embedded camera](embedded-camera.md) records CameraX/photo/video checkpoints. Their original validation reports and anchors remain in place. Their old draft/queue deserialization requirements are superseded by ADR 002 for the future cutover. Current source still supports those serialized stores. Historical external artifact paths are provenance, not required setup or newly verified evidence.
+
+## Step 03 implementation
+
+[Current draft schema/recovery](architecture/draft-schema-v1.md), [package move inventory and exceptions](architecture/package-moves.md), and [executed cutover/move results](testing/step-03-cutover-and-moves.md) supersede the relevant pre-cutover storage/package claims. Earlier execution results remain historical evidence; no operator acceptance is implied.

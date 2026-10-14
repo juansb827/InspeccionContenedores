@@ -9,7 +9,10 @@ public final class AtomicObjects {
 
     public static Object read(File file) throws IOException, ClassNotFoundException {
         AtomicFile atomic = new AtomicFile(file);
-        if (!file.exists() && !new File(file + ".bak").exists()) return null;
+        if (!file.exists() && !new File(file + ".bak").exists()) {
+            if (new File(file + ".new").exists()) throw new IOException("Registro local interrumpido; se conserva el archivo .new para recuperación");
+            return null;
+        }
         try (ObjectInputStream in = new ObjectInputStream(atomic.openRead())) {
             return in.readObject();
         }

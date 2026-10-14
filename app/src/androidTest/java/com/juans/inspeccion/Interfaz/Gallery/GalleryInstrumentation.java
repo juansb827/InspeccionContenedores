@@ -21,10 +21,12 @@ import java.util.function.BooleanSupplier;
 /** Standalone local acceptance runner, invoked with adb shell am instrument -w. */
 public class GalleryInstrumentation extends com.juans.inspeccion.Interfaz.Camera.CameraInstrumentation {
     private boolean cameraSuite;
+    private boolean storageSuite;
     private volatile GalleryDeviceHost current;
     private int checks;
-    @Override public void onCreate(Bundle args) { cameraSuite = args != null && ("camera".equals(args.getString("suite")) || "video".equals(args.getString("suite"))); super.onCreate(args); }
+    @Override public void onCreate(Bundle args) { storageSuite=args!=null&&"storage".equals(args.getString("suite")); cameraSuite = args != null && ("camera".equals(args.getString("suite")) || "video".equals(args.getString("suite"))); super.onCreate(args); }
     @Override public void onStart() {
+        if(storageSuite) { com.juans.inspeccion.data.local.StorageDeviceSuite.run(this); return; }
         if (cameraSuite) { super.onStart(); return; }
         Bundle report = new Bundle();
         try {
@@ -54,6 +56,7 @@ public class GalleryInstrumentation extends com.juans.inspeccion.Interfaz.Camera
                 runOnMainSync(() -> confirmation().getButton(AlertDialog.BUTTON_POSITIVE).performClick());
                 waitFor(() -> ui(() -> current.persisted == 1));
                 check(ui(() -> !current.selectedAlbum().getFotos().contains(removed)), "deleted reference");
+                waitFor(() -> ui(() -> title().equals("2 de " + count)));
                 check(ui(() -> title().equals("2 de " + count)), "next photo after deletion");
                 GalleryDeviceHost old = current;
                 runOnMainSync(() -> ((ViewPager2) gallery().requireView().findViewById(R.id.galleryPager)).setCurrentItem(7, false));

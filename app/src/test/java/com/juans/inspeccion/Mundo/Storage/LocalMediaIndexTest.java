@@ -33,10 +33,10 @@ public class LocalMediaIndexTest {
         index.addVideo(owner.getPhotoId(),album,"content://video/1",2000);
         assertArrayEquals(before,bytes(owner)); assertEquals(Collections.singletonList("content://photo/1"),album.getFotos());
         assertNull(album.recordedRemoteName("content://video/1"));
-        new FotosPendientes(app).agregarFotos(owner);
-        Inspeccion queued=StoredInspections.read(app,StoredInspections.UPLOADS).get(0);
-        assertEquals(Collections.singletonList("content://photo/1"),queued.getFotosGenerales().getFotos());
-        for(Album uploaded:queued.allAlbums()) assertFalse(uploaded.getFotos().contains("content://video/1"));
+        StoredInspections.write(app,StoredInspections.DRAFTS,new ArrayList<>(Collections.singletonList(owner)));
+        Inspeccion reopened=StoredInspections.read(app,StoredInspections.DRAFTS).get(0);
+        assertEquals(Collections.singletonList("content://photo/1"),reopened.getFotosGenerales().getFotos());
+        assertEquals(GalleryMediaItem.Kind.VIDEO,index.items(reopened.getPhotoId(),reopened.getFotosGenerales()).get(1).kind);
     }
     @Test public void failedAtomicWritePreservesLastIndexAndCorruptReadDoesNotOverwrite() throws Exception {
         index.addVideo(owner.getPhotoId(),album,"content://video/1",1000);

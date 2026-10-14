@@ -14,28 +14,17 @@ import static org.junit.Assert.*;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28, application = android.app.Application.class)
 public class UploadQueueTest {
-    @Test public void failedSecondUploadPersistsFirstAcknowledgementAndRetryRetainsGallery() throws Exception {
-        LegacyPhotoImporterTest.FakePhotos photos = new LegacyPhotoImporterTest.FakePhotos();
-        photos.bytes.put("content://photos/1", new byte[]{1}); photos.bytes.put("content://photos/2", new byte[]{2});
-        Inspeccion inspection = new Inspeccion("/sdcard/Inspecciones/ENTRADA_EP_123_CNTR");
-        Album album = new Album(); inspection.setFotosGenerales(album);
-        album.agregarFoto("content://photos/1"); album.agregarFoto("content://photos/2");
-        album.setRemoteName("content://photos/1", "ENTRADA_EP_123_CNTR_0.jpg");
-        album.setRemoteName("content://photos/2", "ENTRADA_EP_123_CNTR_DANIO#0_0.jpg");
-        FotosPendientes queue = new FotosPendientes(RuntimeEnvironment.getApplication(), photos); queue.agregarFotos(inspection);
-        Transport transport = new Transport(); transport.failAt = 2;
-        try (FTPUpload uploader = new FTPUpload("fake",21,"user","pass",transport)) {
-            uploader.conect(); assertFalse(queue.subirFotosServidor(uploader));
-            assertEquals(1, StoredInspections.read(RuntimeEnvironment.getApplication(), StoredInspections.UPLOADS).get(0).getFotosGenerales().getFotos().size());
-            assertEquals(2, album.getFotos().size()); assertEquals(2, photos.bytes.size());
-            transport.failAt = -1;
-            assertTrue(new FotosPendientes(RuntimeEnvironment.getApplication(), photos).subirFotosServidor(uploader));
-            assertFalse(queue.hayPendientes());
+    @Test public void retiredQueueNeverEnqueuesOrCallsTransportAndRetainsGallery() throws Exception {
+        LegacyPhotoImporterTest.FakePhotos photos=new LegacyPhotoImporterTest.FakePhotos();
+        Inspeccion inspection=new Inspeccion(); inspection.getFotosGenerales().agregarFoto("content://photos/1");
+        FotosPendientes queue=new FotosPendientes(RuntimeEnvironment.getApplication(),photos);
+        try { queue.agregarFotos(inspection); fail(); } catch(StoredInspections.StorageException expected) {}
+        Transport transport=new Transport();
+        try(FTPUpload uploader=new FTPUpload("fake",21,"user","pass",transport)) {
+            try { queue.subirFotosServidor(uploader); fail(); } catch(IOException expected) { assertTrue(expected.getMessage().contains("retirada")); }
         }
-        assertEquals(Arrays.asList("/ENTRADA_EP_123_CNTR/ENTRADA_EP_123_CNTR_0.jpg",
-                "/ENTRADA_EP_123_CNTR/ENTRADA_EP_123_CNTR_DANIO#0_0.jpg",
-                "/ENTRADA_EP_123_CNTR/ENTRADA_EP_123_CNTR_DANIO#0_0.jpg"), transport.paths);
-        assertFalse(transport.connected); assertTrue(transport.logout);
+        assertFalse(queue.hayPendientes()); assertTrue(transport.paths.isEmpty()); assertFalse(transport.connected);
+        assertEquals(Collections.singletonList("content://photos/1"),inspection.getFotosGenerales().getFotos());
     }
     @Test public void transferFailureClosesSourceAndConnection() throws Exception {
         Transport transport = new Transport(); transport.throwOnUpload = true;

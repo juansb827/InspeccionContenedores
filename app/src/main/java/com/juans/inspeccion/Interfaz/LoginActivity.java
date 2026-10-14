@@ -74,6 +74,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        com.juans.inspeccion.ui.settings.StorageNotice.show(this,false);
 
         cargarCampos();
 

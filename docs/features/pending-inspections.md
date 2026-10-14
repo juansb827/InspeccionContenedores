@@ -1,6 +1,6 @@
 # Pending inspections / drafts
 
-Status: current S/T; future cutover P. Reviewed 2026-10-13, app 1.10 at `0a365c1`. Reviewer needed: operator/storage owner.
+Status: current S/T, with step-03 automated execution evidence. Reviewed 2026-10-13, app 1.10 at `0a365c1`. Reviewer needed: operator/storage owner.
 
 ## Purpose and entry points
 
@@ -20,11 +20,11 @@ Status: current S/T; future cutover P. Reviewed 2026-10-13, app 1.10 at `0a365c1
 
 Leaving an inspection does not automatically save a draft. Capture recovery can retain inspection snapshots separately, so recovery of a captured inspection is not proof of general form autosave. Storage failures retain the previous durable collection; edits in memory are not guaranteed durable after process death. Reopen, repeated save, deletion and failure examples need ACCEPT-02/07.
 
-## Persistence and planned changes
+## Storage retirement (intentional step-03 behavior change)
 
-Current source still opens earlier serialized drafts (T), without a separate storage version envelope. This is current evidence, not the future compatibility requirement.
+Earlier steps characterized opening serialized drafts. Those expectations are superseded; fixture bytes remain as historical evidence.
 
-**DRAFT-006 (P, accepted, not implemented):** recognized unsupported older drafts will be excluded with a notice allowing new drafts in a separate current store. Supported formats remain readable regardless of writer app version. Newer schemas, corrupt/unknown data and I/O errors have distinct outcomes and must be preserved. Do not guess originating app versions or draft counts. [ADR 002](../decisions/002-storage-retirement.md) and the [storage policy](../modernization/storage-version-policy.md) govern this change; step 02 tests recognition, step 03 implements cutover before package moves.
+**DRAFT-006 (S/T/E):** recognized unsupported older drafts are excluded with a notice allowing new drafts in a separate current store. Supported formats remain readable regardless of writer app version. Newer schemas, corrupt/unknown data and I/O errors have distinct outcomes and must be preserved. Do not guess originating app versions or draft counts. [ADR 002](../decisions/002-storage-retirement.md) and the [storage policy](../modernization/storage-version-policy.md) govern this change; [Current storage/recovery](../architecture/draft-schema-v1.md) and [step-03 results](../testing/step-03-cutover-and-moves.md) describe the implementation.
 
 ## Acceptance examples
 
@@ -32,12 +32,16 @@ Current source still opens earlier serialized drafts (T), without a separate sto
 | --- | --- | --- | --- | --- |
 | DRAFT-001 | Existing draft with same identity | Save again | Existing draft replaced | T: StorageCompatibilityTest identity case |
 | DRAFT-004 | Damaged existing store | Save/clear is attempted | Error; previous file preserved | T: StorageCompatibilityTest; UI manual gap |
-| DRAFT-006 | Recognized retired collection | Future cutover reads it | Unsupported notice; isolated source; new drafts possible | P; no current implementation/test |
+| DRAFT-006 | Recognized retired collection | The app opens storage | Unsupported notice; isolated source; new drafts possible | T/E: DraftCutoverTest; dedicated local storage runner |
 
 ## Evidence and questions
 
-Source: [draft list](../../app/src/main/java/com/juans/inspeccion/Interfaz/PendientesActivity.java), [inspection menus/save](../../app/src/main/java/com/juans/inspeccion/Interfaz/InspeccionActivity.java), [draft operations](../../app/src/main/java/com/juans/inspeccion/Mundo/Pendientes.java), [compatibility tests](../../app/src/test/java/com/juans/inspeccion/Mundo/Storage/StorageCompatibilityTest.java). Confirm “Borrar todo” intent and restored form completeness; future notice wording/cleanup UX remain implementation review items, not current behavior.
+Source: [draft list](../../app/src/main/java/com/juans/inspeccion/Interfaz/PendientesActivity.java), [inspection menus/save](../../app/src/main/java/com/juans/inspeccion/Interfaz/InspeccionActivity.java), [draft operations](../../app/src/main/java/com/juans/inspeccion/Mundo/Pendientes.java), [compatibility tests](../../app/src/test/java/com/juans/inspeccion/Mundo/Storage/StorageCompatibilityTest.java). Confirm “Borrar todo” intent and restored form completeness; the current notice is reviewed through automated local paths, with operator wording/cleanup acceptance still open.
 
 ## Step 02 regression evidence
 
 DraftRecoveryTest covers current serialized reopen/backup/error preservation; InspectionSubmissionTest covers real local removal after fake remote outcomes. StorageFormatProbeTest covers an unwired encoding/envelope preflight only. DRAFT-006 application behavior remains planned; real record validation/new-format recovery/notices/no replay require GATE-03-01/02. See [executed tests and precise gates](../testing/step-02-regression.md). Helper/request tests do not establish operator, full-screen, device or service acceptance.
+
+## Step 03 evidence
+
+DRAFT-001–006 use the real current-format reader/writer, with complete field/album/ordering recovery and distinct error outcomes. A notice titled “Estado de almacenamiento” explains retirement and public photo/video preservation. “Entendido” acknowledges it durably; “Cerrar” leaves it pending. The same status remains available in Configuración. New drafts work after recognized old data is isolated; newer, corrupt or unknown current data is preserved and blocks replacement. No public media is inferred into a new draft. See [storage tests and limitations](../testing/step-03-cutover-and-moves.md). The preceding step-02 paragraph is historical evidence of its unwired preflight, superseded by this implementation.

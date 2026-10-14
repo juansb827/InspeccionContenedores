@@ -1,6 +1,6 @@
 # Photo uploads
 
-Status: dormant current behavior S/T; retirement P. Reviewed 2026-10-13, app 1.10 at `0a365c1`. Reviewer needed: maintenance owner.
+Status: retired S/T; historical helper behavior retained below. Reviewed 2026-10-13, app 1.10 at `0a365c1`. Reviewer needed: maintenance owner.
 
 ## Purpose and entry points
 
@@ -9,7 +9,7 @@ Historical photo-upload work remains in the repository. There is no active opera
 | ID | Behavior | Evidence |
 | --- | --- | --- |
 | UPLOAD-001 | Saving inspections/capturing media does not automatically start photo uploads. Videos never enter the photo queue. | S/T video exclusion |
-| UPLOAD-002 | Existing helper tests exercise incremental photo-upload acknowledgement, retry of remaining photos and retention of public gallery copies using fakes. These are helper contracts, not acceptance of a reachable upload screen or service. | T |
+| UPLOAD-002 | Historical helper tests exercised incremental acknowledgement/retry. The current helper refuses enqueue/send with “La cola de fotos está retirada; no se envían archivos.” Original albums/public media remain. | H; S/T current refusal |
 | UPLOAD-003 | The dormant background service is not a usable configured upload feature. No operator-visible successful upload, cancellation or end-to-end retry is established. | S |
 | UPLOAD-004 | **P, accepted, not implemented:** the old unused queue is retired without compatibility/import or replay. Upload unavailability must not block inspection saving. Any remaining upload controls must report unavailability rather than throw or claim success. | P |
 
@@ -28,3 +28,7 @@ The current queue persists acknowledgement state; helper transfer failures retai
 ## Evidence and open items
 
 Source: [inspection upload stub](../../app/src/main/java/com/juans/inspeccion/Interfaz/InspeccionActivity.java), [dormant service](../../app/src/main/java/com/juans/inspeccion/Other/SimpleService.java), [network receiver](../../app/src/main/java/com/juans/inspeccion/Other/NetWorkChangeReceiver.java), [queue helper tests](../../app/src/test/java/com/juans/inspeccion/Mundo/Storage/UploadQueueTest.java). [ADR 002](../decisions/002-storage-retirement.md) supersedes historical requirements to import/replay this queue. No active upload acceptance item is required; preventing replay at cutover is ACCEPT-07.
+
+## Step 03 retirement evidence
+
+The service reports “La cola de fotos está retirada; no se envían archivos.” and stops, including when restarted without extras. No network connection or replay occurs. Unknown/unreadable old queue data remains unresolved and does not block healthy inspection drafts. Importing selected public photos only updates active current drafts; retired draft/queue associations are not imported or guessed. [Cutover tests/results](../testing/step-03-cutover-and-moves.md) supersede the historical incremental-queue expectation while retaining transfer resource-closure tests.

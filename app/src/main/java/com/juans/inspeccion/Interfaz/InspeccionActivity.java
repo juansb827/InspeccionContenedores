@@ -294,7 +294,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         photoStore = new com.juans.inspeccion.Mundo.Storage.MediaPhotoStore(this);
         if (savedInstanceState != null) editingAlbum = (Album) savedInstanceState.getSerializable("editingPhotoAlbum");
         try {
-            captureCoordinator = new com.juans.inspeccion.Mundo.Storage.CaptureCoordinator(photoStore, getFileStreamPath("pending-photo-capture"));
+            captureCoordinator = new com.juans.inspeccion.Mundo.Storage.CaptureCoordinator(photoStore, com.juans.inspeccion.data.local.StorageCutover.currentJournal(this, "pending-photo-capture"));
             com.juans.inspeccion.Mundo.Storage.CaptureCoordinator.Session session = captureCoordinator.session();
             if (session != null && (captureCoordinator.isBusy() || savedInstanceState == null)) {
                 recoveredPhotoCapture = !session.inspectionId.equals(inspeccionObject.getPhotoId());
@@ -316,11 +316,11 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         } catch (IOException | com.juans.inspeccion.Mundo.Storage.StoredInspections.StorageException e) { photoStorageError = e.getMessage(); }
         mediaIndex = new com.juans.inspeccion.Mundo.Storage.LocalMediaIndex(this);
         try {
-            videoCoordinator = new com.juans.inspeccion.Mundo.Storage.VideoCaptureCoordinator(new com.juans.inspeccion.Mundo.Storage.MediaVideoStore(this), getFileStreamPath("pending-video-capture"));
+            videoCoordinator = new com.juans.inspeccion.Mundo.Storage.VideoCaptureCoordinator(new com.juans.inspeccion.Mundo.Storage.MediaVideoStore(this), com.juans.inspeccion.data.local.StorageCutover.currentJournal(this, "pending-video-capture"));
             com.juans.inspeccion.Mundo.Storage.VideoCaptureCoordinator.Session video = videoCoordinator.session();
             // An older completed video must not replace a newer photo/form recovery snapshot.
             boolean newestVideo = captureCoordinator == null || captureCoordinator.session() == null
-                    || getFileStreamPath("pending-video-capture").lastModified() >= getFileStreamPath("pending-photo-capture").lastModified();
+                    || com.juans.inspeccion.data.local.StorageCutover.currentJournal(this, "pending-video-capture").lastModified() >= com.juans.inspeccion.data.local.StorageCutover.currentJournal(this, "pending-photo-capture").lastModified();
             if (video != null && (videoCoordinator.isBusy() || (savedInstanceState == null && !video.discard && newestVideo
                     && (captureCoordinator == null || !captureCoordinator.isBusy())))) {
                 recoveredPhotoCapture = !video.inspectionId.equals(inspeccionObject.getPhotoId());
@@ -351,6 +351,7 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         });
 
     setContentView(R.layout.activity_inspeccion);
+        com.juans.inspeccion.ui.settings.StorageNotice.show(this,false);
 
     viewPager = (ViewPager) findViewById(R.id.pager);
     TabLayout tabLayout = findViewById(R.id.tab_layout);

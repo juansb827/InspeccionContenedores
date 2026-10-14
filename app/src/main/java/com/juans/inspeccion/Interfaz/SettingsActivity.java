@@ -104,7 +104,6 @@ public class SettingsActivity extends AppCompatActivity implements View.OnFocusC
         try {
             ArrayList<com.juans.inspeccion.Mundo.Inspeccion> saved = com.juans.inspeccion.Mundo.Storage.StoredInspections.read(this,
                     com.juans.inspeccion.Mundo.Storage.StoredInspections.DRAFTS);
-            saved.addAll(com.juans.inspeccion.Mundo.Storage.StoredInspections.read(this, com.juans.inspeccion.Mundo.Storage.StoredInspections.UPLOADS));
             if (com.juans.inspeccion.Mundo.Storage.LegacyPhotoImporter.hasLegacyReferences(saved))
                 Toast.makeText(this, "Hay fotos antiguas: use Importar fotos antiguas en el menú", Toast.LENGTH_LONG).show();
         } catch (Exception e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); }
@@ -370,6 +369,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnFocusC
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.settings, menu);
+        menu.add(0, com.juans.inspeccion.ui.settings.StorageNotice.MENU_ID, 0, "Estado de almacenamiento");
 
         return true;
     }
@@ -387,6 +387,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnFocusC
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        if (id == com.juans.inspeccion.ui.settings.StorageNotice.MENU_ID) { com.juans.inspeccion.ui.settings.StorageNotice.show(this,true); return true; }
         if (id == R.id.action_import_legacy_photos) { selectLegacyFolder(); return true; }
         if (id == R.id.action_settings) {
             return true;

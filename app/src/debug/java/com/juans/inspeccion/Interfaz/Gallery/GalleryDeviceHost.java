@@ -67,7 +67,7 @@ public class GalleryDeviceHost extends FragmentActivity implements com.juans.ins
                             inspection.getPhotoId(), "fixture-" + i + ".jpg", capture));
                 }
                 image.recycle();
-                if (getIntent().getBooleanExtra("unavailable", true)) target.getFotos().add("/old/Inspecciones/unavailable.jpg");
+                if (getIntent().getBooleanExtra("unavailable", true)) target.getFotos().add("content://media/external/images/media/2147483647");
             } catch (IOException e) { throw new IllegalStateException(e); }
             runOnUiThread(() -> PhotoGalleryFragment.newInstance(inspection.getPhotoId(), target.getId()).show(getSupportFragmentManager(), "photos"));
             }, "gallery-fixtures").start();

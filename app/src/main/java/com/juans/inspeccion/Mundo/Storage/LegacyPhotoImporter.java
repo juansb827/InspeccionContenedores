@@ -96,16 +96,13 @@ public final class LegacyPhotoImporter {
         return failures;
     }
 
-    /** Persist each store separately; the mapping makes recovery safe between the two writes. */
+    /** Only current drafts are eligible; retired drafts/queues are never imported. */
     public synchronized ArrayList<String> importSaved(Source source) throws IOException {
         if (source == null) return new ArrayList<>(); // A canceled selection must not even upgrade/write the stores.
         ArrayList<Inspeccion> drafts = StoredInspections.read(context, StoredInspections.DRAFTS);
-        ArrayList<Inspeccion> uploads = StoredInspections.read(context, StoredInspections.UPLOADS);
         ArrayList<Inspeccion> all = new ArrayList<>(drafts);
-        all.addAll(uploads);
         ArrayList<String> failures = importAll(source, all);
         commitVerified(StoredInspections.DRAFTS);
-        commitVerified(StoredInspections.UPLOADS);
         return failures;
     }
 

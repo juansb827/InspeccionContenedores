@@ -37,8 +37,9 @@ public class GalleryDeletionModel extends AndroidViewModel {
     public GalleryDeletionModel(Application app) { this(app,new MediaPhotoStore(app),WORKER); }
     GalleryDeletionModel(Application app, PhotoStore store, Executor worker) {
         super(app); this.store=store; this.videos=new MediaVideoStore(app); this.worker=worker;
-        journal=app.getFileStreamPath("pending-media-deletion");
+        journal=app.getFileStreamPath("pending-media-deletion-v1");
         try {
+            com.juans.inspeccion.data.local.StorageCutover.currentJournal(app, "pending-media-deletion");
             Result saved=(Result)AtomicObjects.read(journal);
             if(saved!=null) {
                 if(saved.busy) {

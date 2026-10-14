@@ -9,15 +9,17 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-/** Local sidecar only. Album serialization and the photo-only upload queue stay unchanged. */
+/** Local sidecar only. Album identity and independent video ordering are preserved; uploads are retired. */
 public class LocalMediaIndex {
     private static final Object LOCK = new Object();
     private final AtomicFile file;
     public LocalMediaIndex(Context context) { file = new AtomicFile(context.getFileStreamPath("local-media-index.json")); }
     private JSONObject read() throws IOException {
         try {
-            if (!file.getBaseFile().exists() && !new File(file.getBaseFile()+".bak").exists())
+            if (!file.getBaseFile().exists() && !new File(file.getBaseFile()+".bak").exists()) {
+                if(new File(file.getBaseFile()+".new").exists()) throw new IOException("Índice local interrumpido; se conserva .new para recuperación");
                 return new JSONObject().put("version", 1).put("albums", new JSONObject());
+            }
             JSONObject root = new JSONObject(new String(file.readFully(), StandardCharsets.UTF_8));
             if (root.getInt("version") != 1 || !(root.get("albums") instanceof JSONObject)) throw new IOException("Versión del índice desconocida");
             return root;

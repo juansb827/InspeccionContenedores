@@ -1,6 +1,6 @@
 # Local storage version policy
 
-Decision: **accepted scope; implementation pending**. The user accepts that old drafts and the unused photo-upload queue will be unavailable after the format cutover. Backward-compatible reading or importing of those stores is not required. The app must recognize unsupported older data and explain why it cannot open it.
+Decision: **accepted; atomic JSON cutover implemented in step 03**. The user accepts that old drafts and the unused photo-upload queue will be unavailable after the format cutover. Backward-compatible reading or importing of those stores is not required. The app must recognize unsupported older data and explain why it cannot open it.
 
 This supersedes earlier requirements to preserve released draft/queue serialization. It does not authorize deleting public photos/videos, changing SQL Server records, losing newly created drafts, or treating every storage error as an old-version problem. Backend API implementation remains out of scope.
 
@@ -8,7 +8,7 @@ This supersedes earlier requirements to preserve released draft/queue serializat
 
 Separate the storage format version from the application version. An app update alone does not invalidate data: read any supported format even if another app version wrote it. Changing a Java package must not change the new stored format.
 
-New draft data should use an explicit envelope, readable before constructing application model objects. Proposed fields:
+New draft data uses an explicit envelope, readable before constructing application model objects. Current envelope (`writerAppVersion` optional diagnostic metadata, omitted by the current writer):
 
 ```json
 {
@@ -19,7 +19,7 @@ New draft data should use an explicit envelope, readable before constructing app
 }
 ```
 
-Use explicit stable field names and plain values without Java class names. Atomic JSON documents are the initial proposal; Room remains a later storage-engine decision. Define record-level schema markers if records may evolve independently; otherwise the envelope version governs the complete collection. The app version is diagnostic metadata, not the compatibility check.
+Use explicit stable field names and plain values without Java class names. Atomic JSON documents are the implemented initial store; Room remains a later storage-engine decision. Define record-level schema markers if records may evolve independently; otherwise the envelope version governs the complete collection. The app version is diagnostic metadata, not the compatibility check.
 
 The existing `listaPendientes` and `fotosPendientes` files lack this application-level envelope. Identify their known storage location and legacy serialization signature before attempting object deserialization. This recognizes a retired format, not its exact producing app version or the integrity of every payload byte. Keep original fixtures for recognition tests; old model classes are not needed merely to identify the format. If evidence is insufficient, report unknown/damaged data instead of claiming an older app wrote it.
 
@@ -51,3 +51,7 @@ Step 01 records this behavior; step 02 adds recognition/error fixtures. Step 03 
 Test known legacy drafts/queues, supported records written by a different app version, retired/newer schema versions, malformed headers/payloads, missing files, I/O failure, interrupted/repeated cutover, and creation/reopening of new drafts. Ensure public media is unchanged, uploads do not replay, and errors are accurately classified. Replace old “must deserialize” expectations at cutover while retaining media and current-format recovery tests.
 
 Downgrade compatibility with the pre-cutover app is not promised. Treat the cutover as a roll-forward release: recover via a corrected build understanding the current schema. An old APK may reopen abandoned files or miss new drafts, so simply reinstalling it is not the recovery procedure. The accepted one-time break does not grant permission to reset drafts on every future release.
+
+## Implemented step-03 contract
+
+[Schema 1 and recovery](../architecture/draft-schema-v1.md) records exact values, semantic/UTF-8/resource validation, namespaces, atomic marker acknowledgement, candidate ordering and journal exceptions. [Executed step-03 results](../testing/step-03-cutover-and-moves.md) supplies the gates; no operator walkthrough or signed in-place update is implied. The broad storage-engine redesign remains in step 08.

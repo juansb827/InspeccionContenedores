@@ -24,26 +24,21 @@ public class StorageCompatibilityTest {
             Files.copy(in, context.getFileStreamPath(name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
     }
-    @Test public void releasedDraftsAndUploadQueueRemainReadable() throws Exception {
-        assertEquals(4164294007417506670L, ObjectStreamClass.lookup(Album.class).getSerialVersionUID());
-        assertEquals(7140579573600875404L, ObjectStreamClass.lookup(Inspeccion.class).getSerialVersionUID());
-        for (String name : new String[]{StoredInspections.DRAFTS, StoredInspections.UPLOADS}) {
-            released(name);
-            ArrayList<Inspeccion> values = StoredInspections.read(context, name);
-            Inspeccion inspection = values.get(0);
-            assertNotNull(inspection.getPhotoId());
-            assertEquals(2, inspection.allAlbums().size());
-            assertNotEquals(inspection.allAlbums().get(0).getId(), inspection.allAlbums().get(1).getId());
-            assertTrue(inspection.allAlbums().get(0).getFotos().get(0).contains("/Inspecciones/"));
-            assertEquals(inspection.getPhotoId(), StoredInspections.read(context, name).get(0).getPhotoId());
-            StoredInspections.write(context, name, values);
-            assertEquals(inspection.getPhotoId(), StoredInspections.read(context, name).get(0).getPhotoId());
-        }
+    // DRAFT-006/UPLOAD-004: intentional cutover replaces old deserialization expectations.
+    @Test public void releasedDraftsAndUploadQueueAreIsolatedWithoutDeserialization() throws Exception {
+        for(String name:new String[]{StoredInspections.LEGACY_DRAFTS,StoredInspections.UPLOADS}) released(name);
+        assertTrue(StoredInspections.read(context,StoredInspections.DRAFTS).isEmpty());
+        com.juans.inspeccion.data.local.StorageCutover.Status status=com.juans.inspeccion.data.local.StorageCutover.prepare(context);
+        assertEquals(2,status.isolated.size()); assertTrue(status.noticePending);
+        for(String name:new String[]{StoredInspections.LEGACY_DRAFTS,StoredInspections.UPLOADS}) assertFalse(context.getFileStreamPath(name).exists());
+        Inspeccion current=new Inspeccion(); Pendientes.upsert(current,context);
+        assertEquals(current.getPhotoId(),StoredInspections.read(context,StoredInspections.DRAFTS).get(0).getPhotoId());
     }
-    @Test public void emptyQueueIsPersisted() throws Exception {
-        released(StoredInspections.UPLOADS);
-        StoredInspections.write(context, StoredInspections.UPLOADS, new ArrayList<>());
-        assertTrue(StoredInspections.read(context, StoredInspections.UPLOADS).isEmpty());
+    @Test public void retiredQueueCannotBeReadOrWritten() throws Exception {
+        released(StoredInspections.UPLOADS); byte[] before=Files.readAllBytes(context.getFileStreamPath(StoredInspections.UPLOADS).toPath());
+        try { StoredInspections.write(context,StoredInspections.UPLOADS,new ArrayList<>()); fail(); }
+        catch(StoredInspections.StorageException e) { assertEquals(StorageFormatProbe.Outcome.UNSUPPORTED_OLDER,e.outcome); }
+        assertArrayEquals(before,Files.readAllBytes(context.getFileStreamPath(StoredInspections.UPLOADS).toPath()));
     }
     @Test public void corruptFileCannotBeOverwritten() throws Exception {
         File file = context.getFileStreamPath(StoredInspections.DRAFTS);

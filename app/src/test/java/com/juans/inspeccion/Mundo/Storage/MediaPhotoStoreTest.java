@@ -48,6 +48,94 @@ public class MediaPhotoStoreTest {
         assertEquals(1, provider.rows.size());
         assertEquals(Integer.valueOf(0), provider.rows.get(1L).getAsInteger(MediaStore.Images.Media.IS_PENDING));
     }
+    @Test public void capturePublishesReleasedNameWithoutCaptureUuid() throws Exception {
+        android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(8, 8, android.graphics.Bitmap.Config.ARGB_8888);
+        File capture = store.createCapture("12345678-1234-1234-1234-123456789012");
+        try (OutputStream out = new FileOutputStream(capture)) { bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out); }
+        bitmap.recycle();
+        String uri = store.publish(capture, "inspection", "ENTRADA_EP_123_ABCD_0.jpg", "12345678-1234-1234-1234-123456789012");
+        assertEquals("ENTRADA_EP_123_ABCD_0.jpg", store.displayName(uri));
+        assertEquals(1, provider.rows.size());
+    }
+    @Test public void collisionsAdvancePhotoNumberAndPreserveExistingBytes() throws Exception {
+        String first = store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", "ENTRADA_EP_123_ABCD_0.jpg", "first");
+        String second = store.importPhoto(new ByteArrayInputStream(new byte[]{2}), "inspection", "ENTRADA_EP_123_ABCD_0.jpg", "second");
+        String third = store.importPhoto(new ByteArrayInputStream(new byte[]{3}), "inspection", "ENTRADA_EP_123_ABCD_0.jpg", "third");
+        assertEquals("ENTRADA_EP_123_ABCD_0.jpg", store.displayName(first));
+        assertEquals("ENTRADA_EP_123_ABCD_1.jpg", store.displayName(second));
+        assertEquals("ENTRADA_EP_123_ABCD_2.jpg", store.displayName(third));
+        try (InputStream in = store.open(first)) { assertEquals(1, in.read()); }
+        try (InputStream in = store.open(second)) { assertEquals(2, in.read()); }
+        try (InputStream in = store.open(third)) { assertEquals(3, in.read()); }
+    }
+    @Test public void damageCollisionsAdvanceOnlyPhotoNumberAndFoldersAreIndependent() throws Exception {
+        String name = "ENTRADA_EP_123_ABCD_DANIO#2_0.jpg";
+        String first = store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", name, "first");
+        String second = store.importPhoto(new ByteArrayInputStream(new byte[]{2}), "inspection", name, "second");
+        String other = store.importPhoto(new ByteArrayInputStream(new byte[]{3}), "other-inspection", name, "other");
+        assertEquals(name, store.displayName(first));
+        assertEquals("ENTRADA_EP_123_ABCD_DANIO#2_1.jpg", store.displayName(second));
+        assertEquals(name, store.displayName(other));
+    }
+    @Test public void collidingFailedCopyRetriesItsReservedRowAfterRecreation() throws Exception {
+        String name = "ENTRADA_EP_123_ABCD_0.jpg";
+        String first = store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", name, "first");
+        InputStream bad = new InputStream() { public int read() throws IOException { throw new IOException("storage failure"); } };
+        try { store.importPhoto(bad, "inspection", name, "second"); fail(); } catch (IOException expected) { }
+        assertEquals("ENTRADA_EP_123_ABCD_1.jpg", provider.rows.get(2L).getAsString(MediaStore.Images.Media.DISPLAY_NAME));
+        String second = new MediaPhotoStore(context).importPhoto(new ByteArrayInputStream(new byte[]{2}), "inspection", name, "second");
+        assertEquals(2, provider.rows.size());
+        assertEquals("ENTRADA_EP_123_ABCD_1.jpg", store.displayName(second));
+        try (InputStream in = store.open(first)) { assertEquals(1, in.read()); }
+    }
+    @Test public void unjournaledReservationIsRecoveredWithoutUsingUnrelatedNamedPhoto() throws Exception {
+        String first = store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", "photo_0.jpg", "first");
+        ContentValues pending = new ContentValues();
+        pending.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Inspecciones/inspection/");
+        pending.put(MediaStore.Images.Media.DISPLAY_NAME, "pending-interrupted.jpg");
+        pending.put(MediaStore.Images.Media.IS_PENDING, 1);
+        Uri reserved = provider.insert(MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), pending);
+        String recovered = new MediaPhotoStore(context).importPhoto(new ByteArrayInputStream(new byte[]{2}), "inspection", "photo_0.jpg", "interrupted");
+        assertEquals(reserved.toString(), recovered);
+        assertEquals("photo_1.jpg", store.displayName(recovered));
+        assertEquals(2, provider.rows.size());
+        try (InputStream in = store.open(first)) { assertEquals(1, in.read()); }
+    }
+    @Test public void submissionRenameAvoidsCollisionsAndIsIdempotent() throws Exception {
+        String existing = store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", "ENTRADA_EP_123_ABCD_0.jpg", "first");
+        String temporary = store.importPhoto(new ByteArrayInputStream(new byte[]{2}), "inspection", "ENTRADA_EP_temp_ABCD_0.jpg", "second");
+        store.rename(temporary, "ENTRADA_EP_123_ABCD_0.jpg");
+        assertEquals("ENTRADA_EP_123_ABCD_1.jpg", store.displayName(temporary));
+        new MediaPhotoStore(context).rename(temporary, "ENTRADA_EP_123_ABCD_0.jpg");
+        assertEquals("ENTRADA_EP_123_ABCD_1.jpg", store.displayName(temporary));
+        assertEquals("ENTRADA_EP_123_ABCD_0.jpg", store.displayName(existing));
+        assertEquals(2, provider.rows.size());
+        try (InputStream in = store.open(existing)) { assertEquals(1, in.read()); }
+        try (InputStream in = store.open(temporary)) { assertEquals(2, in.read()); }
+    }
+    @Test public void pendingPhotoAlsoReservesItsVisibleNumber() throws Exception {
+        InputStream bad = new InputStream() { public int read() throws IOException { throw new IOException("storage failure"); } };
+        try { store.importPhoto(bad, "inspection", "photo_0.jpg", "first"); fail(); } catch (IOException expected) { }
+        String second = store.importPhoto(new ByteArrayInputStream(new byte[]{2}), "inspection", "photo_0.jpg", "second");
+        assertEquals("photo_1.jpg", store.displayName(second));
+        assertEquals(Integer.valueOf(1), provider.rows.get(1L).getAsInteger(MediaStore.Images.Media.IS_PENDING));
+        assertEquals("photo_0.jpg", provider.rows.get(1L).getAsString(MediaStore.Images.Media.DISPLAY_NAME));
+    }
+    @Test public void completedPublicationWithOldUuidNameIsStillReusable() throws Exception {
+        String original = store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", "photo_0-old-capture-id.jpg", "old-capture");
+        String retried = new MediaPhotoStore(context).importPhoto(new ByteArrayInputStream(new byte[]{2}), "inspection", "photo_0.jpg", "old-capture");
+        assertEquals(original, retried);
+        assertEquals("photo_0-old-capture-id.jpg", store.displayName(retried));
+        assertEquals(1, provider.rows.size());
+        try (InputStream in = store.open(original)) { assertEquals(1, in.read()); }
+    }
+    @Test public void unavailableCollisionQueryFailsWithoutTouchingExistingPhoto() throws Exception {
+        String first = store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", "photo_0.jpg", "first");
+        provider.failQueries = true;
+        try { store.importPhoto(new ByteArrayInputStream(new byte[]{2}), "inspection", "photo_0.jpg", "second"); fail(); }
+        catch (IOException expected) { assertEquals(1, provider.rows.size()); }
+        try (InputStream in = store.open(first)) { assertEquals(1, in.read()); }
+    }
     @Test @Config(sdk = 28) public void oldAndroidRequiresStorageGrant() throws Exception {
         assertTrue(MediaPhotoStore.needsStoragePermission(context));
         try { store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", "photo.jpg", "denied"); fail(); }
@@ -60,6 +148,15 @@ public class MediaPhotoStoreTest {
         assertTrue(provider.rows.get(1L).getAsString(MediaStore.Images.Media.DATA).contains("Pictures/Inspecciones/inspection/photo.jpg"));
         assertFalse(provider.rows.get(1L).containsKey(MediaStore.Images.Media.IS_PENDING));
         try (InputStream in = store.open(uri)) { assertEquals(1, in.read()); }
+    }
+    @Test @Config(sdk = 28) public void historicalPublicFileCollisionDoesNotReplaceOriginal() throws Exception {
+        org.robolectric.Shadows.shadowOf((android.app.Application) context).grantPermissions(MediaPhotoStore.storagePermissions());
+        String first = store.importPhoto(new ByteArrayInputStream(new byte[]{1}), "inspection", "photo_0.jpg", "first");
+        String second = store.importPhoto(new ByteArrayInputStream(new byte[]{2}), "inspection", "photo_0.jpg", "second");
+        assertEquals("photo_0.jpg", store.displayName(first));
+        assertEquals("photo_1.jpg", store.displayName(second));
+        try (InputStream in = store.open(first)) { assertEquals(1, in.read()); }
+        try (InputStream in = store.open(second)) { assertEquals(2, in.read()); }
     }
     @Test public void failedExplicitDeletionKeepsAlbumReference() throws Exception {
         com.juans.inspeccion.Mundo.Album album = new com.juans.inspeccion.Mundo.Album();
@@ -76,6 +173,7 @@ public class MediaPhotoStoreTest {
     public static class MediaProvider extends ContentProvider {
         final Map<Long, ContentValues> rows = new LinkedHashMap<>();
         final Map<Long, File> files = new HashMap<>();
+        boolean failQueries;
         public boolean onCreate() { return true; }
         public String getType(Uri uri) { return "image/jpeg"; }
         public Uri insert(Uri uri, ContentValues values) {
@@ -89,8 +187,11 @@ public class MediaPhotoStoreTest {
             return Uri.withAppendedPath(uri, Long.toString(id));
         }
         public Cursor query(Uri uri, String[] projection, String selection, String[] args, String sort) {
+            if (failQueries) return null;
             MatrixCursor cursor = new MatrixCursor(projection);
             for (Map.Entry<Long, ContentValues> entry : rows.entrySet()) {
+                if (Integer.valueOf(1).equals(entry.getValue().getAsInteger(MediaStore.Images.Media.IS_PENDING))
+                        && !"1".equals(uri.getQueryParameter("includePending"))) continue;
                 if (selection != null) {
                     String path = entry.getValue().getAsString(MediaStore.Images.Media.RELATIVE_PATH);
                     if (path == null) path = entry.getValue().getAsString(MediaStore.Images.Media.DATA);

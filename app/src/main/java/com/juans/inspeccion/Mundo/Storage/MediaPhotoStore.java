@@ -59,7 +59,7 @@ public class MediaPhotoStore implements PhotoStore {
         }
         File processed = ImageProcessor.process(original);
         try (InputStream in = new FileInputStream(processed)) {
-            return importPhoto(in, inspection, name.replaceFirst("(?i)\\.jpg$", "") + "-" + id + ".jpg", id);
+            return importPhoto(in, inspection, name, id);
         } finally { processed.delete(); }
     }
 
@@ -70,12 +70,16 @@ public class MediaPhotoStore implements PhotoStore {
             if (entry != null && entry.complete) return entry.uri;
             if (needsStoragePermission(context)) throw new IOException("Se requiere permiso para guardar fotos en este Android");
             String folder = "Pictures/Inspecciones/" + safe(inspection) + "/";
-            String base = safe(name.replaceFirst("(?i)\\.jpg$", ""));
-            String display = base + ".jpg";
+            String display = safe(name.replaceFirst("(?i)\\.jpg$", "")) + ".jpg";
             if (Build.VERSION.SDK_INT <= 28) {
                 File dir = new File(Environment.getExternalStorageDirectory(), folder);
                 if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("No se pudo crear la carpeta pública");
+                display = availableName(folder, display, null);
                 File destination = new File(dir, display);
+                while (!destination.createNewFile()) {
+                    display = availableName(folder, nextName(display), null);
+                    destination = new File(dir, display);
+                }
                 ExportFiles.write(destination, out -> copyPhoto(source, out));
                 // Old MediaStore must register only the fully written public file.
                 Uri registered = findDestination(folder, display);
@@ -85,11 +89,16 @@ public class MediaPhotoStore implements PhotoStore {
                 AtomicObjects.write(journalFile, journal);
                 return complete.uri;
             }
-            Uri uri = entry == null ? findDestination(folder, display) : Uri.parse(entry.uri);
-            if (uri == null) uri = createDestination(folder, display);
+            // A pending row uses capture identity only until its URI is journaled. This
+            // closes the insert/journal crash window without mistaking another photo
+            // with the requested visible name for this capture's recovery destination.
+            String pendingName = "pending-" + safe(id) + ".jpg";
+            Uri uri = entry == null ? findDestination(folder, pendingName) : Uri.parse(entry.uri);
+            if (uri == null) uri = createDestination(folder, pendingName);
             entry = new Publication(uri.toString(), false);
             journal.put(id, entry);
             AtomicObjects.write(journalFile, journal);
+            rename(uri.toString(), display);
             try (OutputStream out = context.getContentResolver().openOutputStream(uri, "wt")) {
                 if (out == null) throw new IOException("No se pudo abrir la foto para escritura");
                 copyPhoto(source, out);
@@ -121,10 +130,12 @@ public class MediaPhotoStore implements PhotoStore {
     private Uri findDestination(String folder, String display) throws IOException {
         String column = Build.VERSION.SDK_INT >= 29 ? MediaStore.Images.Media.RELATIVE_PATH : MediaStore.Images.Media.DATA;
         String location = Build.VERSION.SDK_INT >= 29 ? folder : new File(Environment.getExternalStorageDirectory(), folder + display).getPath();
-        try (Cursor cursor = context.getContentResolver().query(imageCollection(),
+        Uri queryUri = Build.VERSION.SDK_INT >= 29 ? MediaStore.setIncludePending(imageCollection()) : imageCollection();
+        try (Cursor cursor = context.getContentResolver().query(queryUri,
                 new String[]{MediaStore.Images.Media._ID}, column + "=? AND " + MediaStore.Images.Media.DISPLAY_NAME + "=?",
                 new String[]{location, display}, null)) {
-            if (cursor != null && cursor.moveToFirst()) return Uri.withAppendedPath(imageCollection(), cursor.getString(0));
+            if (cursor == null) throw new IOException("No se pudo consultar la biblioteca");
+            if (cursor.moveToFirst()) return Uri.withAppendedPath(imageCollection(), cursor.getString(0));
             return null;
         } catch (RuntimeException e) { throw new IOException("No se pudo consultar la biblioteca", e); }
     }
@@ -177,11 +188,50 @@ public class MediaPhotoStore implements PhotoStore {
     }
 
     @Override public void rename(String reference, String name) throws IOException {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, safe(name));
-        try {
-            if (context.getContentResolver().update(contentUri(reference), values, null, null) != 1) throw new IOException("No se pudo actualizar el nombre de la foto");
-        } catch (RuntimeException e) { throw new IOException("No se pudo actualizar el nombre de la foto", e); }
+        synchronized (PUBLICATION_LOCK) {
+            Uri uri = contentUri(reference);
+            String column = Build.VERSION.SDK_INT >= 29 ? MediaStore.Images.Media.RELATIVE_PATH : MediaStore.Images.Media.DATA;
+            String folder;
+            Uri queryUri = Build.VERSION.SDK_INT >= 29 ? MediaStore.setIncludePending(uri) : uri;
+            try (Cursor cursor = context.getContentResolver().query(queryUri, new String[]{column}, null, null, null)) {
+                if (cursor == null || !cursor.moveToFirst() || cursor.isNull(0)) throw new IOException("Foto no disponible");
+                folder = cursor.getString(0);
+                if (Build.VERSION.SDK_INT <= 28) {
+                    File parent = new File(folder).getParentFile();
+                    String root = Environment.getExternalStorageDirectory().getPath() + "/";
+                    if (parent == null || !parent.getPath().startsWith(root)) throw new IOException("Carpeta de foto no disponible");
+                    folder = parent.getPath().substring(root.length()) + "/";
+                }
+            } catch (RuntimeException e) { throw new IOException("No se pudo consultar la biblioteca", e); }
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, availableName(folder, safe(name), uri));
+            try {
+                if (context.getContentResolver().update(uri, values, null, null) != 1) throw new IOException("No se pudo actualizar el nombre de la foto");
+            } catch (RuntimeException e) { throw new IOException("No se pudo actualizar el nombre de la foto", e); }
+        }
+    }
+
+    private String availableName(String folder, String requested, Uri ownRow) throws IOException {
+        String candidate = requested;
+        while (true) {
+            Uri existing = findDestination(folder, candidate);
+            if (ownRow != null && ownRow.equals(existing)) return candidate;
+            boolean fileExists = Build.VERSION.SDK_INT <= 28
+                    && new File(Environment.getExternalStorageDirectory(), folder + candidate).exists();
+            if (existing == null && !fileExists) return candidate;
+            candidate = nextName(candidate);
+        }
+    }
+
+    private static String nextName(String name) throws IOException {
+        String base = name.replaceFirst("(?i)\\.jpg$", "");
+        int separator = base.lastIndexOf('_');
+        String number = base.substring(separator + 1);
+        if (separator >= 0 && number.matches("[0-9]+")) {
+            try { return base.substring(0, separator + 1) + Math.addExact(Long.parseLong(number), 1) + ".jpg"; }
+            catch (NumberFormatException | ArithmeticException e) { throw new IOException("No hay un número de foto disponible", e); }
+        }
+        return base + "_1.jpg";
     }
 
     @Override public void delete(String reference) throws IOException {

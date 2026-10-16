@@ -12,9 +12,9 @@ import static org.junit.Assert.*;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28, application = android.app.Application.class)
 public class PhotoNamesTest {
-    @Test public void containerComesFromContainerDataAndMissingDocumentUsesInspectionUuid() {
+    @Test public void containerComesFromContainerDataAndMissingDocumentUsesTemp() {
         Context context = RuntimeEnvironment.getApplication(); Inspeccion inspection = inspection(context);
-        assertEquals("ENTRADA_EP_" + inspection.getPhotoId() + "_ABCD_0.jpg",
+        assertEquals("ENTRADA_EP_temp_ABCD_0.jpg",
                 PhotoNames.capture(context, inspection, inspection.getFotosGenerales(), -1));
     }
     @Test public void generalAndDamageRemoteNamesKeepDocumentAndReleasedNumbering() throws Exception {

@@ -984,9 +984,8 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
     private void updatePhotoName(Album album, int index, String remoteName) throws IOException {
         String reference = album.getFotos().get(index);
         if (!reference.startsWith("content://")) { album.setRemoteName(reference, remoteName); return; }
-        // Keep the URI stable and the local filename unique; remote naming remains the released convention.
-        String localName = remoteName.replaceFirst("(?i)\\.jpg$", "") + "-" + album.getId() + "-" + index + ".jpg";
-        photoStore.rename(reference, localName);
+        // The store resolves local name collisions while keeping the URI and remote convention stable.
+        photoStore.rename(reference, remoteName);
         album.setRemoteName(reference, remoteName);
     }
     public void enviarFotos() {

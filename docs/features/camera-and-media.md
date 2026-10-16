@@ -11,7 +11,7 @@ Status: S/T; checkpoint device evidence H only. Reviewed 2026-10-13, app 1.10 at
 | ID | Current visible behavior | Evidence |
 | --- | --- | --- |
 | MEDIA-001 | Camera opening starts in “Foto”, uses rear camera, flash off, tap-to-focus and pinch zoom. Opening/canceling before shutter creates no capture file. Camera denial preserves the inspection; “Permitir cámara” or “Abrir ajustes” supports retry. | S/T |
-| MEDIA-002 | “Tomar foto” saves a processed photo in the public device gallery and associates it with its album. Interrupted publication can use “Reintentar guardado” on existing bytes or “Descartar captura”. Retry does not intentionally duplicate public publication. | S/T |
+| MEDIA-002 | “Tomar foto” saves a processed photo in the public device gallery and associates it with its album. Visible JPEG names use the document/container convention without UUID suffixes (`temp` until the document number is available); a name collision advances the photo number without replacing existing photos. Interrupted publication can use “Reintentar guardado” on existing bytes or “Descartar captura”. Retry does not intentionally duplicate public publication. | S/T |
 | MEDIA-003 | “Video” requires microphone permission and audio; denial leaves photos usable. Recording uses 720p when supported, otherwise 480p; unsupported devices retain photo mode. Maximum is 5 minutes and 200 MB (decimal). “Detener y guardar” finalizes a clip. | S/T |
 | MEDIA-004 | Back during recording offers “Guardar”, “Descartar”, “Continuar”. Backgrounding/recreation stops/finalizes; recording never resumes automatically. Invalid/incomplete video is retained privately for retry/discard rather than presented as saved. Discard does not delete an earlier public copy. | S/T |
 | MEDIA-005 | “Fotos y videos” shows an ordered mixed grid. Photos support swipe, pinch/pan, double-tap 1×/2× and maximum 4× zoom. Missing items retain their positions with “Foto no disponible” or “Video no disponible”. Back returns to grid then inspection; selection/grid position survives recreation. | S/T |
@@ -20,6 +20,8 @@ Status: S/T; checkpoint device evidence H only. Reviewed 2026-10-13, app 1.10 at
 | MEDIA-008 | Clearing an inspection/form, removing a damage and removing a submitted draft preserve public media bytes. Videos are local: they do not affect photo counters or upload work; submitted videos remain available in the device gallery. | S/T |
 
 ## Persistence, failures and recovery
+
+Photo naming was intentionally adjusted on 2026-10-15: general names are `<direction>_<EP/ET>_<document>_<container>_<photo>.jpg`; damage names include `_DANIO#<damage>_<photo>.jpg`. The current public folder `Pictures/Inspecciones/<inspection UUID>/`, internal capture/album IDs, URI references and separate remote-name convention remain. Renaming after submission applies the same collision protection. Existing photos are not bulk-renamed. Pending MediaStore reservations can temporarily use capture identity until their URI is journaled, then receive the readable name before publication. [Scope and verification](../testing/photo-naming.md).
 
 Public media survives removal of its form association; reopening business records does not reconstruct local associations automatically. Private capture recovery can restore an inspection and unsaved editing album. Unreadable recovery data is retained and can block capture instead of silently resetting state. The durability of the entire inspection across every lifecycle transition remains unverified; local host tests cover narrower media paths.
 

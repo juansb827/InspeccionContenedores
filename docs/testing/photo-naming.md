@@ -22,3 +22,26 @@ Results: 60 tests in 8 suites, zero failures/errors/skips; the test task execute
 No emulator, physical device, SQL Server, FTP or printer check was performed for this adjustment. OEM MediaStore behavior and cross-application races remain device acceptance, not something the fake provider proves.
 
 Before pushing on 2026-10-16, the naming-only staged patch was applied to an isolated checkout of `b422c7d`, excluding unrelated modernization edits. `:app:assembleDebug` and `:app:testDebugUnitTest` filtered to `MediaPhotoStoreTest`, `PhotoNamesTest` and `PhotoRenamingTest` passed: 19 tests, zero failures/errors/skips; all 40 Gradle tasks executed. This verifies the published change independently of unfinished working-tree changes. No device or service checks were added.
+
+## Readable folder names — 2026-10-17
+
+The subsequently authorized folder change supersedes the UUID-folder location above for new conventionally named photos. General and damage JPEGs now share `Pictures/Inspecciones/<direction>_<EP/ET>_<document>_<container>/`. Missing documents use `temp`. The existing submission-renaming path updates both `DISPLAY_NAME` and `RELATIVE_PATH` through MediaStore on supported Android versions, preserving the URI and bytes. It resolves filename collisions in the destination folder before moving. Identical readable prefixes (including temporary inspections) can share a folder; capture identity and album associations remain separate. Only associated photo rows move, never an entire folder or unrelated photos.
+
+Existing photos are not bulk-migrated. The pre-release decision explicitly removes UUID-folder lookup and migration compatibility: new capture recovery searches only its current readable folder or uses its journaled URI. Imports without the inspection naming convention use the public `Pictures/Inspecciones/` root, never an inspection-ID folder. Private staging names, IDs, serialized fields/UIDs, independent media order, video storage and uploads are unchanged. Historical pre-29 branches remain tests, not supported device behavior.
+
+Additional focused coverage checks all four prefix modes, shared general/damage folders, temporary-folder collisions across different inspection IDs, destination collisions and idempotent submission moves on Robolectric API 29/34, recovery within the current named folder, failed move/retry with preserved bytes, and leaving unrelated photos in a shared temporary folder.
+
+Local verification executed with the configured JBR 21 / SDK:
+
+```sh
+./scripts/check.sh --tests '*MediaPhotoStoreTest' --tests '*PhotoNamesTest' \
+  --tests '*PhotoRenamingTest' --tests '*CaptureCoordinatorTest' \
+  --tests '*LegacyPhotoImporterTest' --tests '*CameraCaptureModelTest' \
+  --tests '*InspectionSubmissionTest' --tests '*MediaStagingRecoveryTest'
+./gradlew --no-daemon -Dorg.gradle.jvmargs='-Xmx3072m -XX:MaxMetaspaceSize=1024m' \
+  --max-workers=2 :app:assembleDebug :app:lintDebug
+```
+
+The completed focused invocation and its immediate script summary reported 70 tests in 9 suites, zero failures/errors/skips; the task executed, and import-boundary checks passed. The shared JUnit report directory was subsequently overwritten by another local test selection, so it is not a durable artifact of this invocation. Debug assembly and lint passed; lint reported 653 warnings and 7 baseline-filtered errors. No full JVM suite, emulator or real device/service checks were included.
+
+The 70-test result above describes the initial folder implementation before the requested compatibility removal. The finalized pre-release behavior and independent branch verification are recorded in [readable photo folders](../photo-folders.md). No old UUID-folder search or UUID-folder fallback is retained.

@@ -38,6 +38,9 @@ public class PhotoRenamingTest {
         Danio damage = new Danio(); inspection.getDaniosManager().getListaDanios().add(damage);
         String damageRef = store.importPhoto(new ByteArrayInputStream(new byte[]{3}), owner, "ENTRADA_EP_temp_ABCD_DANIO#0_0.jpg", "damage");
         damage.getAlbum().agregarFoto(damageRef);
+        String otherTemp = store.importPhoto(new ByteArrayInputStream(new byte[]{4}), "other-owner", "ENTRADA_EP_temp_ABCD_0.jpg", "unrelated");
+        assertEquals("Pictures/Inspecciones/ENTRADA_EP_temp_ABCD/", folder(context, generalRef));
+        assertEquals(folder(context, generalRef), folder(context, damageRef));
 
         // Do not start the inspection lifecycle or any database/printing work.
         InspeccionActivity activity = Robolectric.buildActivity(InspeccionActivity.class).get();
@@ -47,6 +50,9 @@ public class PhotoRenamingTest {
 
         assertEquals("ENTRADA_EP_123_ABCD_1.jpg", store.displayName(generalRef));
         assertEquals("ENTRADA_EP_123_ABCD_DANIO#0_0.jpg", store.displayName(damageRef));
+        assertEquals("Pictures/Inspecciones/ENTRADA_EP_123_ABCD/", folder(context, generalRef));
+        assertEquals(folder(context, generalRef), folder(context, damageRef));
+        assertEquals("Pictures/Inspecciones/ENTRADA_EP_temp_ABCD/", folder(context, otherTemp));
         assertEquals(generalRef, general.getFotos().get(0));
         assertEquals(damageRef, damage.getAlbum().getFotos().get(0));
         assertEquals("ENTRADA_EP_123_ABCD_0.jpg", general.recordedRemoteName(generalRef));
@@ -54,6 +60,14 @@ public class PhotoRenamingTest {
         try (InputStream in = store.open(earlier)) { assertEquals(1, in.read()); }
         try (InputStream in = store.open(generalRef)) { assertEquals(2, in.read()); }
         try (InputStream in = store.open(damageRef)) { assertEquals(3, in.read()); }
+        try (InputStream in = store.open(otherTemp)) { assertEquals(4, in.read()); }
+    }
+
+    private static String folder(Context context, String reference) {
+        try (android.database.Cursor cursor = context.getContentResolver().query(android.net.Uri.parse(reference),
+                new String[]{android.provider.MediaStore.Images.Media.RELATIVE_PATH}, null, null, null)) {
+            assertNotNull(cursor); assertTrue(cursor.moveToFirst()); return cursor.getString(0);
+        }
     }
 
     private static void set(InspeccionActivity activity, String name, Object value) throws Exception {

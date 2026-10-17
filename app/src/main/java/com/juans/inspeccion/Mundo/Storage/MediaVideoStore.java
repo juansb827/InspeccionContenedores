@@ -1,5 +1,7 @@
 package com.juans.inspeccion.Mundo.Storage;
 
+
+
 import android.content.*;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
@@ -43,17 +45,19 @@ public class MediaVideoStore implements VideoStore {
         synchronized (LOCK) {
             HashMap<String, Publication> records = publications(); Publication publication = records.get(id);
             if (publication != null && publication.complete) return publication.uri;
-            String folder = "Movies/Inspecciones/" + MediaPhotoStore.safe(inspection) + "/";
-            String display = MediaPhotoStore.safe(name.replaceFirst("(?i)\\.mp4$", "")) + "-" + id + ".mp4";
-            Uri uri = publication == null ? find(folder, display) : Uri.parse(publication.uri);
+            String display = MediaPhotoStore.safe(name.replaceFirst("(?i)\\.mp4$", "")) + ".mp4";
+            String folder = folder(display);
+            String pending = "pending-" + MediaPhotoStore.safe(id) + ".mp4";
+            Uri uri = publication == null ? find(folder, pending) : Uri.parse(publication.uri);
             if (uri == null) {
-                ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.DISPLAY_NAME, display);
+                ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.DISPLAY_NAME, pending);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4"); values.put(MediaStore.MediaColumns.RELATIVE_PATH, folder);
                 values.put(MediaStore.MediaColumns.IS_PENDING, 1);
                 uri = context.getContentResolver().insert(collection(), values);
                 if (uri == null) throw new IOException("No se pudo reservar el video");
             }
             publication = new Publication(uri.toString()); records.put(id, publication); AtomicObjects.write(journal, records);
+            rename(uri.toString(), display);
             try (InputStream in = new FileInputStream(file); OutputStream out = context.getContentResolver().openOutputStream(uri, "wt")) {
                 if (out == null) throw new IOException("No se pudo escribir el video");
                 byte[] buffer = new byte[32768]; int count; long copied = 0;
@@ -65,10 +69,40 @@ public class MediaVideoStore implements VideoStore {
             publication.complete = true; AtomicObjects.write(journal, records); return publication.uri;
         }
     }
-    private Uri find(String folder, String name) {
-        try (Cursor cursor = context.getContentResolver().query(collection(), new String[]{MediaStore.MediaColumns._ID},
+    private static String folder(String name) {
+        String prefix = PhotoNames.folderForMedia(name);
+        return "Movies/Inspecciones/" + (prefix == null ? "" : MediaPhotoStore.safe(prefix) + "/");
+    }
+    private Uri find(String folder, String name) throws IOException {
+        try (Cursor cursor = context.getContentResolver().query(MediaStore.setIncludePending(collection()), new String[]{MediaStore.MediaColumns._ID},
                 MediaStore.MediaColumns.RELATIVE_PATH+"=? AND "+MediaStore.MediaColumns.DISPLAY_NAME+"=?", new String[]{folder,name}, null)) {
-            return cursor != null && cursor.moveToFirst() ? Uri.withAppendedPath(collection(), cursor.getString(0)) : null;
+            if (cursor == null) throw new IOException("No se pudo consultar la biblioteca de videos");
+            return cursor.moveToFirst() ? Uri.withAppendedPath(collection(), cursor.getString(0)) : null;
+        } catch (RuntimeException e) { throw new IOException("No se pudo consultar la biblioteca de videos", e); }
+    }
+    @Override public void rename(String reference, String name) throws IOException {
+        synchronized (LOCK) {
+            if (reference == null || !reference.startsWith("content://")) throw new IOException("Video no disponible");
+            Uri uri = Uri.parse(reference);
+            String target = folder(name);
+            String candidate = MediaPhotoStore.safe(name);
+            while (true) {
+                Uri existing = find(target, candidate);
+                if (existing == null || existing.equals(uri)) break;
+                String base = candidate.replaceFirst("(?i)\\.mp4$", "");
+                int separator = base.lastIndexOf('_');
+                String number = base.substring(separator + 1);
+                if (separator >= 0 && number.matches("[0-9]+")) {
+                    try { candidate = base.substring(0, separator + 1) + Math.addExact(Long.parseLong(number), 1) + ".mp4"; }
+                    catch (NumberFormatException | ArithmeticException e) { throw new IOException("No hay un número de video disponible", e); }
+                } else candidate = base + "_1.mp4";
+            }
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, candidate);
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, target);
+            try {
+                if (context.getContentResolver().update(uri, values, null, null) != 1) throw new IOException("No se pudo actualizar el nombre del video");
+            } catch (RuntimeException e) { throw new IOException("No se pudo actualizar el nombre del video", e); }
         }
     }
     public void delete(String reference) throws IOException {

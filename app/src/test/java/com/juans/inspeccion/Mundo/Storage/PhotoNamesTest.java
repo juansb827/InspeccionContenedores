@@ -27,16 +27,28 @@ public class PhotoNamesTest {
     @Test public void generalAndDamageShareReadableFolderAcrossAllFourModes() {
         for (String direction : new String[]{"ENTRADA", "SALIDA"}) for (String document : new String[]{"EP", "ET"}) {
             String prefix = direction + "_" + document + "_123_ABCD";
-            assertEquals(prefix, PhotoNames.folderForPhoto(prefix + "_0.jpg"));
-            assertEquals(prefix, PhotoNames.folderForPhoto(prefix + "_DANIO#2_7.jpg"));
+            assertEquals(prefix, PhotoNames.folderForMedia(prefix + "_0.jpg"));
+            assertEquals(prefix, PhotoNames.folderForMedia(prefix + "_DANIO#2_7.jpg"));
+            assertEquals(prefix, PhotoNames.folderForMedia(prefix + "_0.mp4"));
+            assertEquals(prefix, PhotoNames.folderForMedia(prefix + "_DANIO#2_7.mp4"));
         }
-        assertEquals("ENTRADA_EP_temp_", PhotoNames.folderForPhoto("ENTRADA_EP_temp__0.jpg"));
-        assertEquals("ENTRADA_EP_123_AB_CD", PhotoNames.folderForPhoto("ENTRADA_EP_123_AB_CD_2.jpg"));
+        assertEquals("ENTRADA_EP_temp_", PhotoNames.folderForMedia("ENTRADA_EP_temp__0.jpg"));
+        assertEquals("ENTRADA_EP_123_AB_CD", PhotoNames.folderForMedia("ENTRADA_EP_123_AB_CD_2.jpg"));
+    }
+    @Test public void videosUseTheSameBusinessKeysAndUnsavedDamagePositionAsPhotos() {
+        Context context = RuntimeEnvironment.getApplication(); Inspeccion inspection = inspection(context);
+        assertEquals(PhotoNames.capture(context, inspection, inspection.getFotosGenerales(), -1).replace(".jpg", ".mp4"),
+                PhotoNames.video(inspection, inspection.getFotosGenerales()));
+        inspection.getInformacion().put(context.getString(R.string.NNUMDOC), "123");
+        com.juans.inspeccion.Mundo.Danio saved = new com.juans.inspeccion.Mundo.Danio();
+        inspection.getDaniosManager().getListaDanios().add(saved);
+        assertEquals("ENTRADA_EP_123_ABCD_DANIO#0_0.mp4", PhotoNames.video(inspection, saved.getAlbum()));
+        assertEquals("ENTRADA_EP_123_ABCD_DANIO#1_0.mp4", PhotoNames.video(inspection, new Album()));
     }
     @Test public void arbitraryImportedNamesDoNotInventInspectionDetails() {
-        assertNull(PhotoNames.folderForPhoto("photo_0.jpg"));
-        assertNull(PhotoNames.folderForPhoto("pending-capture.jpg"));
-        assertNull(PhotoNames.folderForPhoto("ENTRADA_EP_123_ABCD_0-old-uuid.jpg"));
+        assertNull(PhotoNames.folderForMedia("photo_0.jpg"));
+        assertNull(PhotoNames.folderForMedia("pending-capture.jpg"));
+        assertNull(PhotoNames.folderForMedia("ENTRADA_EP_123_ABCD_0-old-uuid.jpg"));
     }
     private Inspeccion inspection(Context context) {
         Inspeccion inspection = new Inspeccion(); inspection.setTipoInspeccion("ENTRADA"); inspection.setTipoDocumento("EP");

@@ -54,11 +54,19 @@ public class VideoCaptureCoordinatorTest {
         capture.discard(); capture.begin(inspection,album); capture.finalized(0,false); capture.publish();
         try { capture.associate(index,new Inspeccion(),album); fail(); } catch(IOException expected) {} assertTrue(index.items(inspection.getPhotoId(),album).isEmpty());
     }
+    @Test public void recreatedCaptureNamesVideoFromInspectionAndEditingAlbumWithoutUuid() throws Exception {
+        inspection.setTipoInspeccion("ENTRADA");inspection.setTipoDocumento("EP");
+        inspection.getInformacion().put("NNUMDOC","123");inspection.getDatosContenedor().put("CCODCNTR","ABCD");
+        capture.begin(inspection,album);capture.finalized(0,false);
+        VideoCaptureCoordinator restored=new VideoCaptureCoordinator(store,app.getFileStreamPath("video-test"));
+        restored.publish();
+        assertEquals("ENTRADA_EP_123_ABCD_DANIO#0_0.mp4",store.name);
+    }
     class Fake implements VideoStore {
-        boolean invalid,failure; int publishes;
+        boolean invalid,failure; int publishes; String name;
         public File createCapture(String id) throws IOException { File file=app.getFileStreamPath(id); file.createNewFile(); return file; }
         public long validate(File f) throws IOException { if(invalid) throw new IOException("incomplete"); return 1000; }
-        public String publish(File f,String i,String n,String id) throws IOException { if(failure)throw new IOException("full"); publishes++; return "content://videos/"+id; }
+        public String publish(File f,String i,String n,String id) throws IOException { if(failure)throw new IOException("full"); name=n; publishes++; return "content://videos/"+id; }
         public void delete(String ref) { throw new AssertionError("discard cannot delete published bytes"); }
     }
 }

@@ -4,6 +4,7 @@ import com.juans.inspeccion.data.local.AtomicObjects;
 
 import com.juans.inspeccion.platform.media.LocalMediaIndex;
 import com.juans.inspeccion.platform.media.VideoStore;
+import com.juans.inspeccion.platform.media.PhotoNames;
 
 import com.juans.inspeccion.Mundo.Album;
 import com.juans.inspeccion.Mundo.Inspeccion;
@@ -48,9 +49,10 @@ public final class VideoCaptureCoordinator {
                 && error != VideoRecordEvent.Finalize.ERROR_SOURCE_INACTIVE)
             throw new IOException("No se pudo finalizar el video (" + error + "); la captura privada se conserva");
         File file = new File(session.path); session.duration = store.validate(file);
-        session.reference = store.publish(file, session.inspectionId, "video-"+session.albumId, session.id);
+        session.reference = store.publish(file, session.inspectionId, PhotoNames.video(session.inspection, session.album), session.id);
         session.finalized = true; AtomicObjects.write(journal, session); return session.reference;
     }
+    public synchronized void renamePublished(String reference, String name) throws IOException { store.rename(reference, name); }
     public synchronized void associate(LocalMediaIndex index, Inspeccion inspection, Album album) throws IOException {
         if (session == null || !session.inspectionId.equals(inspection.getPhotoId()) || !session.albumId.equals(album.getId()) || session.reference == null)
             throw new IOException("El video pertenece a otra inspección o álbum");

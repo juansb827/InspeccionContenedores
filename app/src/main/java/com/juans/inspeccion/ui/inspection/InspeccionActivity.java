@@ -964,10 +964,19 @@ public class InspeccionActivity extends AppCompatActivity implements Formularios
         String prefix = darSubCarpetaFotos(numDoc, container);
         Album general = inspeccionObject.getFotosGenerales();
         for (int i = 0; i < general.getFotos().size(); i++) updatePhotoName(general, i, prefix + "_" + i + ".jpg");
+        renameAlbumVideos(general, prefix);
         ArrayList<Danio> damages = inspeccionObject.getDaniosManager().getListaDanios();
         for (int i = 0; i < damages.size(); i++) {
             Album album = damages.get(i).getAlbum();
             for (int j = 0; j < album.getFotos().size(); j++) updatePhotoName(album, j, prefix + "_DANIO#" + i + "_" + j + ".jpg");
+            renameAlbumVideos(album, prefix + "_DANIO#" + i);
+        }
+    }
+    private void renameAlbumVideos(Album album, String prefix) throws IOException {
+        int number = 0;
+        for (com.juans.inspeccion.Interfaz.Gallery.GalleryMediaItem item : mediaIndex.items(inspeccionObject.getPhotoId(), album)) {
+            if (item.kind == com.juans.inspeccion.Interfaz.Gallery.GalleryMediaItem.Kind.VIDEO)
+                videoCoordinator.renamePublished(item.reference, prefix + "_" + number++ + ".mp4");
         }
     }
     private void updatePhotoName(Album album, int index, String remoteName) throws IOException {

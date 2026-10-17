@@ -29,6 +29,8 @@ public class PhotoRenamingTest {
         provider.attachInfo(context, info);
         ShadowContentResolver.registerProviderInternal("media", provider);
         MediaPhotoStore store = new MediaPhotoStore(context);
+        com.juans.inspeccion.Mundo.Storage.MediaVideoStore videos = new com.juans.inspeccion.Mundo.Storage.MediaVideoStore(context);
+        com.juans.inspeccion.platform.media.LocalMediaIndex index = new com.juans.inspeccion.platform.media.LocalMediaIndex(context);
         Inspeccion inspection = new Inspeccion();
         inspection.setTipoInspeccion("ENTRADA"); inspection.setTipoDocumento("EP");
         String owner = inspection.getPhotoId();
@@ -41,10 +43,17 @@ public class PhotoRenamingTest {
         String otherTemp = store.importPhoto(new ByteArrayInputStream(new byte[]{4}), "other-owner", "ENTRADA_EP_temp_ABCD_0.jpg", "unrelated");
         assertEquals("Pictures/Inspecciones/ENTRADA_EP_temp_ABCD/", folder(context, generalRef));
         assertEquals(folder(context, generalRef), folder(context, damageRef));
+        java.io.File clip=videos.createCapture("fixture");try(java.io.FileOutputStream out=new java.io.FileOutputStream(clip)){out.write(5);}
+        videos.publish(clip,owner,"ENTRADA_EP_123_ABCD_0.mp4","existing-video");
+        String generalVideo=videos.publish(clip,owner,"ENTRADA_EP_temp_ABCD_0.mp4","general-video");
+        String damageVideo=videos.publish(clip,owner,"ENTRADA_EP_temp_ABCD_DANIO#0_0.mp4","damage-video");
+        index.addVideo(owner,general,generalVideo,1000);index.addVideo(owner,damage.getAlbum(),damageVideo,1000);
 
         // Do not start the inspection lifecycle or any database/printing work.
         InspeccionActivity activity = Robolectric.buildActivity(InspeccionActivity.class).get();
         set(activity, "inspeccionObject", inspection); set(activity, "photoStore", store);
+        set(activity,"mediaIndex",index);
+        set(activity,"videoCoordinator",new com.juans.inspeccion.Mundo.Storage.VideoCaptureCoordinator(videos,context.getFileStreamPath("naming-videos")));
         activity.renombrarFotos("123", "ABCD");
         activity.renombrarFotos("123", "ABCD");
 
@@ -53,6 +62,11 @@ public class PhotoRenamingTest {
         assertEquals("Pictures/Inspecciones/ENTRADA_EP_123_ABCD/", folder(context, generalRef));
         assertEquals(folder(context, generalRef), folder(context, damageRef));
         assertEquals("Pictures/Inspecciones/ENTRADA_EP_temp_ABCD/", folder(context, otherTemp));
+        assertEquals("Movies/Inspecciones/ENTRADA_EP_123_ABCD/",folder(context,generalVideo));
+        assertEquals(folder(context,generalVideo),folder(context,damageVideo));
+        assertEquals("ENTRADA_EP_123_ABCD_1.mp4",store.displayName(generalVideo));
+        assertEquals("ENTRADA_EP_123_ABCD_DANIO#0_0.mp4",store.displayName(damageVideo));
+        assertEquals(1,general.getFotos().size());assertEquals(2,index.items(owner,general).size());
         assertEquals(generalRef, general.getFotos().get(0));
         assertEquals(damageRef, damage.getAlbum().getFotos().get(0));
         assertEquals("ENTRADA_EP_123_ABCD_0.jpg", general.recordedRemoteName(generalRef));

@@ -1,5 +1,7 @@
 package com.juans.inspeccion.Mundo.Storage;
 
+
+
 import android.Manifest;
 import android.content.ContentValues;
 import android.content.Context;
@@ -69,8 +71,8 @@ public class MediaPhotoStore implements PhotoStore {
             Publication entry = journal.get(id);
             if (entry != null && entry.complete) return entry.uri;
             if (needsStoragePermission(context)) throw new IOException("Se requiere permiso para guardar fotos en este Android");
-            String folder = "Pictures/Inspecciones/" + safe(inspection) + "/";
             String display = safe(name.replaceFirst("(?i)\\.jpg$", "")) + ".jpg";
+            String folder = photoFolder(PhotoNames.folderForPhoto(display));
             if (Build.VERSION.SDK_INT <= 28) {
                 File dir = new File(Environment.getExternalStorageDirectory(), folder);
                 if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("No se pudo crear la carpeta pública");
@@ -204,11 +206,20 @@ public class MediaPhotoStore implements PhotoStore {
                 }
             } catch (RuntimeException e) { throw new IOException("No se pudo consultar la biblioteca", e); }
             ContentValues values = new ContentValues();
+            String readable = PhotoNames.folderForPhoto(safe(name));
+            if (Build.VERSION.SDK_INT >= 29 && readable != null) {
+                folder = photoFolder(readable);
+                values.put(MediaStore.Images.Media.RELATIVE_PATH, folder);
+            }
             values.put(MediaStore.Images.Media.DISPLAY_NAME, availableName(folder, safe(name), uri));
             try {
                 if (context.getContentResolver().update(uri, values, null, null) != 1) throw new IOException("No se pudo actualizar el nombre de la foto");
             } catch (RuntimeException e) { throw new IOException("No se pudo actualizar el nombre de la foto", e); }
         }
+    }
+
+    private static String photoFolder(String name) {
+        return "Pictures/Inspecciones/" + (name == null ? "" : safe(name) + "/");
     }
 
     private String availableName(String folder, String requested, Uri ownRow) throws IOException {

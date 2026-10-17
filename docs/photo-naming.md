@@ -1,5 +1,7 @@
 # Readable photo filenames — 2026-10-16
 
+Current folder policy (2026-10-17): readable inspection folders with no UUID-folder compatibility fallback are described in [photo folders](photo-folders.md). The following filename checkpoint predates that change.
+
 This is the media-only backport of `8ec869ed7e9c3ebea5e1e21d5238254d8c5a3281` to master, adapted to its existing Java packages. It does not bring in the modernization branch's package moves, draft cutover, repositories or database experiments.
 
 Public JPEG filenames follow the existing document/container convention without UUID suffixes:
